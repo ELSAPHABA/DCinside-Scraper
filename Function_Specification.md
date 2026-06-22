@@ -26,6 +26,7 @@
   - 글 번호 범위를 지정하여 특정 게시글만 수집 가능
   - 작성일 기준으로 게시글 수집 가능
   - 댓글은 게시글 상세 페이지에서 별도로 수집
+  - 글자만 수집 / 이미지 포함 수집 옵션 제공
 
 #### 2.1.3 수집 주기
   - 수집 주기는 사용자가 설정 가능 (예: 매일, 매주)
@@ -39,46 +40,58 @@
   - 수집된 데이터는 JSON 형식으로 저장
   - 이미지 파일은 별도의 폴더에 저장
   - MongoDB를 활용한 확장 가능 (선택 사항)
+  - 파일명: job_YYYYMMDD_HHMMSS.json (예: job_20230101_120000.json)
   - 데이터베이스 구조 예시:
     ```json
+    {
     {
       "gallery_id": "example",
       "post_number": 12345,
       "title": "Example Post",
       "author": "Example User",
-      "date": "2023-01-01",
+      "date": "2023-01-01-12:00:00",
       "content": "This is an example post.",
       "images": ["image1.jpg", "image2.jpg"],
       "comments": [
         {
           "author": "Commenter1",
-          "date": "2023-01-02",
+          "date": "2023-01-02-12:00:00",
           "content": "This is a comment.",
           "replies": [
             {
               "author": "Replier1",
-              "date": "2023-01-03",
+              "date": "2023-01-03-12:00:00",
               "content": "This is a reply to the comment."
             },
             {
               "author": "Replier2",
-              "date": "2023-01-04",
+              "date": "2023-01-04-12:00:00",
               "content": "This is another reply to the comment."
             },
             {
               "author": "Replier3",
-              "date": "2023-01-05",
+              "date": "2023-01-05-12:00:00",
               "content": "emoji-62b5df2be09d3ca567b1c5bc12d46b394aa3b1058c6e4d0ca4164.jpg"
             }
           ]
         },
         {
           "author": "Commenter2",
-          "date": "2023-01-03",
+          "date": "2023-01-03-12:00:00",
           "content": "This is another comment.",
           "replies": []
         }
       ]
+    },
+    {
+      "gallery_id": "example",
+      "post_number": 12346,
+      "title": "Another Example Post",
+      "author": "Example User2",
+      "date": "2023-01-02-12:00:00",
+      "content": "This is another example post.",
+      "images": ["image3.jpg"],
+      "comments": []}
     }
     ```
 
