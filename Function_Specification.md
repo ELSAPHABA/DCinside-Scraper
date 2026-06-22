@@ -53,7 +53,30 @@
         {
           "author": "Commenter1",
           "date": "2023-01-02",
-          "content": "This is a comment."
+          "content": "This is a comment.",
+          "replies": [
+            {
+              "author": "Replier1",
+              "date": "2023-01-03",
+              "content": "This is a reply to the comment."
+            },
+            {
+              "author": "Replier2",
+              "date": "2023-01-04",
+              "content": "This is another reply to the comment."
+            },
+            {
+              "author": "Replier3",
+              "date": "2023-01-05",
+              "content": "emoji-62b5df2be09d3ca567b1c5bc12d46b394aa3b1058c6e4d0ca4164.jpg"
+            }
+          ]
+        },
+        {
+          "author": "Commenter2",
+          "date": "2023-01-03",
+          "content": "This is another comment.",
+          "replies": []
         }
       ]
     }
