@@ -44,6 +44,13 @@
   - 데이터베이스 구조 예시:
     ```json
     {
+      // 검색 필드
+      // 검색 옵션 설정 시에만 작성
+      "gallery_id": "example", // 전체 검색시 "all"
+      "post_no_range": [0, 1000], // 전체 검색시 없음
+      "post_date_range": ["YYYY-MM-DD-HH:MM:SS", "YYYY-MM-DD-HH:MM:SS"], // 전체 검색시 없음
+      "search_field": "all", // "all" (통합검색), "tittle+content", "title", "content", "author", "comment"
+      "search_keyword": "검색 키워드",
     {
       "gallery_id": "example",
       "post_number": 12345,
@@ -91,21 +98,22 @@
       "date": "2023-01-02-12:00:00",
       "content": "This is another example post.",
       "images": ["image3.jpg"],
-      "comments": []}
+      "comments": []
+    }
     }
     ```
 
 ### 2.2 검색
-  - 갤러리 ID
-  - 날짜
-  - 글 번호 범위
-  - 갤러리 내 검색
-    - 제목 + 내용
-    - 제목
-    - 내용
-    - 글쓴이
-    - 댓글
-  - 통합검색
+  - 갤러리 ID: "example" 형식 ("all" 입력시 통합검색)
+  - 날짜 범위: ["YYYY-MM-DD-HH:MM:SS", "YYYY-MM-DD-HH:MM:SS"] 형식 (옵션)
+  - 글 번호 범위: [min_post_no, max_post_no] 형식 (옵션)
+  - 갤러리 내 검색:
+    - 제목 + 내용: "tittle+content" 형식
+    - 제목: "title" 형식
+    - 내용: "content" 형식
+    - 글쓴이: "author" 형식
+    - 댓글: "comment" 형식
+  - 통합검색: "all" 형식
 
 ## 3. 디렉토리 구조
 ```
