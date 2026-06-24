@@ -81,7 +81,7 @@
       "post_no_range": [0, 1000], // 전체 범위 검색시 없음
       "post_date_range": ["YYYY-MM-DD-HH:MM:SS", "YYYY-MM-DD-HH:MM:SS"], // 전체 기간 검색시 없음
       "search_field": "all", // "all" (통합 검색), "tittle+content", "title", "content", "author", "comment"
-      "search_keyword": "검색 키워드",
+      "search_keyword": "검색 키워드"
     {
       "gallery_id": "example",
       "post_number": 12345,
