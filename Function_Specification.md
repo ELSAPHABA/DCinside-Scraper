@@ -145,12 +145,17 @@
   - 페이지 번호: `&page=<페이지_번호>`
     - 요청 페이지 번호와 응답 페이지 번호가 다르면 마지막 페이지로 판단
   - 검색 기준점: `&search_pos=<검색_기준점>`
-    - 최신 글번호 스크랩
+    - 방법 1: 최신 글번호 스크랩
       - 셀렉터: `'.gall_listwrap.list table tbody`의 `tr.us-post` && `{data-type = ("icon_pic" | "icon_txt" | "icon_movie" | "icon_recomimg" | "icon_recomtxt" | "icon_recomovie")}`의 텍스트 값
+      - 글 번호 전부 수집 수 가장 높은 수가 최신 글번호
     - 시작값: 최신 글번호 - 10000
     - 감소값: -10000
+    - 방법 2: `next_link = soup.select_one("a.search_next")` 후, `next_link`의 `search_pos` 값 - 10000
   - 순서: 검색 기준점 이동 -> 페이지 번호 이동 -> 검색 기준점 이동 -> 반복
 
+##### 2.2.1.1. 게시글 작성일 이동
+  - 셀렉터: `#calendarInput`의 `value=`에 `YYYY-MM-DD` 형식으로 입력 후 `#container > section.left_content.result > article:nth-child(3) > div.bottom_paging_wrap.re > div.pop_wrap.type3.fast_move_lyr > div > div.inner.fast > div.moveset > button` 클릭
+    
 
 #### 2.2.2. 통합 검색 API
   - 대상: 전체 갤러리 검색
