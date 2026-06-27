@@ -143,18 +143,24 @@
   - 키워드: `&s_keyword=<키워드>`
     - 스페이스는 `%20`로 인코딩
   - 페이지 번호: `&page=<페이지_번호>`
+    - 요청 페이지 번호와 응답 페이지 번호가 다르면 마지막 페이지로 판단
   - 검색 기준점: `&search_pos=<검색_기준점>`
-    - 
+    - 최신 글번호 스크랩
+      - 셀렉터: `'.gall_listwrap.list table tbody`의 `tr.us-post` && `{data-type = ("icon_pic" | "icon_txt" | "icon_movie" | "icon_recomimg" | "icon_recomtxt" | "icon_recomovie")}`의 텍스트 값
+    - 시작값: 최신 글번호 - 10000
+    - 감소값: -10000
+  - 순서: 검색 기준점 이동 -> 페이지 번호 이동 -> 검색 기준점 이동 -> 반복
 
 
 #### 2.2.2. 통합 검색 API
   - 대상: 전체 갤러리 검색
   - 기본 링크: https://search.dcinside.com/post/
   - 순서: /p/<페이지>/sort/<latest or accuracy>/q/<키워드>
-  - page: 페이지 번호
+  - p: 페이지 번호
     - 시작값: 1
     - 최대값: 120
     - `#dgn_btn_paging` 의 마지막 `<a>` 태그의 텍스트 값이 변하지 않으면 마지막 페이지로 판단
+  - sort: 정렬
     - latest: 최신순
     - accuracy: 정확도순
   - q: 키워드
