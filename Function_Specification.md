@@ -21,14 +21,14 @@
   - 내용 (텍스트 및 이미지)
   - 댓글 + 덧글 (글쓴이, 작성일, 내용)
 
-#### 2.1.2. 수집 방식
-  - 갤러리 ID를 기반으로 게시글 목록을 순차적으로 수집
-  - 글 번호 범위를 지정하여 특정 게시글만 수집 가능
-  - 작성일 기준으로 게시글 수집 가능
-  - 댓글은 게시글 상세 페이지에서 별도로 수집
-  - 글자만 수집 / 이미지 포함 수집 옵션 제공
+#### 2.1.2. 수집 방식 (수정 중)
+  - 갤러리 ID 수집
+  - 글 번호 범위 수집 
+  - 작성일 수집 
+  - 댓글은 게시글 하위로 수집
+  - 글자만 수집 / 이미지 포함 수집 옵션
 
-#### 2.1.2.1. 수집 옵션
+#### 2.1.2.1. 수집 옵션 (수정 중)
   - 갤러리 수집옵션
     - 전체 갤러리 수집
     - 특정 갤러리 수집
@@ -42,17 +42,6 @@
     - 특정 검색
     - 특정 기간 검색
     - 특정 글번호 범위 검색
-
-#### 2.1.2.2. 수집 기술 스택
-    - requests 라이브러리를 활용한 Proxy 요청
-    - 요청별 세션 분리 (쿠키 reset)
-    - BeautifulSoup 라이브러리를 활용한 HTML 파싱
-    - json 라이브러리를 활용한 JSON 처리
-    - user-agents 라이브러리를 활용한 User-Agent 랜덤 생성
-    - 비동기 처리를 위한 asyncio 라이브러리 활용
-    - httpx 라이브러리를 활용한 비동기 HTTP 요청
-    - Queue를 활용한 job 관리
-    
 
 #### 2.1.3. 수집 주기
   - 수집 주기는 사용자가 설정 가능 (예: 수동, 매일, 매주)
@@ -73,8 +62,8 @@
       // 검색 필드
       // 검색 옵션 설정 시에만 작성
       "gallery_id": "example", // 통합 검색시 "all"
-      "post_no_range": [0, 1000], // 전체 범위 검색시 없음
-      "post_date_range": ["YYYY-MM-DD-HH:MM:SS", "YYYY-MM-DD-HH:MM:SS"], // 전체 기간 검색시 없음
+      "post_no_range": [0, 1000], // 전체 범위 검색시 [None, None]
+      "post_date_range": ["YYYY-MM-DD-HH:MM:SS", "YYYY-MM-DD-HH:MM:SS"], // 전체 기간 검색시 [None, None]
       "search_field": "all", // "all" (통합 검색), "tittle+content", "title", "content", "author", "comment"
       "search_keyword": "검색 키워드"
     {
@@ -141,7 +130,50 @@
     - 댓글: "comment" 형식
   - 통합검색: "all" 형식
 
-## 3. 디렉토리 구조
+#### 2.2.1 갤러리 검색 API
+  - 대상: 특정 갤러리 내 검색
+  - 기본 링크: https://gall.dcinside.com/mgallery/board/lists?
+  - 갤러리 ID: `&id=<갤러리_ID>`
+  - 검색옵션: `&s_type=search_<검색옵션>`
+    - 제목 + 내용: "subject_memo"
+    - 제목: "subject"
+    - 내용: "memo"
+    - 글쓴이: "name"
+    - 댓글: "comment"
+  - 키워드: `&s_keyword=<키워드>`
+    - 스페이스는 `%20`로 인코딩
+  - 페이지 번호: `&page=<페이지_번호>`
+  - 검색 기준점: `&search_pos=<검색_기준점>`
+    - 
+
+
+#### 2.2.2. 통합 검색 API
+  - 대상: 전체 갤러리 검색
+  - 기본 링크: https://search.dcinside.com/post/
+  - 순서: /p/<페이지>/sort/<latest or accuracy>/q/<키워드>
+  - page: 페이지 번호
+    - 시작값: 1
+    - 최대값: 120
+    - `#dgn_btn_paging` 의 마지막 `<a>` 태그의 텍스트 값이 변하지 않으면 마지막 페이지로 판단
+    - latest: 최신순
+    - accuracy: 정확도순
+  - q: 키워드
+    - 키워드는 UTF-8 16진수로 변환
+      - 디시: `.EB.94.94.EC.8B.9C`
+      - 갤러리: `.EA.B0.A4.EB.9F.AC.EB.A6.AC`
+    - 스페이스는 `.20`로 치환
+
+## 3. 기술 스택 (수정 중)
+  - requests 라이브러리를 활용한 Proxy 요청
+  - 요청별 세션 분리 (쿠키 reset)
+  - BeautifulSoup 라이브러리를 활용한 HTML 파싱
+  - json 라이브러리를 활용한 JSON 처리
+  - user-agents 라이브러리를 활용한 User-Agent 랜덤 생성
+  - 비동기 처리를 위한 asyncio 라이브러리 활용
+  - httpx 라이브러리를 활용한 비동기 HTTP 요청
+  - Queue를 활용한 job 관리
+
+## 4. 디렉토리 구조
 ```
 DCinside-Scraper/
 ├── main.py
