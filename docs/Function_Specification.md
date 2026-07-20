@@ -212,6 +212,20 @@
       - 갤러리: `.EA.B0.A4.EB.9F.AC.EB.A6.AC`
     - 스페이스는 `.20`로 치환
 
+  #### 2.2.3. 검색 결과 게시글 수집
+  - 갤러리: 링크의 `id` 값
+  - 글 번호: 링크의 `no` 값
+  - 제목: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > h3 > span.title_subject`
+  - 글쓴이: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div > div.fl > span > span.nickname.in`의 `title` 값
+    - (반)고정닉 or 유동닉: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div` 에서 `data-uid="..." data-ip data-loc="view"` 이면 (반)고정닉, `data-uid data-ip="..." data-loc="view"` 이면 유동닉
+  - 조회수
+  - 추천수 + 비추천수
+  - 댓글 수
+  - 작성일
+  - 내용 (텍스트 및 이미지)
+    - 이미지 저장 or URL 수집 (옵션)
+  - 댓글 + 덧글 (글쓴이, 작성일, 내용)
+
 ## 3. 기술 스택 (수정 중)
   - requests 라이브러리를 활용한 Proxy 요청
   - 요청별 세션 분리 (쿠키 reset)
