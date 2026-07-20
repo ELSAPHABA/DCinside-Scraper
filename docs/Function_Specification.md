@@ -17,8 +17,13 @@
   - 글 번호
   - 제목
   - 글쓴이
+    - (반)고정닉 or 유동닉
+  - 조회수
+  - 추천수 + 비추천수
+  - 댓글 수
   - 작성일
   - 내용 (텍스트 및 이미지)
+    - 이미지 저장 or URL 수집 (옵션)
   - 댓글 + 덧글 (글쓴이, 작성일, 내용)
 
 #### 2.1.2. 수집 방식 (수정 중)
@@ -29,15 +34,33 @@
   - 글자만 수집 / 이미지 포함 수집 옵션
 
 #### 2.1.2.1. 수집 옵션 (수정 중)
-  - 갤러리 수집옵션
-    - 전체 갤러리 수집
-    - 특정 갤러리 수집
-  - 글 수집옵션
+  - 갤러리 글 수집 옵션
+    - 전체 갤러리 글 수집
+    - 특정 갤러리 글 수집
+      - 갤러리 ID 입력
+  - 글 수집 옵션
     - 전체 글 수집
     - 특정 글 수집
+    - (반)고정닉 or 유동닉 글 수집
+      - 전체 수집
+      - (반)고정닉만 수집
+      - 유동닉만 수집
     - 특정 기간 글 수집
     - 특정 글번호 범위 글 수집
-  - 검색옵션
+  - 댓글 수집 옵션
+    - 전체 댓글 수집
+    - 특정 댓글 수집
+    - (반)고정닉 or 유동닉 댓글 수집
+      - 전체 수집
+      - (반)고정닉만 수집
+      - 유동닉만 수집
+    - 특정 기간 댓글 수집
+    - 특정 글번호 범위 댓글 수집
+  - 이미지 수집 옵션
+    - 이미지 저장
+    - 이미지 URL 수집
+    - 이미지 저장 및 URL 수집
+  - 검색 옵션
     - 전체 검색
     - 특정 검색
     - 특정 기간 검색
@@ -73,7 +96,13 @@
       "post_number": 12345,
       "title": "Example Post",
       "author": "Example User",
+      "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
       "date": "2023-01-01-12:00:00",
+      "views": 100,
+      "recommendations": {
+        "upvotes": 10,
+        "downvotes": 2
+      },
       "content": "This is an example post.",
       "images": ["image1.jpg", "image2.jpg"],
       "comments": [
@@ -113,7 +142,13 @@
       "post_number": 12346,
       "title": "Another Example Post",
       "author": "Example User2",
+      "nickname_type": "floating", // "fixed" ((반)고정닉), "floating" (유동닉)
       "date": "2023-01-02-12:00:00",
+      "views": 150,
+      "recommendations": {
+        "upvotes": 15,
+        "downvotes": 1
+      },
       "content": "This is another example post.",
       "images": ["image3.jpg"],
       "comments": []
