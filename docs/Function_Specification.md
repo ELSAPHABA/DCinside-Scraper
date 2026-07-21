@@ -18,6 +18,8 @@
   - 제목
   - 글쓴이
     - (반)고정닉 or 유동닉
+      - (반)고정닉: 식별코드
+      - 유동닉: IP 주소
   - 조회수
   - 추천수 + 비추천수
   - 댓글 수
@@ -25,6 +27,10 @@
   - 내용 (텍스트 및 이미지)
     - 이미지 저장 or URL 수집 (옵션)
   - 댓글 + 덧글 (글쓴이, 작성일, 내용)
+    - 댓글 글쓴이: (반)고정닉 or 유동닉
+      - (반)고정닉: 식별코드
+      - 유동닉: IP 주소
+    - 디시콘
 
 #### 2.1.2. 수집 방식 (수정 중)
   - 갤러리 ID 수집
@@ -95,7 +101,7 @@
       "gallery_id": "example",
       "post_number": 12345,
       "title": "Example Post",
-      "author": "Example User",
+      "author": "BAMF (hz6ipw7c0072454)",
       "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
       "date": "2023-01-01-12:00:00",
       "views": 100,
@@ -107,22 +113,26 @@
       "images": ["image1.jpg", "image2.jpg"],
       "comments": [
         {
-          "author": "Commenter1",
+          "author": "ㅇㅇ (123.232)",
+          "nickname_type": "floating", // "fixed" ((반)고정닉), "floating" (유동닉)
           "date": "2023-01-02-12:00:00",
           "content": "This is a comment.",
           "replies": [
             {
               "author": "Replier1",
+              "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
               "date": "2023-01-03-12:00:00",
               "content": "This is a reply to the comment."
             },
             {
-              "author": "Replier2",
+              "author": "ㅇㅇ (323.112)",
+              "nickname_type": "floating", // "fixed" ((반)고정닉), "floating" (유동닉)
               "date": "2023-01-04-12:00:00",
               "content": "This is another reply to the comment."
             },
             {
               "author": "Replier3",
+              "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
               "date": "2023-01-05-12:00:00",
               "content": "emoji-62b5df2be09d3ca567b1c5bc12d46b394aa3b1058c6e4d0ca4164.jpg"
             }
@@ -130,6 +140,7 @@
         },
         {
           "author": "Commenter2",
+          "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
           "date": "2023-01-03-12:00:00",
           "content": "This is another comment.",
           "replies": []
@@ -141,7 +152,7 @@
       "gallery_id": "example",
       "post_number": 12346,
       "title": "Another Example Post",
-      "author": "Example User2",
+      "author": "BadAss (adjust6974)",
       "nickname_type": "floating", // "fixed" ((반)고정닉), "floating" (유동닉)
       "date": "2023-01-02-12:00:00",
       "views": 150,
@@ -218,14 +229,22 @@
   - 제목: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > h3 > span.title_subject`
   - 글쓴이: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div > div.fl > span > span.nickname.in`의 `title` 값
     - (반)고정닉 or 유동닉: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div` 에서 `data-uid="..." data-ip data-loc="view"` 이면 (반)고정닉, `data-uid data-ip="..." data-loc="view"` 이면 유동닉
-  - 조회수
+  - 조회수: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div > div.fr > span.gall_count` 의 `"조회 NNN"` 값
   - 추천수 + 비추천수
-  - 댓글 수
-  - 작성일
+    - 추천수: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div > div.fr > span.gall_reply_num` 의 `"추천 NNN"` 값
+    - 비추천수: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div > div.fr > span.gall_reply_num` 의 `"비추천 NNN"` 값
+  - 댓글 수: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div > div.fr > span.gall_comment > a` 의 `"댓글 NNN"` 값
+  - 작성일: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div > div.fl > span > span.gall_date` 의 `title="YYYY-MM-DD HH:MM:SS"` 값
   - 내용 (텍스트 및 이미지)
+    - 텍스트: 
     - 이미지 저장 or URL 수집 (옵션)
+      - 이미지: `#container > section > article:nth-child(3) > div.view_content_wrap > div > div.inner.clear > div.writing_view_box > div.write_div` 하위 `<div class="img_area noN" id="img_focus_NNNNNNN">` 의 `onclick="javascript:imgPop('https://image.dcinside.com/viewimagePop.php?no=...', ...);"` 값에서 `https://image.dcinside.com/viewimagePop.php?no=...` 저장
+      - 이미지 URL: `#img_focus_NNNNNNN > div > img`의 `onclick="javascript:imgPop('https://image.dcinside.com/viewimagePop.php?no=...', ...);"` 값에서 `https://image.dcinside.com/viewimagePop.php?no=...` 부분 추출
   - 댓글 + 덧글 (글쓴이, 작성일, 내용)
-
+    - 댓글 페이지: `#comment_wrap_<글 번호> > div.comment_box > div > div.cmt_paging` 하위 `<a href="javascript:viewComments({페이지 번호},'D',true)">{페이지 번호}</a>` 로 이동
+    - 댓글 글쓴이: 
+    - 댓글 작성일: `#comment_li_NNNNNNNNN > div > div.fr.clear > span`에서, 올해일 경우 `MM.DD HH:MM:SS` (저장은 `YYYY.MM.DD HH:MM:SS`), 작년 또는 그 이전일 경우 `YYYY.MM.DD HH:MM:SS`
+    - 댓글 내용: `#comment_li_NNNNNNNNN > div > div.addbox > div.clear.cmt_txtbox.btn_reply_write_all > p` 의 텍스트 값
 ## 3. 기술 스택 (수정 중)
   - requests 라이브러리를 활용한 Proxy 요청
   - 요청별 세션 분리 (쿠키 reset)
