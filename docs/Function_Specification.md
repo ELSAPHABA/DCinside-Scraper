@@ -178,7 +178,7 @@
   - 날짜 범위: ["YYYY-MM-DD-HH:MM:SS", "YYYY-MM-DD-HH:MM:SS"] 형식 (옵션)
   - 글 번호 범위: [min_post_no, max_post_no] 형식 (옵션)
   - 갤러리 내 검색:
-    - 제목 + 내용: "tittle+content" 형식
+    - 제목 + 내용: "title+content" 형식
     - 제목: "title" 형식
     - 내용: "content" 형식
     - 글쓴이: "author" 형식
@@ -187,29 +187,46 @@
 
 #### 2.2.1 갤러리 내 검색 API
   - 대상: 특정 갤러리 내 검색
-  - 기본 링크: https://gall.dcinside.com/mgallery/board/lists?
-  - 갤러리 ID: `&id=<갤러리_ID>`
-  - 검색옵션: `&s_type=search_<검색옵션>`
-    - 제목 + 내용: "subject_memo"
-    - 제목: "subject"
-    - 내용: "memo"
-    - 글쓴이: "name"
-    - 댓글: "comment"
-  - 키워드: `&s_keyword=<키워드>`
-    - 스페이스는 `%20`로 인코딩
-  - 페이지 번호: `&page=<페이지_번호>`
-    - 요청 페이지 번호와 응답 페이지 번호가 다르면 마지막 페이지로 판단
-  - 검색 기준점: `&search_pos=<검색_기준점>`
-    - 방법 1: 최신 글번호 스크랩
-      - 셀렉터: `'.gall_listwrap.list table tbody`의 `tr.us-post` && `{data-type = ("icon_pic" | "icon_txt" | "icon_movie" | "icon_recomimg" | "icon_recomtxt" | "icon_recomovie")}`의 텍스트 값
-      - 글 번호 전부 수집 수 가장 높은 수가 최신 글번호
-    - 시작값: 최신 글번호 - 10000
-    - 감소값: -10000
-    - 방법 2: `next_link = soup.select_one("a.search_next")` 후, `next_link`의 `search_pos` 값 - 10000
-  - 순서: 검색 기준점 이동 -> 페이지 번호 이동 -> 검색 기준점 이동 -> 반복
+  - 기본 링크: `https://gall.dcinside.com/mgallery/board/lists/`
+    - 일반 갤러리는 `/board/lists/`, 마이너 갤러리는 `/mgallery/board/lists/`
+  - 요청 파라미터
+    - 갤러리 ID: `id=<갤러리_ID>`
+    - 검색옵션: `s_type=<검색옵션>`
+      - 제목 + 내용: `search_subject_memo`
+      - 제목: `search_subject`
+      - 내용: `search_memo`
+      - 글쓴이: `search_name`
+      - 댓글: `search_comment`
+    - 키워드: `s_keyword=<키워드>`
+      - `requests`의 `params`로 전달하거나, 직접 URL 생성 시 UTF-8 URL 인코딩
+    - 페이지 번호: `page=<페이지_번호>`
+    - 검색 기준점: `search_pos=<검색_기준점>`
+      - 최초 검색은 `search_pos`를 생략하거나 빈 값으로 요청
+      - 다음 검색 구간은 응답 HTML의 `a.search_next[href]` 값을 그대로 사용
+      - 이전 검색 구간은 응답 HTML의 `a.search_prev[href]` 값을 그대로 사용
+      - `search_pos` 시작값을 최신 글번호에서 직접 계산하지 않는다.
+  - 수집 순서
+    - 최초 URL에서 `page=1`부터 현재 `search_pos` 구간의 마지막 페이지까지 수집
+    - 마지막 페이지는 `a.page_end[href]`의 `page` 값 또는 페이징 링크 중 가장 큰 `page` 값으로 판단
+    - 현재 구간 수집 후 `a.search_next[href]`가 있으면 해당 URL로 이동해 다시 `page=1`부터 반복
+    - `a.search_next[href]`가 없거나 게시글 행이 없으면 종료
+  - 게시글 행 파싱
+    - 목록 행: `.gall_listwrap.list tbody tr.ub-content.us-post`
+    - 광고/공지 행은 `.gall_num` 값이 `-` 이거나 `us-post` 클래스가 없으므로 제외
+    - 글 번호: `.gall_num`
+    - 말머리: `.gall_subject`
+    - 제목/상세 링크: `.gall_tit a`
+    - 글쓴이: `.gall_writer`
+    - 작성일: `.gall_date`의 `title` 값 우선, 없으면 텍스트 값
+    - 조회수: `.gall_count`
+    - 추천수: `.gall_recommend`
 
 ##### 2.2.1.1. 게시글 작성일 이동
-  - 셀렉터: `#calendarInput`의 `value=`에 `YYYY-MM-DD` 형식으로 입력 후 `#container > section.left_content.result > article:nth-child(3) > div.bottom_paging_wrap.re > div.pop_wrap.type3.fast_move_lyr > div > div.inner.fast > div.moveset > button` 클릭
+  - 빠른 이동 UI는 내부적으로 `/ajax/search_ajax/search_date/` 를 호출해 해당 날짜의 `search_pos`를 받은 뒤 목록 URL로 이동한다.
+  - 요청: `POST https://gall.dcinside.com/ajax/search_ajax/search_date/`
+    - form data: `ci_t=<ci_c 쿠키 값>`, `date=YYYY-MM-DD`, `id=<갤러리 ID>`, `keyword=<검색어>`, `s_type=<검색옵션>`, `_GALLTYPE_=<갤러리 타입>`
+  - 응답: `{"result":"success","data":"<search_pos>"}` 형식이면 `search_pos=<data>` 로 갤러리 검색 목록을 요청
+  - 실패하거나 `data`가 없으면 해당 날짜 이동 결과 없음으로 처리
     
 
 #### 2.2.2. 통합 검색 API
