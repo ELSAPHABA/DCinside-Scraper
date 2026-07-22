@@ -83,6 +83,17 @@
     - 특정 검색
     - 특정 기간 검색
     - 특정 글번호 범위 검색
+  - 요청 옵션
+    - User-Agent Mixer
+      - 차단 회피를 위해 요청 시 사용할 User-Agent를 주기적으로 교체
+      - 터미널에서 파일 탐색기 창을 열어 User-Agent 목록 파일을 불러오기
+      - 불러온 목록은 실행 파일과 같은 위치의 `User-Agent.txt`에 저장
+      - `User-Agent.txt`는 사용자가 직접 편집할 수 있도록 비인코딩 평문으로 저장
+    - Proxy
+      - Proxy를 통해 requests 요청 전송
+      - host, ID, PW는 터미널에서 입력
+      - 입력한 Proxy 설정은 실행 파일과 같은 위치의 `Proxy-Profile.txt`에 저장
+      - `Proxy-Profile.txt`는 사용자가 직접 편집할 수 있도록 비인코딩 평문으로 저장
 
 #### 2.1.3. 수집 주기
   - 수집 주기는 사용자가 설정 가능 (예: 수동, 매일, 매주)
@@ -345,11 +356,11 @@
     - 제한 횟수 초과 시 실패 목록에 `(gallery_id, post_number, url, reason)` 저장
 
 ## 3. 기술 스택 (수정 중)
-  - requests 라이브러리를 활용한 Proxy 요청
+  - Proxy를 통한 requests 요청 전송
   - 요청별 세션 분리 (쿠키 reset)
   - BeautifulSoup 라이브러리를 활용한 HTML 파싱
   - json 라이브러리를 활용한 JSON 처리
-  - user-agents 라이브러리를 활용한 User-Agent 랜덤 생성
+  - user-agents.txt 리스트 이용 User-Agent 주기적교체
   - 비동기 처리를 위한 asyncio 라이브러리 활용
   - httpx 라이브러리를 활용한 비동기 HTTP 요청
   - asyncio.Queue를 활용한 링크 수집 워커 + 게시글 수집 워커 분리
@@ -369,10 +380,13 @@ DCinside-Scraper/
 │   └── mongodb_handler.py
 ├── utils/
 │   ├── __init__.py
+│   ├── proxy.py
 │   ├── user_agent.py
 │   └── logger.py
 ├── config/
 │   └── settings.py
+├── User-Agent.txt
+├── Proxy-Profile.txt
 ├── pyproject.toml
 └── README.md
 ```
