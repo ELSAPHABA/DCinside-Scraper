@@ -27,10 +27,11 @@
   - 내용 (텍스트 및 이미지)
     - 이미지 저장 or URL 수집 (옵션)
   - 댓글 + 덧글 (글쓴이, 작성일, 내용)
+    - 댓글 번호
     - 댓글 글쓴이: (반)고정닉 or 유동닉
       - (반)고정닉: 식별코드
       - 유동닉: IP 주소
-    - 디시콘
+    - 텍스트 or 디시콘
 
 #### 2.1.2. 수집 방식 (수정 중)
   - 갤러리 ID 수집
@@ -113,24 +114,28 @@
       "images": ["image1.jpg", "image2.jpg"],
       "comments": [
         {
+          "comment_number": 12345,
           "author": "ㅇㅇ (123.232)",
           "nickname_type": "floating", // "fixed" ((반)고정닉), "floating" (유동닉)
           "date": "2023-01-02-12:00:00",
           "content": "This is a comment.",
           "replies": [
             {
+              "comment_number": 12352,
               "author": "Replier1",
               "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
               "date": "2023-01-03-12:00:00",
               "content": "This is a reply to the comment."
             },
             {
+              "comment_number": 12423,
               "author": "ㅇㅇ (323.112)",
               "nickname_type": "floating", // "fixed" ((반)고정닉), "floating" (유동닉)
               "date": "2023-01-04-12:00:00",
               "content": "This is another reply to the comment."
             },
             {
+              "comment_number": 12512,
               "author": "Replier3",
               "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
               "date": "2023-01-05-12:00:00",
@@ -139,6 +144,7 @@
           ]
         },
         {
+          "comment_number": 13231,
           "author": "Commenter2",
           "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
           "date": "2023-01-03-12:00:00",
@@ -242,9 +248,13 @@
       - 이미지 URL: `#img_focus_NNNNNNN > div > img`의 `onclick="javascript:imgPop('https://image.dcinside.com/viewimagePop.php?no=...', ...);"` 값에서 `https://image.dcinside.com/viewimagePop.php?no=...` 부분 추출
   - 댓글 + 덧글 (글쓴이, 작성일, 내용)
     - 댓글 페이지: `#comment_wrap_<글 번호> > div.comment_box > div > div.cmt_paging` 하위 `<a href="javascript:viewComments({페이지 번호},'D',true)">{페이지 번호}</a>` 로 이동
-    - 댓글 글쓴이: 
-    - 댓글 작성일: `#comment_li_NNNNNNNNN > div > div.fr.clear > span`에서, 올해일 경우 `MM.DD HH:MM:SS` (저장은 `YYYY.MM.DD HH:MM:SS`), 작년 또는 그 이전일 경우 `YYYY.MM.DD HH:MM:SS`
-    - 댓글 내용: `#comment_li_NNNNNNNNN > div > div.addbox > div.clear.cmt_txtbox.btn_reply_write_all > p` 의 텍스트 값
+      - 15 페이지 이후 `#comment_wrap_<글 번호> > div.comment_box > div > div.cmt_paging > a.sp_pagingicon.page_next` 클릭하여 다음 페이지로 이동
+    - 댓글 글쓴이: `#comment_li_<댓글 번호> > div > div.addbox > div.cmt_nickbox > span`
+      - (반)고정닉은 `data-uid="<식별코드>" data-ip`, 유동닉은 `data-uid data-ip="<IP 주소>"` 로 구분
+    - 댓글 작성일: `#comment_li_<댓글 번호> > div > div.fr.clear > span`에서, 올해일 경우 `MM.DD HH:MM:SS` (저장은 `YYYY.MM.DD HH:MM:SS`), 작년 또는 그 이전일 경우 `YYYY.MM.DD HH:MM:SS`
+    - 댓글 내용: `#comment_li_<댓글 번호> > div > div.addbox > div.clear.cmt_txtbox.btn_reply_write_all > p` 의 텍스트 값
+    - 덧글: 댓글 `<댓글 번호>` 의 덧글은 `#reply_list_<덧글 번호>`, `<ul class="reply_list" id="reply_list_<댓글 번호>" p-no="<댓글 번호>">`, 하위의 
+
 ## 3. 기술 스택 (수정 중)
   - requests 라이브러리를 활용한 Proxy 요청
   - 요청별 세션 분리 (쿠키 reset)
