@@ -255,23 +255,35 @@
     - 갤러리 ID와 글 번호는 상세 링크의 `id`, `no` 쿼리 값에서 추출
     - 상세 링크가 `/board/view/`이면 일반 갤러리, `/mgallery/board/view/`이면 마이너 갤러리
 
-  #### 2.2.3. 검색 결과 게시글 수집
-  - 갤러리: 링크의 `id` 값
-  - 글 번호: 링크의 `no` 값
-  - 제목: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > h3 > span.title_subject`
-  - 글쓴이: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div > div.fl > span > span.nickname.in`의 `title` 값
-    - (반)고정닉 or 유동닉: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div` 에서 `data-uid="..." data-ip data-loc="view"` 이면 (반)고정닉, `data-uid data-ip="..." data-loc="view"` 이면 유동닉
-  - 조회수: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div > div.fr > span.gall_count` 의 `"조회 NNN"` 값
+  #### 2.2.3. 게시글 상세 페이지 수집
+  - 갤러리: 게시글 URL의 `id` 값
+  - 글 번호: 게시글 URL의 `no` 값
+  - 제목: `.title_subject`
+  - 글쓴이: `.gall_writer.ub-writer`
+    - 닉네임: `data-nick`
+    - 식별코드: `data-uid`
+    - IP: `data-ip`
+    - (반)고정닉 or 유동닉: `data-uid` 값이 있으면 (반)고정닉, `data-uid` 값이 없고 `data-ip` 값이 있으면 유동닉
+  - 조회수: `.gall_count` 의 `"조회 NNN"` 값
   - 추천수 + 비추천수
-    - 추천수: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div > div.fr > span.gall_reply_num` 의 `"추천 NNN"` 값
-    - 비추천수: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div > div.fr > span.gall_reply_num` 의 `"비추천 NNN"` 값
-  - 댓글 수: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div > div.fr > span.gall_comment > a` 의 `"댓글 NNN"` 값
-  - 작성일: `#container > section > article:nth-child(3) > div.view_content_wrap > header > div > div > div.fl > span > span.gall_date` 의 `title="YYYY-MM-DD HH:MM:SS"` 값
-  - 내용 (텍스트 및 이미지)
-    - 텍스트: 
-    - 이미지 저장 or URL 수집 (옵션)
-      - 이미지: `#container > section > article:nth-child(3) > div.view_content_wrap > div > div.inner.clear > div.writing_view_box > div.write_div` 하위 `<div class="img_area noN" id="img_focus_NNNNNNN">` 의 `onclick="javascript:imgPop('https://image.dcinside.com/viewimagePop.php?no=...', ...);"` 값에서 `https://image.dcinside.com/viewimagePop.php?no=...` 저장
-      - 이미지 URL: `#img_focus_NNNNNNN > div > img`의 `onclick="javascript:imgPop('https://image.dcinside.com/viewimagePop.php?no=...', ...);"` 값에서 `https://image.dcinside.com/viewimagePop.php?no=...` 부분 추출
+    - 추천수: `.gall_reply_num` 의 `"추천 NNN"` 값, 없으면 `.up_num` 값
+    - 비추천수: `#recommend_view_down_<글 번호>` 또는 `.down_num` 값
+  - 댓글 수: `.gall_comment` 의 `"댓글 NNN"` 값
+  - 작성일: `.gall_date` 의 `title="YYYY-MM-DD HH:MM:SS"` 값
+  - 본문
+    - 기준 컨테이너: `.writing_view_box .write_div`
+    - 텍스트 추출 전 제거: `.img_comment`, `.image_comment`, `.tip_box2`, `.num.img`, `button`, `script`
+    - 텍스트: 제거 후 `.write_div`의 텍스트 값
+    - 본문 링크: `.write_div a[href]`
+  - 이미지 저장 or URL 수집 (옵션)
+    - 이미지 목록: `.write_div img[data-fileno]`
+    - 이미지 파일 번호: `data-fileno`
+    - 이미지 URL 우선순위: `data-original` -> `src` -> `onclick`의 `imgPop(...)` URL
+    - `src`가 `gallview_loading_ori.gif` 이면 실제 이미지가 아니므로 `data-original` 값을 사용
+  - 첨부 파일 저장 or URL 수집 (옵션)
+    - 첨부 파일 목록: `.appending_file a[href]`
+    - 파일명: 링크 텍스트 또는 `href`의 `f_no` 값
+    - 다운로드 URL: `href`
   - 댓글 + 덧글 (글쓴이, 작성일, 내용)
     - 댓글은 게시글 HTML에 고정으로 포함되지 않고, `/board/comment/` AJAX 응답으로 로드된다.
     - 댓글 요청: `POST https://gall.dcinside.com/board/comment/`
@@ -370,6 +382,9 @@ DCinside-Scraper/
 - 작업 컨테이너 스케줄링 및 모니터링 기능
 - 작업 상태 시각화 및 알림 기능
 - 작업 실패 시 재시도 및 오류 로그 관리
+
+### ?.4. 커뮤니티 통합 스크래퍼
+- 통합 스크래핑 시스템의 디시인사이드용 워커 컨테이너로 스케줄링 및 스케일링
 
 ## ?. 미들웨어 활용 계획
 MCP, 라이브러리, KubeRay, 커뮤니티 통합 스크래퍼
