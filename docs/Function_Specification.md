@@ -247,24 +247,33 @@
       - 이미지: `#container > section > article:nth-child(3) > div.view_content_wrap > div > div.inner.clear > div.writing_view_box > div.write_div` 하위 `<div class="img_area noN" id="img_focus_NNNNNNN">` 의 `onclick="javascript:imgPop('https://image.dcinside.com/viewimagePop.php?no=...', ...);"` 값에서 `https://image.dcinside.com/viewimagePop.php?no=...` 저장
       - 이미지 URL: `#img_focus_NNNNNNN > div > img`의 `onclick="javascript:imgPop('https://image.dcinside.com/viewimagePop.php?no=...', ...);"` 값에서 `https://image.dcinside.com/viewimagePop.php?no=...` 부분 추출
   - 댓글 + 덧글 (글쓴이, 작성일, 내용)
-    - 댓글 페이지: `#comment_wrap_<글 번호> > div.comment_box > div > div.cmt_paging` 하위 `<a href="javascript:viewComments({페이지 번호},'D',true)">{페이지 번호}</a>` 로 이동
-      - 15 페이지 이후 `#comment_wrap_<글 번호> > div.comment_box > div > div.cmt_paging > a.sp_pagingicon.page_next` 클릭하여 다음 페이지로 이동
-    - 댓글 글쓴이: `#comment_li_<댓글 번호> > div > div.addbox > div.cmt_nickbox > span`
-      - (반)고정닉은 `data-uid="<식별코드>" data-ip`, 유동닉은 `data-uid data-ip="<IP 주소>"` 로 구분
-    - 댓글 작성일: `#comment_li_<댓글 번호> > div > div.fr.clear > span`에서, 올해일 경우 `MM.DD HH:MM:SS` (저장은 `YYYY.MM.DD HH:MM:SS`), 작년 또는 그 이전일 경우 `YYYY.MM.DD HH:MM:SS`
-    - 댓글 내용: `#comment_li_<댓글 번호> > div > div.addbox > div.clear.cmt_txtbox.btn_reply_write_all > p` 의 텍스트 값
-    - 덧글: 댓글 `<댓글 번호>` 의 덧글은 `#comment_li_<댓글 번호>` 내부가 아니라, 같은 `ul.cmt_list` 안에서 댓글 바로 다음 형제 `<li>` 하위의 `<ul class="reply_list" id="reply_list_<댓글 번호>" p-no="<댓글 번호>">` 에 들어간다.
-      - BeautifulSoup 기준: `comment_li.find_next_sibling("li")` 에서 `ul.reply_list[p-no="<댓글 번호>"]` 를 찾고, 없으면 덧글 없음으로 처리
-      - 덧글 목록: `#reply_list_<댓글 번호> > li[id^="reply_li_"]`
-      - 덧글 번호: `#reply_li_<덧글 번호>` 의 id 또는 `div.reply_info[data-no]` 값
-      - 덧글 글쓴이: `div.reply_info > div.addbox > div.cmt_nickbox > span.gall_writer`
-        - (반)고정닉은 `data-uid="<식별코드>" data-ip=""`, 유동닉은 `data-uid="" data-ip="<IP 주소>"` 로 구분
-      - 덧글 작성일: `div.reply_info > div.fr.clear > span.date_time`
-      - 덧글 내용: `div.reply_info > div.addbox > div.clear.cmt_txtbox.btn_re_reply_write_all`
-        - 일반 텍스트: `p.usertxt.ub-word` 의 텍스트 값
-        - 멘션: `p.usertxt.ub-word > a.mention` 의 텍스트/`href` 값
+    - 댓글은 게시글 HTML에 고정으로 포함되지 않고, `/board/comment/` AJAX 응답으로 로드된다.
+    - 댓글 요청: `POST https://gall.dcinside.com/board/comment/`
+      - 게시글 HTML에서 `#e_s_n_o`, `#board_type`, `#_GALLTYPE_`, `#secret_article_key` 값을 먼저 수집
+      - 주요 form data: `id=<갤러리 ID>`, `no=<글 번호>`, `cmt_id=<갤러리 ID>`, `cmt_no=<글 번호>`, `e_s_n_o=<e_s_n_o>`, `comment_page=<페이지 번호>`, `sort=D`, `prevCnt=`, `board_type=<board_type>`, `_GALLTYPE_=<_GALLTYPE_>`, `secret_article_key=<secret_article_key>`, `clean=`, `nptest=`
+      - 요청 헤더: `X-Requested-With: XMLHttpRequest`, `Content-Type: application/x-www-form-urlencoded; charset=UTF-8`
+    - 댓글 페이지: 응답 JSON의 `pagination` 또는 현재 페이지 댓글 수를 기준으로 `comment_page=1,2,3...` 순서대로 요청
+    - 댓글 응답: JSON의 `comments` 배열 사용
+      - 일반 댓글: `depth == 0`
+      - 덧글: `depth == 1`, 부모 댓글 번호는 `c_no`
+      - 댓글/덧글 번호: `no`
+      - 글쓴이: `name`
+      - (반)고정닉 or 유동닉: `user_id` 값이 있으면 (반)고정닉, `user_id` 값이 없고 `ip` 값이 있으면 유동닉
+      - IP: `ip`
+      - 작성일: `reg_date` 값. 올해일 경우 `MM.DD HH:MM:SS` (저장은 `YYYY.MM.DD HH:MM:SS`), 작년 또는 그 이전일 경우 `YYYY.MM.DD HH:MM:SS`
+      - 덧글 수: 일반 댓글의 `rcnt`
+      - 삭제 여부: `del_yn`, `is_delete`
+      - 내용: `memo`
+        - 일반 텍스트는 `memo`를 텍스트로 저장
+        - 디시콘/HTML이 포함된 경우 `memo`를 BeautifulSoup으로 한 번 더 파싱
         - 디시콘 이미지: `img.written_dccon[src]` 의 `src`, `alt`, `title`, `conalt` 값
         - 디시콘 영상: `video.written_dccon[data-src]` 또는 `video.written_dccon > source[src]` 값
+    - 렌더링된 HTML을 보조로 파싱할 경우
+      - 댓글 목록: `li[id^="comment_li_"]`
+      - 댓글 글쓴이: `#comment_li_<댓글 번호> > div > div.addbox > div.cmt_nickbox > span.gall_writer`
+      - 댓글 내용: `#comment_li_<댓글 번호> > div > div.addbox > div.clear.cmt_txtbox.btn_reply_write_all`
+      - 덧글은 `#comment_li_<댓글 번호>` 내부가 아니라, 같은 `ul.cmt_list` 안에서 댓글 바로 다음 형제 `<li>` 하위의 `<ul class="reply_list" id="reply_list_<댓글 번호>" p-no="<댓글 번호>">` 에 들어간다.
+      - BeautifulSoup 기준: `comment_li.find_next_sibling("li")` 에서 `ul.reply_list[p-no="<댓글 번호>"]` 를 찾고, 없으면 덧글 없음으로 처리
       - `li#comment_li_0`, `.dory`, `.cmt_pw_ad` 는 광고/댓글돌이 항목이므로 댓글/덧글 수집 대상에서 제외
 
 ## 3. 기술 스택 (수정 중)
