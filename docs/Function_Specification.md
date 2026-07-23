@@ -27,6 +27,9 @@
 #### 2.1.1. 수집 내용
   - 갤러리
   - 글 번호
+  - 펌 여부
+    - `(펌)` 게시글이면 원 게시글의 갤러리, 글 번호, 유저명, (반)고정닉 여부, 조회수, 추천수 수집
+    - 원 게시글의 댓글 수는 수집하지 않음
   - 제목
   - 글쓴이
     - (반)고정닉 or 유동닉
@@ -197,16 +200,17 @@
       "post_number": 12346,
       "is_repost": true,
       "repost": {
-        "original_gallery_id": "example",
-        "original_post_number": 12345,
-        "original_post_author": "Kicker (hfa8p2454)",
-        "original_post_nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
-        "original_post_views": 100,
-        "original_post_recommendations": {
-          "upvotes": 10,
-        },
+        "gallery_id": "stockus",
+        "gallery_name": "미국 주식",
+        "post_number": 17025333,
+        "author": "ㅇㅇ (116.47)",
+        "nickname_type": "floating", // "fixed" ((반)고정닉), "floating" (유동닉)
+        "views": 58,
+        "recommendations": {
+          "upvotes": 4
+        }
       },
-      "title": "Another Example Post",
+      "title": "이거 뭐냐?",
       "author": "BadAss (adjust6974)",
       "nickname_type": "floating", // "fixed" ((반)고정닉), "floating" (유동닉)
       "date": "2023-01-02-12:00:00",
@@ -265,6 +269,9 @@
     - 글 번호: `.gall_num`
     - 말머리: `.gall_subject`
     - 제목/상세 링크: `.gall_tit a`
+    - `(펌)` 여부: `.gall_tit > b.font_blue009` 의 텍스트가 `(펌)`이면 `is_repost=true`
+      - `.gall_tit span.mark` 는 검색어 하이라이트이므로 단독으로 `(펌)` 판정에 사용하지 않음
+      - `is_repost=true` 인 경우 JSON 저장용 제목에서는 `(펌)` 문자열을 제거
     - 글쓴이: `.gall_writer`
     - 작성일: `.gall_date`의 `title` 값 우선, 없으면 텍스트 값
     - 조회수: `.gall_count`
@@ -308,6 +315,11 @@
   - 갤러리: 게시글 URL의 `id` 값
   - 글 번호: 게시글 URL의 `no` 값
   - 제목: `.title_subject`
+    - `(펌)` 게시글이면 JSON 저장용 제목에서 `(펌)` 문자열을 제거
+    - 예: `.title_subject` 값이 `(펌) 이거 뭐냐?` 이면 `"title": "이거 뭐냐?"`
+  - `(펌)` 여부
+    - `h3.title > b.font_blue009` 의 텍스트가 `(펌)`이면 `is_repost=true`
+    - 또는 `.writing_view_box .write_div script` 안에 `/ajax/pum_ajax/get_contents` 호출이 있으면 `is_repost=true`
   - 글쓴이: `.gall_writer.ub-writer`
     - 닉네임: `data-nick`
     - 식별코드: `data-uid`
@@ -323,12 +335,30 @@
     - 기준 컨테이너: `.writing_view_box .write_div`
     - 텍스트 추출 전 제거: `.img_comment`, `.image_comment`, `.tip_box2`, `.num.img`, `button`, `script`
     - 텍스트: 제거 후 `.write_div`의 텍스트 값
+    - `(펌)` 게시글은 `.write_div` 전체 텍스트를 그대로 쓰면 원글 카드의 갤러리명/조회수/추천수까지 섞이므로, 본문 텍스트는 `.cloned_card_body p` 텍스트를 우선 사용
     - 본문 링크: `.write_div a[href]`
   - 이미지 저장 or URL 수집 (옵션)
     - 이미지 목록: `.write_div img[data-fileno]`
+    - `(펌)` 게시글의 원글 카드 이미지: `#pum_container.cloned_card .cloned_media img[src]` 또는 AJAX 응답 HTML의 `.cloned_media img[src]`
     - 이미지 파일 번호: `data-fileno`
+      - `.cloned_media img` 는 `data-fileno` 가 없을 수 있으므로 `src` URL 기준으로 저장
     - 이미지 URL 우선순위: `data-original` -> `src` -> `onclick`의 `imgPop(...)` URL
     - `src`가 `gallview_loading_ori.gif` 이면 실제 이미지가 아니므로 `data-original` 값을 사용
+  - `(펌)` 원 게시글 정보
+    - 렌더링된 DOM 기준 원글 카드: `#pum_container.cloned_card`
+    - BeautifulSoup + requests 기준으로는 JavaScript가 실행되지 않으므로 `.write_div script` 에서 `/ajax/pum_ajax/get_contents` 호출을 찾고 직접 AJAX 요청
+    - AJAX 요청: `POST https://gall.dcinside.com/ajax/pum_ajax/get_contents`
+      - form data: `ci_t=<script의 ci_t>`, `_GALLTYPE_=<script의 _GALLTYPE_>`, `id=<원글 갤러리 ID>`, `no=<원글 번호>`
+      - 요청 헤더: `X-Requested-With: XMLHttpRequest`, `Content-Type: application/x-www-form-urlencoded; charset=UTF-8`
+    - AJAX 응답 HTML 파싱
+      - 원글 갤러리명/링크: `header.gallview_head a[href*="/board/lists"]`
+      - 원글 갤러리 ID: 갤러리 링크 또는 원글 링크의 `id` 쿼리 값
+      - 원글 번호: `.cloned_card_body > a[href*="/board/view"]` 의 `no` 쿼리 값
+      - 원글 유저명: `header.gallview_head .gall_writer .nickname`
+      - 원글 유동닉 여부: `.nickname .ip` 가 있으면 `floating`, 없으면 `fixed`
+      - 원글 조회수: `header.gallview_head .gall_count` 의 `"조회 NNN"` 값
+      - 원글 추천수: `header.gallview_head .gall_reply_num` 의 `"추천 NNN"` 값
+      - 원글 댓글 수는 `repost` JSON에 저장하지 않음
   - 첨부 파일 저장 or URL 수집 (옵션)
     - 첨부 파일 목록: `.appending_file a[href]`
     - 파일명: 링크 텍스트 또는 `href`의 `f_no` 값
