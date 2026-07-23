@@ -45,14 +45,14 @@
       - 유동닉: IP 주소
     - 텍스트 or 디시콘
 
-#### 2.1.2. 수집 방식 (수정 중)
+#### 2.1.2. 수집 방식
   - 갤러리 ID 수집
   - 글 번호 범위 수집 
   - 작성일 수집 
   - 댓글은 게시글 하위로 수집
   - 글자만 수집 / 이미지 포함 수집 옵션
 
-#### 2.1.2.1. 수집 옵션 (수정 중)
+#### 2.1.2.1. 수집 옵션
   - 갤러리 글 수집 옵션
     - 전체 갤러리 글 수집
     - 특정 갤러리 글 수집
@@ -158,7 +158,7 @@
           "replies": [
             {
               "comment_number": 12352,
-              "author": "Replier1",
+              "author": "Replier1 (hfd12pw7c00721231)",
               "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
               "date": "2023-01-03-12:00:00",
               "content": "This is a reply to the comment."
@@ -172,7 +172,7 @@
             },
             {
               "comment_number": 12512,
-              "author": "Replier3",
+              "author": "Replier3 (hfads21fd31)",
               "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
               "date": "2023-01-05-12:00:00",
               "content": "emoji-62b5df2be09d3ca567b1c5bc12d46b394aa3b1058c6e4d0ca4164.jpg"
@@ -181,7 +181,7 @@
         },
         {
           "comment_number": 13231,
-          "author": "Commenter2",
+          "author": "Commenter2 (xyz789)",
           "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
           "date": "2023-01-03-12:00:00",
           "content": "This is another comment.",
@@ -369,7 +369,7 @@
     - 게시글 요청 실패 시 같은 링크를 제한 횟수만 재시도
     - 제한 횟수 초과 시 실패 목록에 `(gallery_id, post_number, url, reason)` 저장
 
-## 3. 기술 스택 (수정 중)
+## 3. 기술 스택
   - Proxy를 통한 requests 요청 전송
   - 요청별 세션 분리 (쿠키 reset)
   - BeautifulSoup 라이브러리를 활용한 HTML 파싱
