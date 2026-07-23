@@ -137,6 +137,8 @@
       "scrap_timestamp": "YYYY-MM-DD-HH:MM:SS",
       "gallery_id": "example",
       "post_number": 12345,
+      "is_repost": false,
+      "repost": null,
       "title": "Example Post",
       "author": "BAMF (hz6ipw7c0072454)",
       "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
@@ -193,6 +195,17 @@
       "scrap_timestamp": "YYYY-MM-DD-HH:MM:SS",
       "gallery_id": "example",
       "post_number": 12346,
+      "is_repost": true,
+      "repost": {
+        "original_gallery_id": "example",
+        "original_post_number": 12345,
+        "original_post_author": "Kicker (hfa8p2454)",
+        "original_post_nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
+        "original_post_views": 100,
+        "original_post_recommendations": {
+          "upvotes": 10,
+        },
+      },
       "title": "Another Example Post",
       "author": "BadAss (adjust6974)",
       "nickname_type": "floating", // "fixed" ((반)고정닉), "floating" (유동닉)
