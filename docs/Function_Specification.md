@@ -39,8 +39,10 @@
   - 추천수 + 비추천수
   - 댓글 수
   - 작성일
-  - 내용 (텍스트 및 이미지)
-    - 이미지 저장 or URL 수집 (옵션)
+  - 본문 콘텐츠
+    - `content.text`: 검색/미리보기/Pandas 분석용 순수 텍스트
+    - `content.blocks`: 원문 순서를 보존한 텍스트, 이미지, DC 동영상, inline 동영상, YouTube 영상/링크, 일반 링크, 시리즈 블록
+    - 이미지/동영상/디시콘 파일 저장 or URL 수집 (옵션)
   - 댓글 + 덧글 (글쓴이, 작성일, 내용)
     - 댓글 번호
     - 댓글 글쓴이: (반)고정닉 or 유동닉
@@ -53,7 +55,7 @@
   - 글 번호 범위 수집 
   - 작성일 수집 
   - 댓글은 게시글 하위로 수집
-  - 글자만 수집 / 이미지 포함 수집 옵션
+  - 본문 텍스트만 수집 / 본문 콘텐츠 블록 수집 / 미디어 파일 다운로드 옵션
 
 #### 2.1.2.1. 수집 옵션
   - 갤러리 글 수집 옵션
@@ -78,10 +80,12 @@
       - 유동닉만 수집
     - 특정 기간 댓글 수집
     - 특정 글번호 범위 댓글 수집
-  - 이미지 수집 옵션
-    - 이미지 저장
-    - 이미지 URL 수집
-    - 이미지 저장 및 URL 수집
+  - 본문 미디어 수집 옵션
+    - 이미지/동영상/디시콘 URL 및 메타데이터만 저장
+    - 이미지/동영상/디시콘 파일 저장
+    - 이미지/동영상/디시콘 URL 및 파일 모두 저장
+    - YouTube 등 외부 임베드 영상은 다운로드하지 않고 URL, provider, video_id, embed_url만 저장
+    - 시리즈는 게시글 모음 메타데이터로 저장하고, 연결된 게시글 본문은 별도 수집 Job 대상일 때만 수집
   - 검색 옵션
     - 전체 검색
     - 특정 검색
@@ -101,7 +105,7 @@
     - 스크래핑 속도 조절
       - 요청 사이의 대기 시간을 사용자가 설정 가능
       - 기본값은 안정성을 우선하여 너무 빠른 연속 요청을 피하도록 설정
-      - 갤러리 목록, 통합 검색, 게시글 상세, 댓글 API 요청에 동일하게 적용
+      - 갤러리 목록, 통합 검색, 게시글 상세, `(펌)` AJAX, DC 동영상 iframe, 댓글 API, 이미지/동영상/디시콘 다운로드 요청에 동일하게 적용
       - CAPTCHA 또는 차단 의심 응답 발생 시 즉시 작업 중단 후 중단점 저장
     - CAPTCHA 대응
       - CAPTCHA 페이지 또는 비정상 접근 차단 응답 포착 시 현재 작업 중단
@@ -116,26 +120,70 @@
   - 수집 주기는 사용자가 설정 가능 (예: 수동, 매일, 매주)
   - 새로운 게시글이 있는 경우에만 새로운 글부터 수집하도록 최적화
 
-#### 2.1.4. 이미지 수집
-  - 게시글 내 이미지 URL을 추출하여 로컬 또는 클라우드에 저장
-  - 이미지 파일명은 게시글 번호와 일치하도록 저장
+#### 2.1.4. 본문 콘텐츠 및 미디어 수집
+  - 기준 컨테이너는 `.writing_view_box .write_div`
+  - BeautifulSoup으로 `.write_div`의 하위 노드를 DOM 순서대로 순회하여 `content.blocks` 배열에 저장
+  - 빈 `<p>`, `<br>`만 있는 노드는 저장하지 않음
+  - 각 블록은 공통으로 `order`, `type` 값을 가진다.
+  - `type="text"`
+    - 일반 텍스트 문단 또는 텍스트만 있는 `p`, `div`
+    - `text`에 정규화된 문자열 저장
+  - `type="link"`
+    - 일반 링크: `.write_div a[href]`
+    - 단, YouTube 블록 또는 시리즈 블록 내부 링크는 별도 `link` 블록으로 중복 저장하지 않음
+    - `text`, `url` 저장
+  - `type="image"`
+    - 이미지 후보: `.write_div img[src]`, `.write_div img[data-fileno]`
+    - `(펌)` 게시글 원글 카드 이미지: `#pum_container.cloned_card .cloned_media img[src]` 또는 AJAX 응답 HTML의 `.cloned_media img[src]`
+    - URL 우선순위: `data-original` -> `src` -> `onclick`의 `imgPop(...)` URL
+    - `src`가 `gallview_loading_ori.gif` 이면 실제 이미지가 아니므로 `data-original` 값을 사용
+    - `url`, `original_url`, `file_no`, `temp_no`, `alt`, `download` 저장
+  - `type="dc_video"`
+    - DC 업로드 동영상 iframe: `iframe[src*="/board/movie/movie_view"]`
+    - `movie_no`, `iframe_url` 저장
+    - BeautifulSoup/httpx 스크래퍼는 게시글 URL을 `Referer`로 두고 `iframe_url`을 추가 요청하여 `video.dc_mv`, `source[type="video/mp4"]`, `poster`, 다운로드 hidden 값을 파싱
+    - 파싱 가능하면 `video_url`, `poster_url`, `download_url` 저장
+    - iframe 상세 요청이 실패하면 `iframe_url`, `movie_no`, `resolved=false`를 저장하고 게시글 전체 실패로 처리하지 않음
+  - `type="inline_video"`
+    - 본문 안의 `video` 또는 `video > source[type="video/mp4"]`
+    - `data_src`, `video_url`, `sources`, `download` 저장
+  - `type="youtube"`
+    - YouTube embed: `embed[src*="youtube.com/embed"]`, `iframe[src*="youtube.com/embed"]`
+    - 함께 표시되는 원본 링크: 같은 블록 내부의 `a.lnk[href]`
+    - `provider="youtube"`, `video_id`, `embed_url`, `url` 저장
+    - 외부 영상 파일 다운로드는 하지 않음
+  - `type="series"`
+    - 시리즈 블록: `.dc_series`
+    - 시리즈 제목과 하위 게시글 링크 목록 저장
+    - 각 항목은 `title`, `url`, `gallery_id`, `post_number`를 가능한 범위에서 저장
+  - `content.text`는 `content.blocks` 중 텍스트성 블록의 `text`를 합쳐 저장
+    - 포함 대상: `text`, `link.text`, `series.title`, `series.items[].title`
+    - 제외 대상: 조회수/추천수/갤러리명 같은 카드 메타데이터
+  - 기존 `images` top-level 배열을 유지할 경우, 원본 기준 데이터가 아니라 `content.blocks`의 `image` 블록만 뽑은 호환/요약 필드로 취급
+  - 미디어 파일명은 기본적으로 `media/<gallery_id>/<post_no>/<order>_<type>.<ext>` 형식으로 저장
 
 #### 2.1.5. 데이터 저장
-  - 수집된 데이터는 JSON 형식으로 저장
-  - 이미지 파일은 별도의 폴더에 저장
+  - 수집된 게시글 데이터는 Job당 하나의 JSONL 파일로 저장
+  - 게시글 하나는 JSON 객체 한 줄로 append
+  - Job 실행 조건과 요약 정보는 별도 metadata JSON 파일로 저장 가능
+  - 이미지/동영상/디시콘 파일은 별도의 `media/` 폴더에 저장
   - MongoDB를 활용한 확장 가능 (선택 사항)
-  - 파일명: job_YYYYMMDD_HHMMSS.json (예: job_20230101_120000.json)
-  - 데이터베이스 구조 예시:
+  - 파일명: `job_YYYYMMDD_HHMMSS.jsonl` (예: `job_20230101_120000.jsonl`)
+  - Job 메타데이터 예시:
     ```json
     {
-      // 검색 필드
-      // 검색 옵션 설정 시에만 작성
-      "gallery_id": "example", // 통합 검색시 "all"
-      "post_no_range": [0, 1000], // 전체 범위 검색시 [None, None]
-      "post_date_range": ["YYYY-MM-DD-HH:MM:SS", "YYYY-MM-DD-HH:MM:SS"], // 전체 기간 검색시 [None, None]
-      "search_field": "all", // "all" (통합 검색), "tittle+content", "title", "content", "author", "comment"
+      "job_id": "job_20230101_120000",
+      "gallery_id": "example",
+      "post_no_range": [0, 1000],
+      "post_date_range": ["YYYY-MM-DD-HH:MM:SS", "YYYY-MM-DD-HH:MM:SS"],
+      "search_field": "all",
       "search_keyword": "검색 키워드",
-      "scrap_start_timestamp": "YYYY-MM-DD-HH:MM:SS"
+      "scrap_start_timestamp": "YYYY-MM-DD-HH:MM:SS",
+      "output_file": "job_20230101_120000.jsonl"
+    }
+    ```
+  - 게시글 JSONL 한 줄 예시:
+    ```json
     {
       "scrap_timestamp": "YYYY-MM-DD-HH:MM:SS",
       "gallery_id": "example",
@@ -144,41 +192,112 @@
       "repost": null,
       "title": "Example Post",
       "author": "BAMF (hz6ipw7c0072454)",
-      "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
+      "nickname_type": "fixed",
       "date": "2023-01-01-12:00:00",
       "views": 100,
       "recommendations": {
         "upvotes": 10,
         "downvotes": 2
       },
-      "content": "This is an example post.",
-      "images": ["image1.jpg", "image2.jpg"],
+      "content": {
+        "text": "This is an example post. image caption series title linked post title",
+        "blocks": [
+          {
+            "order": 0,
+            "type": "text",
+            "text": "This is an example post."
+          },
+          {
+            "order": 1,
+            "type": "image",
+            "url": "https://dcimg.example/viewimage.php?...",
+            "original_url": "https://image.dcinside.com/viewimagePop.php?...",
+            "file_no": "123456",
+            "temp_no": null,
+            "alt": "image alt",
+            "download": {
+              "enabled": true,
+              "path": "media/example/12345/1_image.jpg",
+              "status": "saved"
+            }
+          },
+          {
+            "order": 2,
+            "type": "dc_video",
+            "movie_no": "6898168",
+            "iframe_url": "https://gall.dcinside.com/board/movie/movie_view?no=6898168",
+            "resolved": true,
+            "video_url": "https://dcm6.dcinside.co.kr/viewmovie.php?...&type=mp4",
+            "poster_url": "https://dcm6.dcinside.co.kr/viewmovie.php?...&type=jpg",
+            "download_url": "https://dcm1.dcinside.co.kr/download.php?...",
+            "download": {
+              "enabled": false,
+              "path": null,
+              "status": "skipped"
+            }
+          },
+          {
+            "order": 3,
+            "type": "youtube",
+            "provider": "youtube",
+            "video_id": "2-3F7y5AKJw",
+            "embed_url": "https://www.youtube.com/embed/2-3F7y5AKJw",
+            "url": "https://youtu.be/2-3F7y5AKJw"
+          },
+          {
+            "order": 4,
+            "type": "link",
+            "text": "external link title",
+            "url": "https://example.com/article"
+          },
+          {
+            "order": 5,
+            "type": "series",
+            "title": "시리즈 제목 1",
+            "items": [
+              {
+                "title": "연결된 게시글 제목",
+                "url": "https://gall.dcinside.com/mgallery/board/view/?id=singlebungle1472&no=2518712",
+                "gallery_id": "singlebungle1472",
+                "post_number": 2518712
+              }
+            ]
+          }
+        ]
+      },
+      "images": [
+        {
+          "order": 1,
+          "url": "https://dcimg.example/viewimage.php?...",
+          "path": "media/example/12345/1_image.jpg"
+        }
+      ],
       "comments": [
         {
           "comment_number": 12345,
           "author": "ㅇㅇ (123.232)",
-          "nickname_type": "floating", // "fixed" ((반)고정닉), "floating" (유동닉)
+          "nickname_type": "floating",
           "date": "2023-01-02-12:00:00",
           "content": "This is a comment.",
           "replies": [
             {
               "comment_number": 12352,
               "author": "Replier1 (hfd12pw7c00721231)",
-              "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
+              "nickname_type": "fixed",
               "date": "2023-01-03-12:00:00",
               "content": "This is a reply to the comment."
             },
             {
               "comment_number": 12423,
               "author": "ㅇㅇ (323.112)",
-              "nickname_type": "floating", // "fixed" ((반)고정닉), "floating" (유동닉)
+              "nickname_type": "floating",
               "date": "2023-01-04-12:00:00",
               "content": "This is another reply to the comment."
             },
             {
               "comment_number": 12512,
               "author": "Replier3 (hfads21fd31)",
-              "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
+              "nickname_type": "fixed",
               "date": "2023-01-05-12:00:00",
               "content": "emoji-62b5df2be09d3ca567b1c5bc12d46b394aa3b1058c6e4d0ca4164.jpg"
             }
@@ -187,13 +306,16 @@
         {
           "comment_number": 13231,
           "author": "Commenter2 (xyz789)",
-          "nickname_type": "fixed", // "fixed" ((반)고정닉), "floating" (유동닉)
+          "nickname_type": "fixed",
           "date": "2023-01-03-12:00:00",
           "content": "This is another comment.",
           "replies": []
         }
       ]
-    },
+    }
+    ```
+  - `(펌)` 게시글 차이 예시:
+    ```json
     {
       "scrap_timestamp": "YYYY-MM-DD-HH:MM:SS",
       "gallery_id": "example",
@@ -204,7 +326,7 @@
         "gallery_name": "미국 주식",
         "post_number": 17025333,
         "author": "ㅇㅇ (116.47)",
-        "nickname_type": "floating", // "fixed" ((반)고정닉), "floating" (유동닉)
+        "nickname_type": "floating",
         "views": 58,
         "recommendations": {
           "upvotes": 4
@@ -212,17 +334,45 @@
       },
       "title": "이거 뭐냐?",
       "author": "BadAss (adjust6974)",
-      "nickname_type": "floating", // "fixed" ((반)고정닉), "floating" (유동닉)
+      "nickname_type": "floating",
       "date": "2023-01-02-12:00:00",
       "views": 150,
       "recommendations": {
         "upvotes": 15,
         "downvotes": 1
       },
-      "content": "This is another example post.",
-      "images": ["image3.jpg"],
+      "content": {
+        "text": "This is another example post.",
+        "blocks": [
+          {
+            "order": 0,
+            "type": "text",
+            "text": "This is another example post."
+          },
+          {
+            "order": 1,
+            "type": "image",
+            "url": "https://dcimg.example/repost_image.jpg",
+            "original_url": null,
+            "file_no": null,
+            "temp_no": null,
+            "alt": "",
+            "download": {
+              "enabled": false,
+              "path": null,
+              "status": "skipped"
+            }
+          }
+        ]
+      },
+      "images": [
+        {
+          "order": 1,
+          "url": "https://dcimg.example/repost_image.jpg",
+          "path": null
+        }
+      ],
       "comments": []
-    }
     }
     ```
 
@@ -331,19 +481,18 @@
     - 비추천수: `#recommend_view_down_<글 번호>` 또는 `.down_num` 값
   - 댓글 수: `.gall_comment` 의 `"댓글 NNN"` 값
   - 작성일: `.gall_date` 의 `title="YYYY-MM-DD HH:MM:SS"` 값
-  - 본문
+  - 본문 콘텐츠
     - 기준 컨테이너: `.writing_view_box .write_div`
+    - 저장 기준: `2.1.4. 본문 콘텐츠 및 미디어 수집`의 `content.blocks` 구조
     - 텍스트 추출 전 제거: `.img_comment`, `.image_comment`, `.tip_box2`, `.num.img`, `button`, `script`
-    - 텍스트: 제거 후 `.write_div`의 텍스트 값
-    - `(펌)` 게시글은 `.write_div` 전체 텍스트를 그대로 쓰면 원글 카드의 갤러리명/조회수/추천수까지 섞이므로, 본문 텍스트는 `.cloned_card_body p` 텍스트를 우선 사용
-    - 본문 링크: `.write_div a[href]`
-  - 이미지 저장 or URL 수집 (옵션)
-    - 이미지 목록: `.write_div img[data-fileno]`
-    - `(펌)` 게시글의 원글 카드 이미지: `#pum_container.cloned_card .cloned_media img[src]` 또는 AJAX 응답 HTML의 `.cloned_media img[src]`
-    - 이미지 파일 번호: `data-fileno`
-      - `.cloned_media img` 는 `data-fileno` 가 없을 수 있으므로 `src` URL 기준으로 저장
-    - 이미지 URL 우선순위: `data-original` -> `src` -> `onclick`의 `imgPop(...)` URL
-    - `src`가 `gallview_loading_ori.gif` 이면 실제 이미지가 아니므로 `data-original` 값을 사용
+    - `content.text`: 텍스트성 블록을 합친 분석용 순수 텍스트
+    - `content.blocks`: 원문 순서를 보존한 `text`, `link`, `image`, `dc_video`, `inline_video`, `youtube`, `series` 블록 배열
+    - `(펌)` 게시글은 `.write_div` 전체 텍스트를 그대로 쓰면 원글 카드의 갤러리명/조회수/추천수까지 섞이므로, 원글 카드 내부 본문은 `.cloned_card_body p` 또는 AJAX 응답 HTML의 `.cloned_card_body`를 우선 사용
+    - `(펌)` 원글 카드 이미지/동영상도 같은 `content.blocks` 구조로 저장하되, 원글 카드 메타데이터는 `repost` 객체에만 저장
+  - 미디어 파일 저장 or URL 수집 (옵션)
+    - 이미지, DC 업로드 동영상, inline mp4, 디시콘은 URL/메타데이터만 저장하거나 파일 다운로드 가능
+    - YouTube 등 외부 임베드는 URL/메타데이터만 저장하고 파일 다운로드 대상에서 제외
+    - 다운로드 파일 경로는 각 블록의 `download.path`에 저장
   - `(펌)` 원 게시글 정보
     - 렌더링된 DOM 기준 원글 카드: `#pum_container.cloned_card`
     - BeautifulSoup + requests 기준으로는 JavaScript가 실행되지 않으므로 `.write_div script` 에서 `/ajax/pum_ajax/get_contents` 호출을 찾고 직접 AJAX 요청
@@ -403,7 +552,7 @@
     - 중복 게시글은 `(gallery_id, post_number)` 기준으로 제거
   - 2단계: 게시글 수집 워커
     - 여러 워커가 Queue에서 게시글 링크를 가져와 병렬 비동기 수집
-    - 게시글 본문, 이미지, 댓글, 덧글을 수집
+    - 게시글 메타데이터, `content.blocks` 본문 콘텐츠, 댓글, 덧글을 수집
     - 수집 결과는 게시글 단위로 JSON 저장소에 기록
   - 3단계: 종료 조건
     - 링크 수집 워커가 설정 범위를 벗어나면 Queue 추가 중단
