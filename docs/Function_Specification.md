@@ -147,8 +147,10 @@
   - `type="dc_video"`
     - DC 업로드 동영상 iframe: `iframe[src*="/board/movie/movie_view"]`
     - `movie_no`, `iframe_url` 저장
-    - BeautifulSoup/httpx 스크래퍼는 게시글 URL을 `Referer`로 두고 `iframe_url`을 추가 요청하여 `video.dc_mv`, `source[type="video/mp4"]`, `poster`, 다운로드 hidden 값을 파싱
-    - 파싱 가능하면 `video_url`, `poster_url`, `download_url` 저장
+    - BeautifulSoup/httpx 스크래퍼는 게시글 URL을 `Referer`로 두고 `iframe_url`을 추가 요청하여 `video.dc_mv`, `source[type="video/mp4"]`, `poster`, 다운로드 hidden 값, 동영상 설명을 파싱
+    - 동영상 설명은 iframe 내부 `div.video_infobox > div.box > div.video_txt > div.inr > p` 텍스트를 저장
+    - 설명이 없거나 빈 값이면 `description=null` 저장
+    - 파싱 가능하면 `description`, `video_url`, `poster_url`, `download_url` 저장
     - iframe 상세 요청이 실패하면 `iframe_url`, `movie_no`, `resolved=false`를 저장하고 게시글 전체 실패로 처리하지 않음
   - `type="inline_video"`
     - 본문 안의 `video` 또는 `video > source[type="video/mp4"]`
@@ -242,6 +244,7 @@
             "movie_no": "6898168",
             "iframe_url": "https://gall.dcinside.com/board/movie/movie_view?no=6898168",
             "resolved": true,
+            "description": "동영상 설명",
             "video_url": "https://dcm6.dcinside.co.kr/viewmovie.php?...&type=mp4",
             "poster_url": "https://dcm6.dcinside.co.kr/viewmovie.php?...&type=jpg",
             "download_url": "https://dcm1.dcinside.co.kr/download.php?...",
