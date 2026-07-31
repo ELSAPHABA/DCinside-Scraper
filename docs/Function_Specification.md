@@ -27,6 +27,9 @@
 #### 2.1.1. 수집 내용
   - 갤러리
   - 글 번호
+  - 말머리
+    - 마이너 갤러리 게시글이면 말머리 ID와 이름 수집
+    - 메이저 갤러리 또는 말머리가 없는 게시글이면 `null`
   - 펌 여부
     - `(펌)` 게시글이면 원 게시글의 갤러리, 글 번호, 유저명, (반)고정닉 여부, 조회수, 추천수 수집
     - 원 게시글의 댓글 수는 수집하지 않음
@@ -69,6 +72,9 @@
       - 전체 수집
       - (반)고정닉만 수집
       - 유동닉만 수집
+    - 특정 말머리 글 수집
+      - 마이너 갤러리에서만 지원
+      - 존재하지 않는 말머리 ID를 지정하거나 메이저 갤러리에서 요청하면 실패 처리
     - 특정 기간 글 수집
     - 특정 글번호 범위 글 수집
   - 댓글 수집 옵션
@@ -176,6 +182,11 @@
       "gallery_id": "example",
       "post_no_range": [0, 1000],
       "post_date_range": ["YYYY-MM-DD-HH:MM:SS", "YYYY-MM-DD-HH:MM:SS"],
+      "subject_head_filter": {
+        "enabled": true,
+        "id": 160,
+        "name": "2D✨️"
+      },
       "search_field": "all",
       "search_keyword": "검색 키워드",
       "scrap_start_timestamp": "YYYY-MM-DD-HH:MM:SS",
@@ -188,6 +199,10 @@
       "scrap_timestamp": "YYYY-MM-DD-HH:MM:SS",
       "gallery_id": "example",
       "post_number": 12345,
+      "subject_head": {
+        "id": 160,
+        "name": "2D✨️"
+      },
       "is_repost": false,
       "repost": null,
       "title": "Example Post",
@@ -320,6 +335,7 @@
       "scrap_timestamp": "YYYY-MM-DD-HH:MM:SS",
       "gallery_id": "example",
       "post_number": 12346,
+      "subject_head": null,
       "is_repost": true,
       "repost": {
         "gallery_id": "stockus",
@@ -403,6 +419,9 @@
     - 키워드: `s_keyword=<키워드>`
       - `requests`의 `params`로 전달하거나, 직접 URL 생성 시 UTF-8 URL 인코딩
     - 페이지 번호: `page=<페이지_번호>`
+    - 말머리 필터: `search_head=<말머리_ID>` (마이너 갤러리 전용)
+      - 특정 말머리 게시글만 수집할 때 사용
+      - `sort_type`은 말머리 ID가 아니라 정렬/목록 상태 값이므로 말머리 필터로 사용하지 않음
     - 검색 기준점: `search_pos=<검색_기준점>`
       - 최초 검색은 `search_pos`를 생략하거나 빈 값으로 요청
       - 다음 검색 구간은 응답 HTML의 `a.search_next[href]` 값을 그대로 사용
@@ -418,6 +437,9 @@
     - 광고/공지 행은 `.gall_num` 값이 `-` 이거나 `us-post` 클래스가 없으므로 제외
     - 글 번호: `.gall_num`
     - 말머리: `.gall_subject`
+      - `.gall_subject .subject_inner`가 있으면 전체 말머리 이름으로 우선 사용
+      - `.subject_inner`가 없으면 `.gall_subject`의 직접 텍스트 노드를 사용
+      - 말머리 ID는 현재 요청 URL 또는 상세 링크의 `search_head` 쿼리 값으로 저장
     - 제목/상세 링크: `.gall_tit a`
     - `(펌)` 여부: `.gall_tit > b.font_blue009` 의 텍스트가 `(펌)`이면 `is_repost=true`
       - `.gall_tit span.mark` 는 검색어 하이라이트이므로 단독으로 `(펌)` 판정에 사용하지 않음
@@ -433,6 +455,47 @@
     - form data: `ci_t=<ci_c 쿠키 값>`, `date=YYYY-MM-DD`, `id=<갤러리 ID>`, `keyword=<검색어>`, `s_type=<검색옵션>`, `_GALLTYPE_=<갤러리 타입>`
   - 응답: `{"result":"success","data":"<search_pos>"}` 형식이면 `search_pos=<data>` 로 갤러리 검색 목록을 요청
   - 실패하거나 `data`가 없으면 해당 날짜 이동 결과 없음으로 처리
+
+##### 2.2.1.2. 마이너 갤러리 말머리 탭
+  - 대상: 마이너 갤러리의 말머리 탭 기반 수집
+  - 말머리 탭 목록 파싱
+    - 목록 페이지의 `a[onclick^="listSearchHead"]`를 파싱
+    - `onclick="listSearchHead(<ID>)"`의 숫자를 말머리 ID로 저장
+    - 링크 텍스트를 말머리 이름으로 저장
+    - `class`에 `on`이 있으면 현재 활성 말머리로 판단
+  - 예시
+    ```json
+    {
+      "id": 160,
+      "name": "2D✨️"
+    }
+    ```
+  - 말머리 필터 요청
+    - 특정 말머리만 수집할 때 목록 URL에 `search_head=<말머리_ID>`를 추가
+    - 예: `/mgallery/board/lists/?id=singlebungle1472&search_head=160&page=1`
+    - 말머리 필터 적용 시 `page=1`부터 수집 시작
+    - 페이지 이동, 게시글 상세 링크, 댓글 링크에 이미 포함된 `search_head` 값은 보존
+  - 유효성 검증
+    - 마이너 갤러리 여부는 `/mgallery/board/lists/` 경로 또는 페이지의 갤러리 타입 값이 `M`인지로 판단
+    - 메이저 갤러리에서 말머리 필터를 요청하면 Job 시작 전 실패 처리
+    - 요청한 말머리 ID가 `a[onclick^="listSearchHead"]` 목록에 없으면 Job 시작 전 실패 처리
+    - `search_head=<ID>` 요청 후 응답 URL에서 `search_head`가 사라지거나 활성 말머리 탭이 확인되지 않으면 존재하지 않는 말머리로 보고 실패 처리
+    - 존재하지 않는 말머리 ID는 갤러리 메인 목록을 반환할 수 있으므로, 단순 HTTP 200 또는 게시글 존재 여부만으로 성공 판단하지 않음
+  - 말머리 탭 탐색 fallback
+    - 기본 방식은 목록 페이지의 `a[onclick^="listSearchHead"]` 파싱
+    - 탭 목록이 DOM에서 확인되지 않을 때만 `search_head=N`을 10씩 증가시키며 fallback 탐색
+    - fallback 탐색에서도 활성 탭 또는 `.gall_subject` 값이 요청한 말머리와 일치해야 존재하는 말머리로 인정
+  - 저장 구조
+    - 게시글 JSON에는 다음 top-level 필드를 저장
+      ```json
+      {
+        "subject_head": {
+          "id": 160,
+          "name": "2D✨️"
+        }
+      }
+      ```
+    - 메이저 갤러리 또는 말머리 없는 게시글은 `"subject_head": null`
     
 
 #### 2.2.2. 통합 검색 API
@@ -467,6 +530,12 @@
   - 제목: `.title_subject`
     - `(펌)` 게시글이면 JSON 저장용 제목에서 `(펌)` 문자열을 제거
     - 예: `.title_subject` 값이 `(펌) 이거 뭐냐?` 이면 `"title": "이거 뭐냐?"`
+  - 말머리
+    - 마이너 갤러리 상세 페이지에서 `h3.title > span.title_headtext` 값을 수집
+    - 값의 앞뒤 `[` `]`를 제거해 `subject_head.name`으로 저장
+    - URL 또는 hidden 값의 `search_head`가 있으면 `subject_head.id`로 저장
+    - 목록 수집 단계에서 이미 말머리 ID/이름을 확보한 경우 목록에서 얻은 값을 우선 사용
+    - 메이저 갤러리 또는 말머리 요소가 없으면 `subject_head=null`
   - `(펌)` 여부
     - `h3.title > b.font_blue009` 의 텍스트가 `(펌)`이면 `is_repost=true`
     - 또는 `.writing_view_box .write_div script` 안에 `/ajax/pum_ajax/get_contents` 호출이 있으면 `is_repost=true`
