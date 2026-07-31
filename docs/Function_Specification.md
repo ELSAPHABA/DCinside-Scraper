@@ -100,14 +100,39 @@
   - 요청 옵션
     - User-Agent Mixer
       - 차단 회피를 위해 요청 시 사용할 User-Agent를 주기적으로 교체
-      - 터미널에서 파일 탐색기 창을 열어 User-Agent 목록 파일을 불러오기
-      - 불러온 목록은 실행 파일과 같은 위치의 `User-Agent.txt`에 저장
-      - `User-Agent.txt`는 사용자가 직접 편집할 수 있도록 비인코딩 평문으로 저장
+      - User-Agent 목록 파일명은 `user-agents.txt`로 통일
+      - 컨테이너 이미지 생성 시 `user-agents.txt`를 포함
+      - 로컬 실행 시 실행 파일과 같은 위치의 `user-agents.txt`를 자동 로드
+      - 터미널 옵션에서 파일 탐색기 창을 열어 User-Agent 목록 파일을 불러오고, 실행 파일과 같은 위치의 `user-agents.txt`로 저장/교체 가능
+      - `user-agents.txt`는 사용자가 직접 편집할 수 있도록 비인코딩 평문으로 저장
+      - 파일 포맷은 한 줄에 User-Agent 하나
+      - 빈 줄은 무시
+      - 파일이 없거나 유효한 User-Agent가 없으면 기본 User-Agent 하나만 사용
+      - User-Agent 교체 주기 기본값은 요청 10회마다 1회
+      - 교체 주기는 터미널 옵션에서 요청 횟수 기준으로 변경 가능
+      - 비동기 멀티 워커 실행 시에도 컨테이너/프로세스 내부 공용 요청 카운터 기준으로 교체
+      - 컨테이너 간 User-Agent 교체 카운터는 공유하지 않음
     - Proxy
       - Proxy를 통해 requests 요청 전송
-      - host, ID, PW는 터미널에서 입력
-      - 입력한 Proxy 설정은 실행 파일과 같은 위치의 `Proxy-Profile.txt`에 저장
-      - `Proxy-Profile.txt`는 사용자가 직접 편집할 수 있도록 비인코딩 평문으로 저장
+      - Proxy 설정은 실행 파일과 같은 위치의 `.env` 파일에 저장
+      - `.env`는 사용자가 직접 편집할 수 있도록 비인코딩 평문으로 저장
+      - 저장 변수
+        - `DCINSIDE_PROXY_HOST=<host:port 또는 proxy URL>`
+        - `DCINSIDE_PROXY_ID=<proxy ID>`
+        - `DCINSIDE_PROXY_PW=<proxy password>`
+      - 로컬 실행 Flow
+        - 사용자가 터미널에서 Proxy 옵션을 켠 경우 이를 최우선으로 처리
+        - Proxy 옵션을 켜면 host, ID, PW를 터미널에서 입력받고, 입력한 값을 `.env`에 저장한 뒤 현재 실행에 사용
+        - 사용자가 Proxy 옵션을 켜지 않았고 실행 파일과 같은 위치에 `.env`가 있으면 `.env`의 Proxy 변수를 자동 사용
+        - `.env`가 없거나 유효한 Proxy 변수가 없으면 Proxy 비활성화
+      - 컨테이너 실행 Flow
+        - 컨테이너 이미지는 `docker-entrypoint.sh`를 포함
+        - `docker run` 시 환경변수로 `DCINSIDE_PROXY_HOST`, `DCINSIDE_PROXY_ID`, `DCINSIDE_PROXY_PW`를 입력 가능
+        - `docker-entrypoint.sh`는 전달받은 Proxy 환경변수를 컨테이너 내부 `.env` 파일로 생성
+        - 컨테이너에 `.env` 파일을 직접 주입하는 방식도 허용
+        - 컨테이너 내부 프로그램은 로컬 실행과 동일하게 `.env`를 읽어 Proxy를 적용
+      - `.env`는 문서화된 보안 예외로 평문 저장을 허용하되, `.gitignore` 포함과 터미널 경고를 필수로 함
+      - 로그에는 Proxy password, raw `.env` 내용, 인증정보가 남지 않아야 함
     - 스크래핑 속도 조절
       - 요청 사이의 대기 시간을 사용자가 설정 가능
       - 기본값은 안정성을 우선하여 너무 빠른 연속 요청을 피하도록 설정
@@ -635,10 +660,11 @@
 
 ## 3. 기술 스택
   - Proxy를 통한 requests 요청 전송
+  - `.env` 파일 기반 Proxy 환경변수 로드
   - 요청별 세션 분리 (쿠키 reset)
   - BeautifulSoup 라이브러리를 활용한 HTML 파싱
   - json 라이브러리를 활용한 JSON 처리
-  - user-agents.txt 리스트 이용 User-Agent 주기적교체
+  - user-agents.txt 리스트 이용 User-Agent 주기적 교체
   - 비동기 처리를 위한 asyncio 라이브러리 활용
   - httpx 라이브러리를 활용한 비동기 HTTP 요청
   - asyncio.Queue를 활용한 링크 수집 워커 + 게시글 수집 워커 분리
@@ -663,8 +689,9 @@ DCinside-Scraper/
 │   └── logger.py
 ├── config/
 │   └── settings.py
-├── User-Agent.txt
-├── Proxy-Profile.txt
+├── user-agents.txt
+├── .env
+├── docker-entrypoint.sh
 ├── Checkpoint.json
 ├── pyproject.toml
 └── README.md
