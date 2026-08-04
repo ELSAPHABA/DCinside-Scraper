@@ -6,7 +6,7 @@
 - **목표**: 
   - 디시인사이드 갤러리의 게시글 및 댓글을 스크래핑하여 데이터베이스에 저장
   - 빠르고 다양한 게시글 검색 기능
-- **기술 스택**: `beautifulsoup`, `requests`, `user-agents`, `json`
+- **기술 스택**: `beautifulsoup`, `requests`, `user-agents`, `json`, `polars`
   - **스크래핑**: BeautifulSoup + Requests
   - **데이터 저장**: JSON + 이미지 (기본) MongoDB (확장)
 
@@ -43,7 +43,7 @@
   - 댓글 수
   - 작성일
   - 본문 콘텐츠
-    - `content.text`: 검색/미리보기/Pandas 분석용 순수 텍스트
+    - `content.text`: 검색/미리보기/Polars 분석용 순수 텍스트
     - `content.blocks`: 원문 순서를 보존한 텍스트, 이미지, DC 동영상, inline 동영상, YouTube 영상/링크, 일반 링크, 시리즈 블록
     - 이미지/동영상/디시콘 파일 저장 or URL 수집 (옵션)
   - 댓글 + 덧글 (글쓴이, 작성일, 내용)
@@ -742,6 +742,7 @@
   - 요청별 세션 분리 (쿠키 reset)
   - BeautifulSoup 라이브러리를 활용한 HTML 파싱
   - json 라이브러리를 활용한 JSON 처리
+  - Polars 라이브러리를 활용한 JSONL 가공 및 분석
   - user-agents.txt 리스트 이용 User-Agent 주기적 교체
   - 비동기 처리를 위한 asyncio 라이브러리 활용
   - httpx 라이브러리를 활용한 비동기 HTTP 요청
@@ -781,7 +782,7 @@ DCinside-Scraper/
 - MongoDB를 활용한 데이터베이스 확장
 - 임베딩 처리 및 벡터 유사도 검색 (Vector Search)
 - 데이터베이스 구조 설계 및 최적화
-- Pandas를 활용한 데이터 분석 및 시각화 기능 추가
+- Polars를 활용한 데이터 분석 및 시각화 기능 추가
 
 ### ?.2. 검색 기능 확장
 - 검색 옵션 추가 (예: 특정 키워드 포함/제외, 정규식 검색)
@@ -801,6 +802,44 @@ DCinside-Scraper/
 
 ### ?.5. 커뮤니티 통합 스크래퍼
 - 통합 스크래핑 시스템의 디시인사이드용 워커 컨테이너로 스케줄링 및 스케일링
+- 향후 에펨코리아, 루리웹, 인벤 등 커뮤니티별 스크래퍼를 추가할 때 각 커뮤니티의 원본 게시글 구조는 개별 JSON 스키마로 저장
+- 개별 JSON 스키마는 수집 원본 보존을 우선하며, 커뮤니티별 특수 필드는 그대로 유지
+
+### ?.6. 공통 분석 스키마 및 Polars 정규화
+- 목적: 커뮤니티별 개별 JSON 스키마를 통합 커뮤니티 전략분석 플랫폼에서 함께 분석할 수 있는 Polars 가공용 공통 스키마로 변환
+- 범위: 향후 개발 참고사항이며, 1차 DCinside 스크래퍼의 필수 저장 구조를 변경하지 않음
+- 처리 위치
+  - 스크래핑 단계: 커뮤니티별 개별 JSONL 저장
+  - 정규화 단계: 개별 JSONL을 읽어 공통 분석 테이블로 변환
+  - 분석 단계: Polars로 공통 테이블을 로드해 커뮤니티 간 비교/집계 수행
+- 정규화 원칙
+  - 원본 JSONL은 변경하지 않고 보존
+  - 공통 스키마에 없는 커뮤니티별 특수 필드는 `extra` 또는 별도 확장 컬럼으로 보존
+  - 커뮤니티에 없는 값은 `null`로 채움
+  - 날짜, 숫자, 추천/비추천 수, 조회수, 작성자 식별자 등 분석 필드는 타입을 통일
+- 공통 테이블 기본 구조
+  - `posts`
+    - 게시글 단위 테이블
+    - 예: `site_id`, `board_id`, `post_id`, `url`, `title`, `author_name`, `author_type`, `created_at`, `content_text`, `view_count`, `upvote_count`, `downvote_count`, `comment_count`, `scraped_at`, `job_id`
+  - `comments`
+    - 댓글/덧글 단위 테이블
+    - 예: `site_id`, `board_id`, `post_id`, `comment_id`, `parent_comment_id`, `depth`, `author_name`, `author_type`, `body`, `created_at`, `upvote_count`, `downvote_count`, `scraped_at`, `job_id`
+  - `media`
+    - 이미지, 동영상, YouTube, 링크 등 본문 미디어 단위 테이블
+    - 예: `site_id`, `board_id`, `post_id`, `media_id`, `media_type`, `order`, `url`, `local_path`, `description`, `scraped_at`, `job_id`
+- 댓글 정규화 규칙
+  - 수집 JSON에서는 댓글을 게시글 하위에 중첩 저장할 수 있음
+  - Polars 공통 스키마 정규화 시 게시글과 댓글을 별도 테이블로 분리
+  - 일반 댓글은 `depth=0`, `parent_comment_id=null`
+  - 덧글은 `depth=1`, `parent_comment_id=<상위 댓글 ID>`
+  - 게시글 테이블에는 댓글 본문을 중첩 저장하지 않고 `comment_count`와 게시글 메타데이터만 유지
+- 정규화 출력 형식
+  - 1차 후보: 공통 스키마별 JSONL 파일 (`posts.jsonl`, `comments.jsonl`, `media.jsonl`)
+  - 대용량 분석이 필요해지면 Parquet 출력 추가 검토
+- 구현 형태
+  - 커뮤니티별 normalizer를 두어 `dcinside JSONL -> common posts/comments/media` 형태로 변환
+  - 다른 커뮤니티도 `community JSONL -> common posts/comments/media` 변환기를 추가하는 방식으로 확장
+  - 통합 분석 로직은 개별 커뮤니티 JSON이 아니라 공통 스키마만 대상으로 처리
 
 ## ?. 미들웨어 활용 계획
 MCP, 라이브러리, KubeRay, 커뮤니티 통합 스크래퍼
