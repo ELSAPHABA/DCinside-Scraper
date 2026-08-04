@@ -77,6 +77,15 @@
       - 존재하지 않는 말머리 ID를 지정하거나 메이저 갤러리에서 요청하면 실패 처리
     - 특정 기간 글 수집
     - 특정 글번호 범위 글 수집
+    - 노키워드 기간 및 글번호 범위 수집
+      - 갤러리 검색 URL에 `s_type=search_subject_memo&s_keyword=%20`을 사용해 검색 상태를 만든 뒤 작성일 빠른 이동으로 시작 위치를 계산
+      - 키워드 없이 특정 작성일 범위와 글번호 범위만으로 게시글 수집
+    - 실시간 키워드 수집
+      - 환경변수로 활성화
+      - 지정 키워드의 최신 검색 결과를 반복 확인해 새 게시글만 수집
+    - 실시간 전체 수집
+      - 환경변수로 활성화
+      - 지정 갤러리의 최신 목록을 반복 확인해 새 게시글만 수집
   - 댓글 수집 옵션
     - 전체 댓글 수집
     - 특정 댓글 수집
@@ -97,6 +106,19 @@
     - 특정 검색
     - 특정 기간 검색
     - 특정 글번호 범위 검색
+    - 노키워드 검색 기간/글번호 범위 검색
+  - 실시간 수집 옵션
+    - 환경변수
+      - `DCINSIDE_REALTIME_ENABLED=true`
+      - `DCINSIDE_REALTIME_MODE=keyword|all`
+      - `DCINSIDE_REALTIME_KEYWORD=<검색어>` (`keyword` 모드에서 필수)
+      - `DCINSIDE_REALTIME_DURATION_SECONDS=<실행_초>`
+      - `DCINSIDE_REALTIME_END_AT=<UTC_ISO-8601_종료시각>`
+      - `DCINSIDE_REALTIME_POLL_INTERVAL_SECONDS=<반복_주기_초>` (없으면 전역 요청 간격 사용)
+    - `DCINSIDE_REALTIME_DURATION_SECONDS`와 `DCINSIDE_REALTIME_END_AT` 중 정확히 하나만 입력
+    - 둘 다 없거나 둘 다 있으면 실시간 Job 시작 실패
+    - 종료 조건 도달 시 `status="completed"`로 최종 체크포인트 저장 후 종료
+    - 수동 중단, 오류, CAPTCHA 감지 시 기존 중단 처리와 동일하게 `status="stopped"` 저장 후 종료
   - 요청 옵션
     - User-Agent Mixer
       - 차단 회피를 위해 요청 시 사용할 User-Agent를 주기적으로 교체
@@ -560,6 +582,49 @@
   - 응답: `{"result":"success","data":"<search_pos>"}` 형식이면 `search_pos=<data>` 로 갤러리 검색 목록을 요청
   - 실패하거나 `data`가 없으면 해당 날짜 이동 결과 없음으로 처리
 
+##### 2.2.1.1.1. 노키워드 기간 및 글번호 범위 수집
+  - 대상: 키워드 없이 특정 갤러리의 작성일 범위와 글번호 범위만으로 게시글 수집
+  - 초기 URL
+    - `/mgallery/board/lists/?id=<갤러리_ID>&s_type=search_subject_memo&s_keyword=%20`
+    - 일반 갤러리는 `/board/lists/`, 마이너 갤러리는 `/mgallery/board/lists/`
+    - `s_keyword=%20`으로 요청하면 검색 상태가 유지되며 작성일 빠른 이동 UI가 활성화됨
+  - 분석된 DOM 구조
+    - 빠른 이동 버튼: `#container > section.left_content > article:nth-child(3) > div.bottom_paging_wrap > div.bottom_movebox > button`
+    - 빠른 이동 버튼 class: `.btn_schmove`
+    - 빠른 이동 레이어: `.fast_move_lyr`
+    - 작성일 입력: `#calendarInput`
+      - `type="text"`
+      - `class="dayin calendar"`
+      - `readonly`
+      - 값 형식: `YYYY-MM-DD`
+    - 확인 버튼: `.fast_move_btn`
+  - 스크래퍼 구현 방식
+    - 브라우저 클릭 없이 `POST /ajax/search_ajax/search_date/`를 직접 호출
+    - `keyword` form 값은 빈 문자열로 전달
+      - 초기 URL의 `s_keyword=%20`은 화면에서 검색 상태를 만들기 위한 값이며, DOM의 hidden `#s_keyword` 값은 빈 문자열로 정규화됨
+    - 요청 form data:
+      - `ci_t=<ci_c 쿠키 값>`
+      - `date=<YYYY-MM-DD>`
+      - `id=<갤러리_ID>`
+      - `keyword=`
+      - `s_type=search_subject_memo`
+      - `_GALLTYPE_=<갤러리 타입>`
+    - 응답 예시:
+      ```json
+      {
+        "result": "success",
+        "data": "-2479616"
+      }
+      ```
+    - `data` 값을 `search_pos`로 사용해 목록 URL 생성
+      - `/mgallery/board/lists/?id=<갤러리_ID>&search_pos=<data>&s_type=search_subject_memo&s_keyword=`
+  - 기간/글번호 범위 처리
+    - `date_to`가 있으면 `date_to`로 작성일 빠른 이동을 먼저 수행
+    - 이동한 검색 구간에서 `page=1`부터 수집
+    - 이후 기존 갤러리 검색 수집 규칙처럼 page와 `search_next`를 따라감
+    - 게시글 작성일이 `date_from`보다 과거이거나 글번호가 `min_post_no`보다 작아지면 수집 종료
+    - `date_from <= 작성일 <= date_to`, `min_post_no <= 글번호 <= max_post_no` 조건을 만족하는 게시글만 Queue에 추가
+
 ##### 2.2.1.2. 마이너 갤러리 말머리 탭
   - 대상: 마이너 갤러리의 말머리 탭 기반 수집
   - 말머리 탭 목록 파싱
@@ -735,6 +800,36 @@
   - 실패 처리
     - 게시글 요청 실패 시 같은 링크를 제한 횟수만 재시도
     - 제한 횟수 초과 시 실패 목록에 `(gallery_id, post_number, url, reason)` 저장
+
+  #### 2.2.5. 실시간 수집 흐름
+  - 대상
+    - 실시간 키워드 수집: 지정 키워드의 최신 검색 결과를 반복 확인
+    - 실시간 전체 수집: 지정 갤러리의 최신 목록을 반복 확인
+  - 활성화 조건
+    - `DCINSIDE_REALTIME_ENABLED=true`
+    - `DCINSIDE_REALTIME_MODE=keyword|all`
+    - `keyword` 모드에서는 `DCINSIDE_REALTIME_KEYWORD` 필수
+  - 종료 조건
+    - `DCINSIDE_REALTIME_DURATION_SECONDS` 또는 `DCINSIDE_REALTIME_END_AT` 중 정확히 하나만 필수
+    - `DCINSIDE_REALTIME_END_AT`은 UTC ISO-8601 문자열 사용
+    - 두 값이 모두 있거나 둘 다 없으면 validation 오류로 Job 시작 실패
+  - 반복 처리
+    - 반복 주기는 `DCINSIDE_REALTIME_POLL_INTERVAL_SECONDS` 사용
+    - 값이 없으면 전역 요청 간격을 사용
+    - 매 반복마다 최신 목록 또는 최신 검색 결과의 `page=1`부터 확인
+    - 이미 처리한 게시글은 `(gallery_id, post_number)` 기준으로 건너뜀
+    - 새 게시글만 게시글 수집 Queue에 추가
+  - 실시간 키워드 수집
+    - 기존 갤러리 내 검색 또는 통합 검색 진입점 설정을 재사용
+    - 각 반복은 최신 검색 구간에서 시작하며 최초 `search_pos`는 생략하거나 빈 값으로 요청
+  - 실시간 전체 수집
+    - 지정 갤러리의 `/board/lists/` 또는 `/mgallery/board/lists/` 최신 목록을 반복 확인
+    - 검색 키워드 없이 `page=1`의 신규 게시글을 기준으로 수집
+  - 상태/체크포인트
+    - 실시간 실행 중에도 `status="running"` 기록
+    - 게시글 10개 처리 완료마다 체크포인트 저장
+    - 타이머 또는 종료 시각에 도달하면 `status="completed"`로 최종 체크포인트 저장
+    - 수동 중단, 오류, CAPTCHA 감지 시 `status="stopped"`로 최종 체크포인트 저장
 
 ## 3. 기술 스택
   - Proxy를 통한 requests 요청 전송
