@@ -140,12 +140,15 @@
       - CAPTCHA 또는 차단 의심 응답 발생 시 즉시 작업 중단 후 중단점 저장
     - CAPTCHA 대응
       - CAPTCHA 페이지 또는 비정상 접근 차단 응답 포착 시 현재 작업 중단
-      - 중단 시 현재 수집 위치, 검색 조건, 수집 옵션, 마지막 처리 글 번호/페이지를 중단점으로 저장
+      - 중단 시 작업 상태를 `stopped`로 변경하고 최종 체크포인트를 저장한 뒤 프로세스 종료
+      - 체크포인트 저장 후 터미널과 로그에 저장된 `job_id` 출력
       - CAPTCHA 자동 우회는 구현하지 않음
     - 중단점 저장 및 불러오기
-      - 수집 작업 진행 중 마지막 정상 처리 위치를 주기적으로 저장
-      - 사용자가 선택하면 저장된 중단점부터 수집 재개
-      - 중단점 파일은 실행 파일과 같은 위치의 `Checkpoint.json`에 저장
+      - 정상 진행 중에는 작업 상태를 `running`으로 기록
+      - 게시글 10개 처리 완료마다 체크포인트 저장
+      - 작업 중단, 복구 불가능한 오류, CAPTCHA 감지 시 즉시 체크포인트 저장
+      - 사용자가 선택하면 저장된 체크포인트부터 수집 재개
+      - 로컬 환경에서는 체크포인트 파일을 실행 파일과 같은 위치의 `Checkpoint.json`에 저장
 
 #### 2.1.3. 수집 주기
   - 수집 주기는 사용자가 설정 가능 (예: 수동, 매일, 매주)
@@ -420,6 +423,79 @@
     }
     ```
 
+#### 2.1.6. 작업 상태 및 체크포인트 저장
+  - 상태 및 체크포인트 JSON은 디시인사이드뿐 아니라 향후 에펨코리아, 루리웹, 인벤 등 커뮤니티 스크래퍼가 공유하는 공통 스키마로 관리
+  - 게시글 본문 JSONL 스키마는 커뮤니티별로 독립 확장 가능
+  - 저장 시점
+    - 각 게시글 스크래핑 및 JSONL 저장 완료 후 메모리상의 진행 상태 갱신
+    - 게시글 10개 처리 완료마다 체크포인트 저장
+    - 수동 중단, 정상 종료, 복구 불가능한 오류, CAPTCHA 또는 차단 감지 시 즉시 체크포인트 저장
+  - 저장 순서
+    - 게시글 결과를 먼저 멱등하게 저장
+    - 게시글 저장 성공 후 `last_completed_post_id`, `last_completed_url`, `scraping_processed_count` 갱신
+    - 체크포인트 저장은 원자적으로 처리
+  - 상태 값
+    - `running`: 정상 수집 진행 중
+    - `stopped`: 수동 중단, 오류, CAPTCHA, timeout, lease 만료 등으로 중단
+    - `completed`: Queue가 비고 모든 워커가 정상 종료
+  - 중단 사유 `reason`
+    - `captcha`
+    - `manual_stop`
+    - `error`
+    - `timeout`
+    - `lease_expired`
+  - 중단 처리
+    - `status="stopped"`로 변경
+    - 최종 체크포인트 저장
+    - 터미널과 로그에 저장한 체크포인트 `job_id` 출력
+    - 프로세스 종료
+  - 재개 처리
+    - 로컬 환경은 터미널 옵션으로 체크포인트 `job_id`를 입력받아 재개
+    - 컨테이너 환경은 `docker run` 환경변수 `RESUME=true`, `JOB_ID=<checkpoint job_id>`로 재개
+    - 재개 요청 시 `JOB_ID`가 없으면 가장 최근 체크포인트를 자동 선택
+    - 재개 시 기존 JSONL 파일에 이어 쓰지 않고 새 JSONL 파일을 생성해 중단점 이후부터 기록
+    - 이미 저장된 게시글은 `(site_id, board_id, post_id)` 또는 커뮤니티별 고유 key로 중복 저장되지 않도록 처리
+  - 저장소 정책
+    - 로컬 환경: `Checkpoint.json`과 Job JSONL 파일을 실행 파일과 같은 위치에 저장
+    - 단일 컨테이너 환경: 체크포인트는 PostgreSQL 컨테이너에 저장, Job JSONL 파일은 MinIO 컨테이너에 저장
+    - 향후 통합 플랫폼/클라우드 환경: 체크포인트는 RDS, Job JSONL 파일은 S3로 확장
+  - 향후 SQS 기반 통합 플랫폼 처리 흐름
+    - Queue에서 작업 획득
+    - 작업 lease 설정
+    - 게시글 요청 및 파싱
+    - 게시글 결과를 멱등하게 저장
+    - 게시글 처리 완료 기록
+    - 다음 작업으로 진행
+    - 주기적으로 lease 갱신
+  - 작업 진행 상태 JSON 예시:
+    ```json
+    {
+      "job_id": "crawl-20260729-001",
+      "site_id": "dcinside",
+      "board_id": "example-board",
+      "last_completed_post_id": "184920",
+      "last_completed_url": "https://example.com/posts/184920",
+      "scraping_processed_count": 1380,
+      "worker_id": "pod-7f86c",
+      "lease_until": "2026-07-29T15:05:00Z",
+      "status": "running",
+      "updated_at": "2026-07-29T14:57:00Z"
+    }
+    ```
+  - 실행 중단 원인 JSON 예시:
+    ```json
+    {
+      "status": "stopped",
+      "job_id": "crawl-20260729-002",
+      "reason": "captcha",
+      "detected_at": "2026-07-29T15:01:10Z",
+      "retry_after": null,
+      "proxy_host": "proxy-host-17",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+      "account_id": null
+    }
+    ```
+
 ### 2.2. 검색 옵션
   - 갤러리 ID: "example" 형식 ("all" 입력시 통합검색)
   - 날짜 범위: ["YYYY-MM-DD-HH:MM:SS", "YYYY-MM-DD-HH:MM:SS"] 형식 (옵션)
@@ -651,9 +727,11 @@
     - 여러 워커가 Queue에서 게시글 링크를 가져와 병렬 비동기 수집
     - 게시글 메타데이터, `content.blocks` 본문 콘텐츠, 댓글, 덧글을 수집
     - 수집 결과는 게시글 단위로 JSON 저장소에 기록
+    - 게시글 저장 완료 후 체크포인트 진행 상태를 갱신
+    - 게시글 10개 처리 완료마다 체크포인트 저장
   - 3단계: 종료 조건
     - 링크 수집 워커가 설정 범위를 벗어나면 Queue 추가 중단
-    - Queue가 비고 모든 게시글 수집 워커가 종료되면 job 완료
+    - Queue가 비고 모든 게시글 수집 워커가 종료되면 `status="completed"`로 최종 체크포인트 저장 후 job 완료
   - 실패 처리
     - 게시글 요청 실패 시 같은 링크를 제한 횟수만 재시도
     - 제한 횟수 초과 시 실패 목록에 `(gallery_id, post_number, url, reason)` 저장
@@ -668,6 +746,7 @@
   - 비동기 처리를 위한 asyncio 라이브러리 활용
   - httpx 라이브러리를 활용한 비동기 HTTP 요청
   - asyncio.Queue를 활용한 링크 수집 워커 + 게시글 수집 워커 분리
+  - 로컬 체크포인트는 `Checkpoint.json`, 컨테이너 체크포인트는 PostgreSQL, 컨테이너 JSONL 출력은 MinIO 사용
 
 ## 4. 디렉토리 구조
 ```
@@ -718,6 +797,7 @@ DCinside-Scraper/
 - 작업 컨테이너 스케줄링 및 모니터링 기능
 - 작업 상태 시각화 및 알림 기능
 - 작업 실패 시 재시도 및 오류 로그 관리
+- SQS 기반 작업 큐, lease 갱신, lease 만료 시 `reason="lease_expired"` 체크포인트 저장
 
 ### ?.5. 커뮤니티 통합 스크래퍼
 - 통합 스크래핑 시스템의 디시인사이드용 워커 컨테이너로 스케줄링 및 스케일링
