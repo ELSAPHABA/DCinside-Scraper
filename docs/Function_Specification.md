@@ -483,8 +483,12 @@
     - 이미 저장된 게시글은 `(site_id, board_id, post_id)` 또는 커뮤니티별 고유 key로 중복 저장되지 않도록 처리
   - 저장소 정책
     - 로컬 환경: `Checkpoint.json`과 Job JSONL 파일을 실행 파일과 같은 위치에 저장
-    - 단일 컨테이너 환경: 체크포인트는 PostgreSQL 컨테이너에 저장, Job JSONL 파일은 MinIO 컨테이너에 저장
-    - 향후 통합 플랫폼/클라우드 환경: 체크포인트는 RDS, Job JSONL 파일은 S3로 확장
+    - 단일 컨테이너 환경: 체크포인트는 PostgreSQL 컨테이너에 저장, Job JSONL 파일과 다운로드 미디어는 S3 호환 오브젝트 스토리지에 저장
+      - 기본 구현 대상은 Garage
+      - 구현은 Garage 전용 API가 아니라 S3 호환 접속 설정을 사용
+      - S3 호환 접속 환경변수: `S3_ENDPOINT_URL`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_REGION`, `S3_FORCE_PATH_STYLE`
+      - SeaweedFS는 대량 미디어/소파일 저장, FUSE, Iceberg 등 고급 저장소 요구가 생길 때 대체 저장소로 검토
+    - 향후 통합 플랫폼/클라우드 환경: 체크포인트는 RDS, Job JSONL 파일과 미디어는 S3 호환 저장소로 확장
   - 향후 SQS 기반 통합 플랫폼 처리 흐름
     - Queue에서 작업 획득
     - 작업 lease 설정
@@ -885,7 +889,8 @@
   - 비동기 처리를 위한 asyncio 라이브러리 활용
   - httpx 라이브러리를 활용한 비동기 HTTP 요청
   - asyncio.Queue를 활용한 링크 수집 워커 + 게시글 수집 워커 분리
-  - 로컬 체크포인트는 `Checkpoint.json`, 컨테이너 체크포인트는 PostgreSQL, 컨테이너 JSONL 출력은 MinIO 사용
+  - 로컬 체크포인트는 `Checkpoint.json`, 컨테이너 체크포인트는 PostgreSQL, 컨테이너 JSONL 출력은 Garage 기반 S3 호환 오브젝트 스토리지 사용
+  - SeaweedFS는 대량 미디어/소파일 저장, FUSE, Iceberg 요구가 생길 때 확장 후보로 유지
 
 ## 4. 디렉토리 구조
 ```
