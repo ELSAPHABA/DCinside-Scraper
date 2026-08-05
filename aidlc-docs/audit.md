@@ -424,3 +424,81 @@
 **Approval Status**: "UOW-001 Code Generation plan approved."
 
 **Context**: CONSTRUCTION - Code Generation - UOW-001
+
+---
+
+## CONSTRUCTION - Code Generation Verification And Review - UOW-001
+
+**Timestamp**: 2026-08-05T18:06:35Z
+
+**User Input**: "코드 생성을 시작해 주세요."
+
+**AI Response**: "Completed UOW-001 Code Generation, ran `python -m pytest -q`, and moved AI-DLC state to Code Generation review."
+
+**Verification Summary**: "`python -m pytest -q` passed: 29 tests."
+
+**Approval Prompt**: "UOW-001 Code Generation 산출물 검토가 필요합니다. Application code is under `src/dcinside_scraper/`, tests are under `tests/`, and documentation is under `aidlc-docs/construction/uow-001-core-models-and-config/code/`. 변경이 필요하면 수정 요청을 해 주세요. 승인하면 UOW-001 Build and Test로 진행합니다."
+
+**Context**: CONSTRUCTION - Code Generation Review - UOW-001
+
+---
+
+## CONSTRUCTION - Code Generation Approval And Build Test Start - UOW-001
+
+**Timestamp**: 2026-08-05T18:15:06Z
+
+**User Input**: "Build and Test를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-001 Code Generation approval, started Build and Test, generated build/test instruction documents, and added `requirements.lock` for the UOW-001 dependency lock requirement."
+
+**Approval Status**: "UOW-001 Code Generation approved."
+
+**Context**: CONSTRUCTION - Build and Test - UOW-001
+
+---
+
+## Build and Test Stage
+
+**Timestamp**: 2026-08-05T18:18:56Z
+
+**User Input**: "Build and Test를 진행해 주세요."
+
+**Build Status**: Success
+
+**Test Status**: Pass
+
+**Commands Executed**:
+- `python -m pip install -e ".[test]"`
+- `python -m pip check`
+- `python -m pip wheel . --no-deps -w dist`
+- `python -m pytest -q`
+- `python -m pytest tests/test_api_ports.py tests/test_models.py::test_error_redaction_drops_secret_details tests/test_models.py::test_import_has_no_runtime_side_effects -q`
+
+**Files Generated**:
+- `requirements.lock`
+- `build-instructions.md`
+- `unit-test-instructions.md`
+- `integration-test-instructions.md`
+- `performance-test-instructions.md`
+- `security-test-instructions.md`
+- `build-and-test-summary.md`
+
+**AI Response**: "Completed UOW-001 Build and Test, generated instruction and summary documents, built the wheel artifact, and moved AI-DLC state to Build and Test review."
+
+**Approval Prompt**: "UOW-001 Build and Test 결과 검토가 필요합니다. `aidlc-docs/construction/build-and-test/build-and-test-summary.md`를 확인해 주세요. 승인하면 UOW-002 Functional Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - Build and Test Review - UOW-001
+
+---
+
+---
+
+## CONSTRUCTION - Code Generation Artifacts Generated - UOW-001
+
+**Timestamp**: 2026-08-05T18:02:55Z
+
+**User Input**: "UOW-001 Code Generation approved and executed from the approved plan."
+
+**AI Response**: "Generated UOW-001 application code, tests, and code documentation. Deployment artifacts were recorded as N/A for this non-runtime unit."
+
+**Context**: CONSTRUCTION - Code Generation - UOW-001

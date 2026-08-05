@@ -93,68 +93,68 @@ Concrete PostgreSQL checkpoint storage is deferred to UOW-008.
 
 ### Step 3. Business Logic Generation - Job And Request Models
 
-- [ ] Create `src/dcinside_scraper/models/job.py`.
-- [ ] Implement `JobConfig`, `ScrapeOptions`, `WorkerConfig`, `StorageConfig`, `RangeFilter`, realtime termination options, source discriminated unions, and public request models.
-- [ ] Validate job/source type matching, range ordering, deep-search range requirement, no-keyword range requirement, and realtime exactly-one termination condition.
+- [x] Create `src/dcinside_scraper/models/job.py`.
+- [x] Implement `JobConfig`, `ScrapeOptions`, `WorkerConfig`, `StorageConfig`, `RangeFilter`, realtime termination options, source discriminated unions, and public request models.
+- [x] Validate job/source type matching, range ordering, deep-search range requirement, no-keyword range requirement, and realtime exactly-one termination condition.
 
 ### Step 4. Business Logic Generation - Post, Comment, Media, Checkpoint, Report, Error Models
 
-- [ ] Create `src/dcinside_scraper/models/content.py`, `media.py`, `comment.py`, `post.py`, `checkpoint.py`, `report.py`, and `error.py`.
-- [ ] Implement ordered content blocks for text, image, DC video, YouTube, link, series, and unknown embeds.
-- [ ] Implement repost consistency, checkpoint status/reason consistency, and schema version defaults.
+- [x] Create `src/dcinside_scraper/models/content.py`, `media.py`, `comment.py`, `post.py`, `checkpoint.py`, `report.py`, and `error.py`.
+- [x] Implement ordered content blocks for text, image, DC video, YouTube, link, series, and unknown embeds.
+- [x] Implement repost consistency, checkpoint status/reason consistency, and schema version defaults.
 
 ### Step 5. Business Logic Generation - Validation And Error Helpers
 
-- [ ] Create `src/dcinside_scraper/core/validation.py` with `MetadataValidator`, `JobConfigValidator`, and bounded metadata checks.
-- [ ] Create `src/dcinside_scraper/core/errors.py` with typed core exceptions.
-- [ ] Implement `ErrorMapper` and `SecretRedactor` for adapter-safe `ErrorResult` creation.
+- [x] Create `src/dcinside_scraper/core/validation.py` with `MetadataValidator`, `JobConfigValidator`, and bounded metadata checks.
+- [x] Create `src/dcinside_scraper/core/errors.py` with typed core exceptions.
+- [x] Implement `ErrorMapper` and `SecretRedactor` for adapter-safe `ErrorResult` creation.
 
 ### Step 6. Business Logic Generation - Schema Compatibility Helpers
 
-- [ ] Create `src/dcinside_scraper/core/schema.py`.
-- [ ] Implement `SchemaRegistry`, `SchemaSnapshot`, `SchemaDiffChecker`, and `MigrationRegistry`.
-- [ ] Add initial schema version registrations for post, checkpoint, and job report.
+- [x] Create `src/dcinside_scraper/core/schema.py`.
+- [x] Implement `SchemaRegistry`, `SchemaSnapshot`, `SchemaDiffChecker`, and `MigrationRegistry`.
+- [x] Add initial schema version registrations for post, checkpoint, and job report.
 
 ### Step 7. API Layer Generation - Ports And Public API
 
-- [ ] Create `src/dcinside_scraper/core/ports.py` with `HttpPort`, `OutputStorePort`, `MediaStorePort`, `CheckpointStorePort`, `ClockPort`, and `LoggerPort` protocols.
-- [ ] Create `src/dcinside_scraper/core/api.py` with import-safe public async function signatures for search, fetch, run, and resume entrypoints.
-- [ ] Export stable public names from `src/dcinside_scraper/__init__.py`.
+- [x] Create `src/dcinside_scraper/core/ports.py` with `HttpPort`, `OutputStorePort`, `MediaStorePort`, `CheckpointStorePort`, `ClockPort`, and `LoggerPort` protocols.
+- [x] Create `src/dcinside_scraper/core/api.py` with import-safe public async function signatures for search, fetch, run, and resume entrypoints.
+- [x] Export stable public names from `src/dcinside_scraper/__init__.py`.
 
 ### Step 8. Business Logic Unit Testing - Example Tests
 
-- [ ] Create example tests for valid minimal `JobConfig` per source type.
-- [ ] Test invalid job/source mismatch, invalid realtime termination options, invalid deep-search/no-keyword range, stopped checkpoint without reason, repost consistency, and error redaction.
-- [ ] Test package import side-effect safety.
+- [x] Create example tests for valid minimal `JobConfig` per source type.
+- [x] Test invalid job/source mismatch, invalid realtime termination options, invalid deep-search/no-keyword range, stopped checkpoint without reason, repost consistency, and error redaction.
+- [x] Test package import side-effect safety.
 
 ### Step 9. Business Logic Unit Testing - Property-Based Strategies
 
-- [ ] Create `tests/strategies/job_configs.py`.
-- [ ] Create `tests/strategies/post_results.py`.
-- [ ] Create `tests/strategies/content_blocks.py`.
-- [ ] Create `tests/strategies/checkpoints.py`.
-- [ ] Create `tests/strategies/errors.py`.
+- [x] Create `tests/strategies/job_configs.py`.
+- [x] Create `tests/strategies/post_results.py`.
+- [x] Create `tests/strategies/content_blocks.py`.
+- [x] Create `tests/strategies/checkpoints.py`.
+- [x] Create `tests/strategies/errors.py`.
 
 ### Step 10. Business Logic Unit Testing - Property-Based Tests
 
-- [ ] Create property tests for JSON round trip, range invariants, content order invariants, repost consistency, checkpoint status/reason consistency, and schema version preservation.
-- [ ] Keep Hypothesis shrinking and seed reproducibility enabled.
+- [x] Create property tests for JSON round trip, range invariants, content order invariants, repost consistency, checkpoint status/reason consistency, and schema version preservation.
+- [x] Keep Hypothesis shrinking and seed reproducibility enabled.
 
 ### Step 11. API Layer Unit Testing
 
-- [ ] Test port protocols are importable and structurally usable by simple fake implementations.
-- [ ] Test public API placeholders are import-safe and do not trigger network, file, terminal, `.env`, or `user-agents.txt` side effects.
+- [x] Test port protocols are importable and structurally usable by simple fake implementations.
+- [x] Test public API placeholders are import-safe and do not trigger network, file, terminal, `.env`, or `user-agents.txt` side effects.
 
 ### Step 12. Documentation Generation
 
-- [ ] Create `aidlc-docs/construction/uow-001-core-models-and-config/code/public-contracts.md`.
-- [ ] Create `aidlc-docs/construction/uow-001-core-models-and-config/code/code-generation-summary.md`.
-- [ ] Document generated public models, schema versions, error mapping, and deferred runtime responsibilities.
+- [x] Create `aidlc-docs/construction/uow-001-core-models-and-config/code/public-contracts.md`.
+- [x] Create `aidlc-docs/construction/uow-001-core-models-and-config/code/code-generation-summary.md`.
+- [x] Document generated public models, schema versions, error mapping, and deferred runtime responsibilities.
 
 ### Step 13. Deployment Artifacts Generation
 
-- [ ] Do not create Docker, Terraform, database migration, object storage, queue, or monitoring artifacts for UOW-001.
-- [ ] Record this as N/A in the code generation summary.
+- [x] Do not create Docker, Terraform, database migration, object storage, queue, or monitoring artifacts for UOW-001.
+- [x] Record this as N/A in the code generation summary.
 
 ## Story Traceability
 
