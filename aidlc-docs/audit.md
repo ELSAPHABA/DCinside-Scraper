@@ -394,3 +394,33 @@
 **Approval Prompt**: "UOW-001 Infrastructure Design 산출물 검토가 필요합니다. `aidlc-docs/construction/uow-001-core-models-and-config/infrastructure-design/` 아래의 infrastructure-design.md, deployment-architecture.md를 검토해 주세요. 변경이 필요하면 수정 요청을 해 주세요. 승인하면 UOW-001 Code Generation으로 진행합니다."
 
 **Context**: CONSTRUCTION - Infrastructure Design Review - UOW-001
+
+---
+
+## CONSTRUCTION - Infrastructure Design Approval And Code Generation Planning - UOW-001
+
+**Timestamp**: 2026-08-05T17:44:13Z
+
+**User Input**: "좋아요. `UOW-001 Code Generation` 을 진행해 주세요."
+
+**AI Response**: "Recorded UOW-001 Infrastructure Design approval and created the UOW-001 Code Generation plan. Per AI-DLC Code Generation rules, code generation is paused until the plan is explicitly approved."
+
+**Approval Status**: "UOW-001 Infrastructure Design approved."
+
+**Approval Prompt**: "UOW-001 Code Generation 계획 검토가 필요합니다. `aidlc-docs/construction/plans/uow-001-core-models-and-config-code-generation-plan.md`를 검토해 주세요. 변경이 필요하면 수정 요청을 해 주세요. 승인하면 실제 UOW-001 코드 생성을 진행합니다."
+
+**Context**: CONSTRUCTION - Code Generation Planning - UOW-001
+
+---
+
+## CONSTRUCTION - Code Generation Plan Approval - UOW-001
+
+**Timestamp**: 2026-08-05T17:52:07Z
+
+**User Input**: "코드 생성을 시작해 주세요."
+
+**AI Response**: "Recorded UOW-001 Code Generation plan approval and started code generation. Completed Step 1 project structure setup."
+
+**Approval Status**: "UOW-001 Code Generation plan approved."
+
+**Context**: CONSTRUCTION - Code Generation - UOW-001

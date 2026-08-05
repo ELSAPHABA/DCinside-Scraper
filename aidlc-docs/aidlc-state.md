@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-07-22T08:16:24Z
-- **Current Stage**: CONSTRUCTION - Infrastructure Design Review - UOW-001
+- **Current Stage**: CONSTRUCTION - Code Generation Planning - UOW-001
 
 ## Workspace State
 - **Existing Code**: No
@@ -54,8 +54,8 @@
 - [x] Functional Design - APPROVED - UOW-001
 - [x] NFR Requirements - APPROVED - UOW-001
 - [x] NFR Design - APPROVED - UOW-001
-- [ ] Infrastructure Design - REVIEW REQUIRED - UOW-001
-- [ ] Code Generation - EXECUTE
+- [x] Infrastructure Design - APPROVED - UOW-001
+- [ ] Code Generation - IN PROGRESS - UOW-001 PLANNING
 - [ ] Build and Test - EXECUTE
 
 ### OPERATIONS PHASE
@@ -63,9 +63,9 @@
 
 ## Current Status
 - **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: Infrastructure Design Review - UOW-001 Core Models And Config
-- **Next Step**: 사용자 승인 후 UOW-001 Code Generation 진행
-- **Status**: UOW-001 Infrastructure Design artifacts generated, pending user approval
+- **Current Stage**: Code Generation Planning - UOW-001 Core Models And Config
+- **Next Step**: `aidlc-docs/construction/plans/uow-001-core-models-and-config-code-generation-plan.md` 승인 후 UOW-001 코드 생성 실행
+- **Status**: UOW-001 Code Generation in progress - Step 2 completed
 
 ## Execution Plan Summary
 - **Total Stages**: 12
@@ -130,11 +130,21 @@
 - **Current Unit**: UOW-001 Core Models And Config
 - **Plan**: Created
 - **Plan Created At**: 2026-08-05T17:14:42Z
-- **Status**: 2 artifacts generated, pending user approval
+- **Status**: Approved
 - **Answers Confirmed At**: 2026-08-05T17:36:56Z
 - **Generated At**: 2026-08-05T17:36:56Z
 - **Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
 - **Shared Infrastructure Artifact**: Not required for UOW-001
+- **Approved At**: 2026-08-05T17:44:13Z
+
+## Code Generation Status
+- **Current Unit**: UOW-001 Core Models And Config
+- **Plan**: Created
+- **Plan Created At**: 2026-08-05T17:44:13Z
+- **Status**: In Progress
+- **Approved At**: 2026-08-05T17:52:07Z
+- **Current Step**: Step 3 Business Logic Generation - Job And Request Models
+- **Artifacts**: Pending
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md
