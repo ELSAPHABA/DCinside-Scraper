@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-07-22T08:16:24Z
-- **Current Stage**: CONSTRUCTION - Build and Test Review - UOW-003
+- **Current Stage**: CONSTRUCTION - Functional Design Planning - UOW-004
 
 ## Workspace State
 - **Existing Code**: No
@@ -68,16 +68,22 @@
 - [x] NFR Design - APPROVED - UOW-003
 - [x] Infrastructure Design - APPROVED - UOW-003
 - [x] Code Generation - APPROVED - UOW-003
-- [ ] Build and Test - REVIEW REQUIRED - UOW-003
+- [x] Build and Test - APPROVED - UOW-003
+- [ ] Functional Design - IN PROGRESS - UOW-004 PLANNING
+- [ ] NFR Requirements - EXECUTE - UOW-004
+- [ ] NFR Design - EXECUTE - UOW-004
+- [ ] Infrastructure Design - EXECUTE - UOW-004
+- [ ] Code Generation - EXECUTE - UOW-004
+- [ ] Build and Test - EXECUTE - UOW-004
 
 ### OPERATIONS PHASE
 - [ ] Operations - PLACEHOLDER
 
 ## Current Status
 - **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: Build and Test Review - UOW-003 Search And Link Collection
-- **Next Step**: 사용자 승인 후 다음 Unit Of Work 진행
-- **Status**: UOW-003 Build and Test completed, pending user approval
+- **Current Stage**: Functional Design Planning - UOW-004 Post Detail And Content Parsing
+- **Next Step**: `aidlc-docs/construction/plans/uow-004-post-detail-and-content-parsing-functional-design-plan.md` 질문 답변 후 Functional Design 산출물 생성
+- **Status**: UOW-003 Build and Test approved; UOW-004 Functional Design plan created, awaiting user answers
 
 ## Execution Plan Summary
 - **Total Stages**: 12
@@ -295,7 +301,7 @@
 
 ## Build and Test Status - UOW-003
 - **Current Unit**: UOW-003 Search And Link Collection
-- **Status**: Review required
+- **Status**: Approved
 - **Started At**: 2026-08-06T12:52:47Z
 - **Instruction Artifacts**: `build-instructions.md`, `unit-test-instructions.md`, `integration-test-instructions.md`, `performance-test-instructions.md`, `security-test-instructions.md`
 - **Completed At**: 2026-08-06T12:57:50Z
@@ -305,6 +311,48 @@
 - **Dependency Check**: temp Python 3.12 venv `pip check` passed
 - **Unit Test Status**: temp Python 3.12 venv `pytest -q` passed, 56 tests, 1 skipped
 - **Security-Relevant Test Status**: passed, 4 tests
+- **Approved At**: 2026-08-06T13:15:09Z
+
+## Functional Design Status - UOW-004
+- **Current Unit**: UOW-004 Post Detail And Content Parsing
+- **Plan**: Created
+- **Plan Created At**: 2026-08-06T13:15:09Z
+- **Status**: Approved
+- **Answers Confirmed At**: 2026-08-06T13:32:00Z
+- **Generated At**: 2026-08-06T13:32:00Z
+- **Artifacts**: `business-logic-model.md`, `business-rules.md`, `domain-entities.md`
+- **Questionnaire Note**: Q1 was blank at confirmation and was treated as the recommended A option because Q2-Q8 all selected A and depend on that service boundary
+- **Approved At**: 2026-08-06T13:41:26Z
+
+## NFR Requirements Status - UOW-004
+- **Current Unit**: UOW-004 Post Detail And Content Parsing
+- **Plan**: Created
+- **Plan Created At**: 2026-08-06T13:41:26Z
+- **Status**: Approved
+- **Answers Confirmed At**: 2026-08-06T14:14:41Z
+- **Generated At**: 2026-08-06T14:14:41Z
+- **Artifacts**: `nfr-requirements.md`, `tech-stack-decisions.md`
+- **Approved At**: 2026-08-06T14:23:34Z
+
+## NFR Design Status - UOW-004
+- **Current Unit**: UOW-004 Post Detail And Content Parsing
+- **Plan**: Created
+- **Plan Created At**: 2026-08-06T14:23:34Z
+- **Status**: Approved
+- **Answers Confirmed At**: 2026-08-06T14:29:14Z
+- **Generated At**: 2026-08-06T14:29:14Z
+- **Artifacts**: `nfr-design-patterns.md`, `logical-components.md`
+- **Approved At**: 2026-08-06T14:34:13Z
+
+## Infrastructure Design Status - UOW-004
+- **Current Unit**: UOW-004 Post Detail And Content Parsing
+- **Plan**: Created
+- **Plan Created At**: 2026-08-06T14:34:13Z
+- **Status**: Review
+- **Answers Confirmed At**: 2026-08-06T14:38:44Z
+- **Generated At**: 2026-08-06T14:38:44Z
+- **Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
+- **Shared Infrastructure Artifact**: Not required for UOW-004
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md
@@ -324,3 +372,4 @@
 - [x] Review new functional revisions before resuming AI-DLC
 - [x] Record specification reconciliation in `aidlc-docs/inception/requirements/specification-reconciliation.md`
 - [x] Replace MinIO container output storage with Garage-based S3-compatible storage and document SeaweedFS extension path
+- [x] Future metadata parsing failure retry unit reflected in docs\Function_Specification.md
