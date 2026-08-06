@@ -952,3 +952,39 @@
 **Approval Prompt**: "UOW-004 Infrastructure Design 산출물 검토가 필요합니다. 승인하면 UOW-004 Code Generation으로 진행합니다."
 
 **Context**: CONSTRUCTION - Infrastructure Design Review - UOW-004
+
+---
+
+## CONSTRUCTION - Infrastructure Design Approval And Code Generation - UOW-004
+
+**Timestamp**: 2026-08-06T14:59:40Z
+
+**User Input**: "좋아요. 승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-004 Infrastructure Design approval, generated UOW-004 post detail parsing code, generated code-stage documentation, installed test-only Hypothesis dependency into workspace-local `.tmp\\test-deps` for verification, ran UOW-004 tests, ran full tests, and moved AI-DLC state to UOW-004 Code Generation review."
+
+**Approval Status**: "UOW-004 Infrastructure Design approved."
+
+**Verification**: "`C:\\ProgramData\\anaconda3\\python.exe -m pytest -q -p no:cacheprovider --basetemp .tmp\\pytest-all` passed with 66 passed and 2 skipped."
+
+**Approval Prompt**: "UOW-004 Code Generation 산출물 검토가 필요합니다. 승인하면 UOW-004 Build and Test로 진행합니다."
+
+**Context**: CONSTRUCTION - Code Generation Review - UOW-004
+
+---
+
+## CONSTRUCTION - Code Generation Approval And Build/Test - UOW-004
+
+**Timestamp**: 2026-08-06T15:19:37Z
+
+**User Input**: "좋아요. 승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-004 Code Generation approval, executed Build and Test in a clean Python 3.13 temporary venv, generated Build/Test instruction and summary artifacts, and moved AI-DLC state to UOW-004 Build and Test review."
+
+**Approval Status**: "UOW-004 Code Generation approved."
+
+**Verification**: "Build succeeded, `pip check` passed, full pytest passed with 66 passed and 2 skipped, security-relevant tests passed with 4 passed, and compileall passed."
+
+**Approval Prompt**: "UOW-004 Build and Test 산출물 검토가 필요합니다. 승인하면 다음 Unit Of Work로 진행합니다."
+
+**Context**: CONSTRUCTION - Build and Test Review - UOW-004

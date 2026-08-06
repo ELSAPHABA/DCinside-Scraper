@@ -348,11 +348,37 @@
 - **Current Unit**: UOW-004 Post Detail And Content Parsing
 - **Plan**: Created
 - **Plan Created At**: 2026-08-06T14:34:13Z
-- **Status**: Review
+- **Status**: Approved
 - **Answers Confirmed At**: 2026-08-06T14:38:44Z
 - **Generated At**: 2026-08-06T14:38:44Z
 - **Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
 - **Shared Infrastructure Artifact**: Not required for UOW-004
+- **Approved At**: 2026-08-06T14:43:17Z
+
+## Code Generation Status - UOW-004
+- **Current Unit**: UOW-004 Post Detail And Content Parsing
+- **Plan**: Created
+- **Plan Created At**: 2026-08-06T14:43:17Z
+- **Status**: Approved
+- **Generated At**: 2026-08-06T14:59:40Z
+- **Artifacts**: `src/dcinside_scraper/post_detail/`, `src/dcinside_scraper/core/api.py`, `src/dcinside_scraper/models/job.py`, `tests/test_post_detail_parsing.py`, `tests/test_post_detail_properties.py`, `tests/test_post_detail_live_smoke.py`, `tests/fixtures/post_detail/`, `tests/strategies/post_detail.py`, `public-contracts.md`, `code-generation-summary.md`
+- **Verification**: `C:\ProgramData\anaconda3\python.exe -m pytest -q -p no:cacheprovider --basetemp .tmp\pytest-all` passed, 66 tests, 2 skipped
+- **Approved At**: 2026-08-06T15:04:55Z
+
+## Build and Test Status - UOW-004
+- **Current Unit**: UOW-004 Post Detail And Content Parsing
+- **Status**: Review
+- **Started At**: 2026-08-06T15:04:55Z
+- **Instruction Artifacts**: `build-instructions.md`, `unit-test-instructions.md`, `integration-test-instructions.md`, `performance-test-instructions.md`, `security-test-instructions.md`
+- **Completed At**: 2026-08-06T15:19:37Z
+- **Summary Artifact**: `build-and-test-summary.md`
+- **Build Artifact**: `dist/dcinside_scraper-0.1.0-py3-none-any.whl`
+- **Build Artifact Size**: 54,214 bytes
+- **Build Artifact SHA256**: `8041F57615CB18513C7E834124381743A101EFBF1E2BD600113B3768DC09B7D0`
+- **Build Status**: Success
+- **Dependency Check**: temp Python 3.13 venv `pip check` passed
+- **Unit Test Status**: temp Python 3.13 venv `pytest -q` passed, 66 tests, 2 skipped
+- **Security-Relevant Test Status**: passed, 4 tests
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md
