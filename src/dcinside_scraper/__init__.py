@@ -21,6 +21,13 @@ from dcinside_scraper.core.errors import (
     ValidationFailure,
 )
 from dcinside_scraper.core.validation import JobConfigValidator
+from dcinside_scraper.http import (
+    HttpClient,
+    HttpRuntimeConfig,
+    ProxyConfig,
+    RuntimePolicyService,
+    UserAgentConfig,
+)
 from dcinside_scraper.models.checkpoint import Checkpoint
 from dcinside_scraper.models.comment import Comment
 from dcinside_scraper.models.error import ErrorResult
@@ -35,16 +42,21 @@ __all__ = [
     "CheckpointFailureError",
     "Comment",
     "ErrorResult",
+    "HttpClient",
+    "HttpRuntimeConfig",
     "JobConfig",
     "JobConfigValidator",
     "JobReport",
     "NetworkFailureError",
     "ParseFailureError",
     "PostResult",
+    "ProxyConfig",
+    "RuntimePolicyService",
     "ScraperError",
     "StorageFailureError",
     "UnavailableContentError",
     "UnsupportedSourceError",
+    "UserAgentConfig",
     "ValidationFailure",
     "fetch_comments",
     "fetch_post",
