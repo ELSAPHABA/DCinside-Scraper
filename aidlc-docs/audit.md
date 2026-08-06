@@ -652,3 +652,21 @@
 **Approval Prompt**: "UOW-002 Code Generation 결과 검토가 필요합니다. `aidlc-docs/construction/uow-002-http-runtime-policy/code/code-generation-summary.md`를 확인해 주세요. 승인하면 UOW-002 Build and Test로 진행합니다."
 
 **Context**: CONSTRUCTION - Code Generation Review - UOW-002
+
+---
+
+## CONSTRUCTION - Code Generation Approval And Build Test - UOW-002
+
+**Timestamp**: 2026-08-06T02:47:41Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-002 Code Generation approval, updated dependency lock entries for UOW-002 runtime dependencies, installed editable test dependencies, built the wheel, ran dependency check, ran unit and security-relevant tests, generated Build and Test instruction/summary documents, and moved AI-DLC state to UOW-002 Build and Test review."
+
+**Approval Status**: "UOW-002 Code Generation approved."
+
+**Verification**: "`python -m pip check` passed; `python -m pip wheel . --no-deps -w dist` succeeded; `python -m pytest -q` passed, 41 tests; security-relevant subset passed, 6 tests."
+
+**Approval Prompt**: "UOW-002 Build and Test 결과 검토가 필요합니다. `aidlc-docs/construction/uow-002-http-runtime-policy/build-and-test/build-and-test-summary.md`를 확인해 주세요. 승인하면 UOW-003 Functional Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - Build and Test Review - UOW-002
