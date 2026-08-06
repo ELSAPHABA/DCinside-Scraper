@@ -1,0 +1,22 @@
+{
+  "comments": [
+    {
+      "no": "1",
+      "depth": 0,
+      "name": "ㅇㅇ",
+      "ip": "123.45",
+      "memo": "root comment",
+      "reg_date": "2026.08.06 12:00:01"
+    },
+    {
+      "no": "2",
+      "depth": 1,
+      "c_no": "1",
+      "name": "fixed",
+      "user_id": "fixed-id",
+      "memo": "reply <img class=\"written_dccon\" src=\"/dccon.png\" alt=\"dccon alt\" conalt=\"dccon text\">",
+      "reg_date": "2026.08.06 12:00:02"
+    }
+  ],
+  "total_page": 1
+}

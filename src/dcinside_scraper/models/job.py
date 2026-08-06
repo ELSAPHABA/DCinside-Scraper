@@ -74,6 +74,7 @@ class ScrapeOptions(MetadataModel):
     dccon_mode: DcconMode = DcconMode.METADATA
     request_interval_seconds: float = Field(default=1.0, ge=0)
     max_post_retries: int = Field(default=3, ge=0)
+    max_comment_pages: int = Field(default=100, ge=1)
     range_filter: RangeFilter | None = None
 
 
@@ -290,4 +291,3 @@ class IntegratedSearchPage(MetadataModel):
     candidates: list[PostCandidate] = Field(default_factory=list)
     gallery_ids: list[str] = Field(default_factory=list)
     has_next: bool = False
-

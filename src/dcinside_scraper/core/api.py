@@ -21,6 +21,7 @@ from dcinside_scraper.models.job import (
 )
 from dcinside_scraper.models.post import PostResult
 from dcinside_scraper.models.report import JobReport
+from dcinside_scraper.post_detail import CommentService, PostDetailService
 from dcinside_scraper.search import GallerySearchCollector, IntegratedSearchCollector
 
 
@@ -36,12 +37,16 @@ async def search_integrated(request: IntegratedSearchRequest, http_client: HttpP
     return await IntegratedSearchCollector(http_client).collect_page(request)
 
 
-async def fetch_post(request: PostRequest) -> PostResult:
-    raise UnavailableContentError("fetch_post is implemented in UOW-004")
+async def fetch_post(request: PostRequest, http_client: HttpPort | None = None) -> PostResult:
+    if http_client is None:
+        raise ValidationFailure("http_client is required", details={"reason": "http_client_required"})
+    return await PostDetailService(http_client).fetch_post(request)
 
 
-async def fetch_comments(request: CommentRequest) -> list[Comment]:
-    raise UnavailableContentError("fetch_comments is implemented in UOW-004")
+async def fetch_comments(request: CommentRequest, http_client: HttpPort | None = None) -> list[Comment]:
+    if http_client is None:
+        raise ValidationFailure("http_client is required", details={"reason": "http_client_required"})
+    return await CommentService(http_client).fetch_comments(request)
 
 
 async def run_job(config: JobConfig) -> JobReport:

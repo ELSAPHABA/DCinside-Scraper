@@ -34,6 +34,12 @@ from dcinside_scraper.models.error import ErrorResult
 from dcinside_scraper.models.job import JobConfig
 from dcinside_scraper.models.post import PostResult
 from dcinside_scraper.models.report import JobReport
+from dcinside_scraper.post_detail import (
+    CommentService,
+    ContentBlockParser,
+    PostDetailService,
+    PostMetadataParser,
+)
 from dcinside_scraper.search import (
     CandidateDeduper,
     GallerySearchCollector,
@@ -50,6 +56,8 @@ __all__ = [
     "Checkpoint",
     "CheckpointFailureError",
     "Comment",
+    "CommentService",
+    "ContentBlockParser",
     "ErrorResult",
     "GallerySearchCollector",
     "GallerySearchUrlBuilder",
@@ -64,6 +72,8 @@ __all__ = [
     "NetworkFailureError",
     "ParseFailureError",
     "PostResult",
+    "PostDetailService",
+    "PostMetadataParser",
     "ProxyConfig",
     "RuntimePolicyService",
     "ScraperError",
