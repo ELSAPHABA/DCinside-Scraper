@@ -776,3 +776,39 @@
 **Approval Prompt**: "UOW-003 Infrastructure Design 산출물 검토가 필요합니다. `aidlc-docs/construction/uow-003-search-and-link-collection/infrastructure-design/` 아래의 infrastructure-design.md, deployment-architecture.md를 검토해 주세요. 변경이 필요하면 수정 요청을 해 주세요. 승인하면 UOW-003 Code Generation으로 진행합니다."
 
 **Context**: CONSTRUCTION - Infrastructure Design Review - UOW-003
+
+---
+
+## CONSTRUCTION - Infrastructure Design Approval And Code Generation - UOW-003
+
+**Timestamp**: 2026-08-06T12:48:27Z
+
+**User Input**: "좋아요. 이제 코드 생성 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-003 Infrastructure Design approval, generated UOW-003 search/link collection code, generated code-stage documentation, ran tests with Python 3.12, and moved AI-DLC state to UOW-003 Code Generation review."
+
+**Approval Status**: "UOW-003 Infrastructure Design approved by user instruction."
+
+**Verification**: "`py -3.12 -m pytest -q` passed with 56 passed and 1 skipped."
+
+**Approval Prompt**: "UOW-003 Code Generation 산출물 검토가 필요합니다. 승인하면 UOW-003 Build and Test로 진행합니다."
+
+**Context**: CONSTRUCTION - Code Generation Review - UOW-003
+
+---
+
+## CONSTRUCTION - Code Generation Approval And Build/Test - UOW-003
+
+**Timestamp**: 2026-08-06T12:57:50Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-003 Code Generation approval, executed Build and Test in a clean Python 3.12 temporary venv, generated Build/Test instruction and summary artifacts, and moved AI-DLC state to UOW-003 Build and Test review."
+
+**Approval Status**: "UOW-003 Code Generation approved."
+
+**Verification**: "Build succeeded, `pip check` passed, full pytest passed with 56 passed and 1 skipped, and security-relevant tests passed with 4 passed."
+
+**Approval Prompt**: "UOW-003 Build and Test 산출물 검토가 필요합니다. 승인하면 다음 Unit Of Work로 진행합니다."
+
+**Context**: CONSTRUCTION - Build and Test Review - UOW-003
