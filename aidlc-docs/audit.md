@@ -634,3 +634,21 @@
 **Approval Prompt**: "UOW-002 Infrastructure Design 산출물 검토가 필요합니다. `aidlc-docs/construction/uow-002-http-runtime-policy/infrastructure-design/` 아래의 infrastructure-design.md, deployment-architecture.md를 검토해 주세요. 변경이 필요하면 수정 요청을 해 주세요. 승인하면 UOW-002 Code Generation으로 진행합니다."
 
 **Context**: CONSTRUCTION - Infrastructure Design Review - UOW-002
+
+---
+
+## CONSTRUCTION - Infrastructure Design Approval And Code Generation - UOW-002
+
+**Timestamp**: 2026-08-06T02:39:59Z
+
+**User Input**: "좋아요. 이제 UOW-002 Code Generation을 진행해 주세요."
+
+**AI Response**: "Recorded UOW-002 Infrastructure Design approval, generated UOW-002 HTTP runtime code, tests, and code documentation, ran pytest successfully, and moved AI-DLC state to UOW-002 Code Generation review."
+
+**Approval Status**: "UOW-002 Infrastructure Design approved."
+
+**Verification**: "`python -m pytest -q` passed, 41 tests."
+
+**Approval Prompt**: "UOW-002 Code Generation 결과 검토가 필요합니다. `aidlc-docs/construction/uow-002-http-runtime-policy/code/code-generation-summary.md`를 확인해 주세요. 승인하면 UOW-002 Build and Test로 진행합니다."
+
+**Context**: CONSTRUCTION - Code Generation Review - UOW-002
