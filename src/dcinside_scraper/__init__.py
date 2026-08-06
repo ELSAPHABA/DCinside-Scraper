@@ -34,19 +34,33 @@ from dcinside_scraper.models.error import ErrorResult
 from dcinside_scraper.models.job import JobConfig
 from dcinside_scraper.models.post import PostResult
 from dcinside_scraper.models.report import JobReport
+from dcinside_scraper.search import (
+    CandidateDeduper,
+    GallerySearchCollector,
+    GallerySearchUrlBuilder,
+    IntegratedSearchCollector,
+    IntegratedSearchUrlBuilder,
+    LinkCollectorService,
+)
 
 __all__ = [
     "BlockedResponseError",
     "CaptchaDetectedError",
+    "CandidateDeduper",
     "Checkpoint",
     "CheckpointFailureError",
     "Comment",
     "ErrorResult",
+    "GallerySearchCollector",
+    "GallerySearchUrlBuilder",
     "HttpClient",
     "HttpRuntimeConfig",
+    "IntegratedSearchCollector",
+    "IntegratedSearchUrlBuilder",
     "JobConfig",
     "JobConfigValidator",
     "JobReport",
+    "LinkCollectorService",
     "NetworkFailureError",
     "ParseFailureError",
     "PostResult",

@@ -6,7 +6,8 @@ library import-safe and establish stable type contracts for adapters.
 
 from __future__ import annotations
 
-from dcinside_scraper.core.errors import UnavailableContentError
+from dcinside_scraper.core.errors import UnavailableContentError, ValidationFailure
+from dcinside_scraper.core.ports import HttpPort
 from dcinside_scraper.models.comment import Comment
 from dcinside_scraper.models.job import (
     CommentRequest,
@@ -20,14 +21,19 @@ from dcinside_scraper.models.job import (
 )
 from dcinside_scraper.models.post import PostResult
 from dcinside_scraper.models.report import JobReport
+from dcinside_scraper.search import GallerySearchCollector, IntegratedSearchCollector
 
 
-async def search_gallery(request: GallerySearchRequest) -> GallerySearchPage:
-    raise UnavailableContentError("search_gallery is implemented in UOW-003")
+async def search_gallery(request: GallerySearchRequest, http_client: HttpPort | None = None) -> GallerySearchPage:
+    if http_client is None:
+        raise ValidationFailure("http_client is required", details={"reason": "http_client_required"})
+    return await GallerySearchCollector(http_client).collect_page(request)
 
 
-async def search_integrated(request: IntegratedSearchRequest) -> IntegratedSearchPage:
-    raise UnavailableContentError("search_integrated is implemented in UOW-003")
+async def search_integrated(request: IntegratedSearchRequest, http_client: HttpPort | None = None) -> IntegratedSearchPage:
+    if http_client is None:
+        raise ValidationFailure("http_client is required", details={"reason": "http_client_required"})
+    return await IntegratedSearchCollector(http_client).collect_page(request)
 
 
 async def fetch_post(request: PostRequest) -> PostResult:
@@ -44,4 +50,3 @@ async def run_job(config: JobConfig) -> JobReport:
 
 async def resume_job(request: ResumeRequest) -> JobReport:
     raise UnavailableContentError("resume_job is implemented in UOW-005")
-

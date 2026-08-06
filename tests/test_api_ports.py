@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import pytest
 
 from dcinside_scraper.core import api
-from dcinside_scraper.core.errors import UnavailableContentError
+from dcinside_scraper.core.errors import UnavailableContentError, ValidationFailure
 from dcinside_scraper.core.ports import (
     CheckpointStorePort,
     ClockPort,
@@ -90,18 +90,17 @@ def test_ports_accept_structural_fakes() -> None:
     assert isinstance(FakeLogger(), LoggerPort)
 
 
-def test_public_api_placeholders_are_import_safe() -> None:
+def test_public_search_api_requires_injected_client() -> None:
     request = GallerySearchRequest(
         gallery_type="minor",
         gallery_id="singlebungle1472",
         s_type="search_subject_memo",
         keyword="test",
     )
-    with pytest.raises(UnavailableContentError):
+    with pytest.raises(ValidationFailure):
         asyncio.run(api.search_gallery(request))
 
 
 def test_resume_placeholder_is_import_safe() -> None:
     with pytest.raises(UnavailableContentError):
         asyncio.run(api.resume_job(ResumeRequest(job_id="job-1")))
-
