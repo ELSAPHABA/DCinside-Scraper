@@ -491,6 +491,64 @@
 
 ---
 
+## CONSTRUCTION - Build Test Approval And Functional Design Planning - UOW-002
+
+**Timestamp**: 2026-08-06T00:54:53Z
+
+**User Input**: "좋아요. 승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-001 Build and Test approval, moved AI-DLC to UOW-002 Functional Design Planning, created the UOW-002 Functional Design plan, and paused for required answers before generating functional design artifacts."
+
+**Approval Status**: "UOW-001 Build and Test approved."
+
+**Approval Prompt**: "UOW-002 Functional Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-002-http-runtime-policy-functional-design-plan.md`의 Q1-Q8을 채워 주세요."
+
+**Context**: CONSTRUCTION - Functional Design Planning - UOW-002
+
+---
+
+## CONSTRUCTION - Functional Design Artifacts Generated - UOW-002
+
+**Timestamp**: 2026-08-06T01:26:22Z
+
+**User Input**: "좋아요. 질문지의 답변을 확정하였습니다. 다음 단계를 진행해 주세요. 오류가 발생해 작업이 중단되어서 다시 진행해 주세요."
+
+**AI Response**: "Resumed after the interrupted turn, validated that all UOW-002 Functional Design answers were completed, found no follow-up questions required, generated 3 functional design artifacts, and moved AI-DLC state to UOW-002 Functional Design review."
+
+**Approval Prompt**: "UOW-002 Functional Design 산출물 검토가 필요합니다. `aidlc-docs/construction/uow-002-http-runtime-policy/functional-design/` 아래의 business-logic-model.md, business-rules.md, domain-entities.md를 검토해 주세요. 변경이 필요하면 수정 요청을 해 주세요. 승인하면 UOW-002 NFR Requirements로 진행합니다."
+
+**Context**: CONSTRUCTION - Functional Design Review - UOW-002
+
+---
+
+## CONSTRUCTION - Functional Design Approval And NFR Requirements Planning - UOW-002
+
+**Timestamp**: 2026-08-06T01:30:36Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-002 Functional Design approval, moved AI-DLC to UOW-002 NFR Requirements Planning, created the NFR Requirements plan, and paused for required answers before generating NFR artifacts."
+
+**Approval Status**: "UOW-002 Functional Design approved."
+
+**Approval Prompt**: "UOW-002 NFR Requirements 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-002-http-runtime-policy-nfr-requirements-plan.md`의 Q1-Q8을 채워 주세요."
+
+**Context**: CONSTRUCTION - NFR Requirements Planning - UOW-002
+
+---
+
+## CONSTRUCTION - Functional Design Questionnaire Revision - UOW-002
+
+**Timestamp**: 2026-08-06T01:15:09Z
+
+**User Input**: "좋아요. 질문지를 수정해 주세요."
+
+**AI Response**: "Updated UOW-002 Functional Design Question 8 to prefer Referer/header-based AJAX handling, allow only in-memory lifecycle cookies, and forbid cookie reuse across restart, resume, Proxy change, or User-Agent change."
+
+**Context**: CONSTRUCTION - Functional Design Planning - UOW-002
+
+---
+
 ---
 
 ## CONSTRUCTION - Code Generation Artifacts Generated - UOW-001
@@ -502,3 +560,77 @@
 **AI Response**: "Generated UOW-001 application code, tests, and code documentation. Deployment artifacts were recorded as N/A for this non-runtime unit."
 
 **Context**: CONSTRUCTION - Code Generation - UOW-001
+
+---
+
+## CONSTRUCTION - NFR Requirements Artifacts Generated - UOW-002
+
+**Timestamp**: 2026-08-06T01:40:26Z
+
+**User Input**: "질문지의 답변을 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Validated that all UOW-002 NFR Requirements answers were completed, found no follow-up questions required, generated 2 NFR Requirements artifacts, and moved AI-DLC state to UOW-002 NFR Requirements review."
+
+**Approval Prompt**: "UOW-002 NFR Requirements 산출물 검토가 필요합니다. `aidlc-docs/construction/uow-002-http-runtime-policy/nfr-requirements/` 아래의 nfr-requirements.md, tech-stack-decisions.md를 검토해 주세요. 변경이 필요하면 수정 요청을 해 주세요. 승인하면 UOW-002 NFR Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - NFR Requirements Review - UOW-002
+
+---
+
+## CONSTRUCTION - NFR Requirements Approval And NFR Design Planning - UOW-002
+
+**Timestamp**: 2026-08-06T01:50:24Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-002 NFR Requirements approval, moved AI-DLC to UOW-002 NFR Design Planning, created the NFR Design plan, and paused for required answers before generating NFR Design artifacts."
+
+**Approval Status**: "UOW-002 NFR Requirements approved."
+
+**Approval Prompt**: "UOW-002 NFR Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-002-http-runtime-policy-nfr-design-plan.md`의 Q1-Q8을 채워 주세요."
+
+**Context**: CONSTRUCTION - NFR Design Planning - UOW-002
+
+---
+
+## CONSTRUCTION - NFR Design Artifacts Generated - UOW-002
+
+**Timestamp**: 2026-08-06T02:03:09Z
+
+**User Input**: "질문지를 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Validated that all UOW-002 NFR Design answers were completed, found no follow-up questions required, generated 2 NFR Design artifacts, and moved AI-DLC state to UOW-002 NFR Design review."
+
+**Approval Prompt**: "UOW-002 NFR Design 산출물 검토가 필요합니다. `aidlc-docs/construction/uow-002-http-runtime-policy/nfr-design/` 아래의 nfr-design-patterns.md, logical-components.md를 검토해 주세요. 변경이 필요하면 수정 요청을 해 주세요. 승인하면 UOW-002 Infrastructure Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - NFR Design Review - UOW-002
+
+---
+
+## CONSTRUCTION - NFR Design Approval And Infrastructure Design Planning - UOW-002
+
+**Timestamp**: 2026-08-06T02:08:41Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-002 NFR Design approval, moved AI-DLC to UOW-002 Infrastructure Design Planning, created the Infrastructure Design plan, and paused for required answers before generating Infrastructure Design artifacts."
+
+**Approval Status**: "UOW-002 NFR Design approved."
+
+**Approval Prompt**: "UOW-002 Infrastructure Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-002-http-runtime-policy-infrastructure-design-plan.md`의 Q1-Q8을 채워 주세요."
+
+**Context**: CONSTRUCTION - Infrastructure Design Planning - UOW-002
+
+---
+
+## CONSTRUCTION - Infrastructure Design Artifacts Generated - UOW-002
+
+**Timestamp**: 2026-08-06T02:14:48Z
+
+**User Input**: "질문지를 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Validated that all UOW-002 Infrastructure Design answers were completed, found no follow-up questions required, generated 2 Infrastructure Design artifacts, and moved AI-DLC state to UOW-002 Infrastructure Design review."
+
+**Approval Prompt**: "UOW-002 Infrastructure Design 산출물 검토가 필요합니다. `aidlc-docs/construction/uow-002-http-runtime-policy/infrastructure-design/` 아래의 infrastructure-design.md, deployment-architecture.md를 검토해 주세요. 변경이 필요하면 수정 요청을 해 주세요. 승인하면 UOW-002 Code Generation으로 진행합니다."
+
+**Context**: CONSTRUCTION - Infrastructure Design Review - UOW-002
