@@ -419,12 +419,37 @@
 - **Current Unit**: UOW-006 Output And Storage
 - **Plan**: Created
 - **Plan Created At**: 2026-08-07T14:21:34Z
-- **Status**: Review
+- **Status**: Approved
 - **Plan Artifact**: `aidlc-docs/construction/plans/uow-006-output-and-storage-infrastructure-design-plan.md`
 - **Answers Confirmed At**: 2026-08-07T14:31:49Z
 - **Generated At**: 2026-08-07T14:31:49Z
 - **Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
 - **Shared Infrastructure Artifact**: Not required for UOW-006
+- **Approved At**: 2026-08-07T14:44:41Z
+
+## Code Generation Status - UOW-006
+- **Current Unit**: UOW-006 Output And Storage
+- **Status**: Approved
+- **Generated At**: 2026-08-07T14:44:41Z
+- **Artifacts**: `src/dcinside_scraper/outputs/`, `src/dcinside_scraper/__init__.py`, `pyproject.toml`, `.gitignore`, `tests/test_outputs_storage.py`, `tests/test_outputs_properties.py`, `tests/strategies/outputs.py`, `public-contracts.md`, `code-generation-summary.md`
+- **Verification**: `python -m pytest tests\test_outputs_storage.py tests\test_outputs_properties.py -q -p no:cacheprovider --basetemp .tmp\pytest-uow006-focused-build` passed, 10 tests; `python -m pytest -q -p no:cacheprovider --basetemp .tmp\pytest-uow006-all-build` passed, 76 tests, 2 skipped; `python -m compileall -q src\dcinside_scraper` passed; `git diff --check` passed
+- **Implementation Note**: local output/media/checkpoint stores are implemented; S3/Garage support is a lazy-loaded object storage boundary and provisioning remains deferred
+- **Approved At**: 2026-08-07T14:49:31Z
+
+## Build and Test Status - UOW-006
+- **Current Unit**: UOW-006 Output And Storage
+- **Status**: Review
+- **Started At**: 2026-08-07T14:49:31Z
+- **Instruction Artifacts**: `build-instructions.md`, `unit-test-instructions.md`, `integration-test-instructions.md`, `performance-test-instructions.md`, `security-test-instructions.md`
+- **Completed At**: 2026-08-07T14:53:58Z
+- **Summary Artifact**: `build-and-test-summary.md`
+- **Build Artifact**: `dist/dcinside_scraper-0.1.0-py3-none-any.whl`
+- **Build Artifact Size**: 59,462 bytes
+- **Build Artifact SHA256**: `A3573E34332D91399A75095EB2E5E9932C849C72676DF0C700354A0071F3EC3B`
+- **Build Status**: Success
+- **Dependency Check**: temp Python 3.13.9 venv `pip check` passed
+- **Unit Test Status**: temp Python 3.13.9 venv `pytest -q` passed, 76 tests, 2 skipped
+- **Security-Relevant Test Status**: passed, 4 tests
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md

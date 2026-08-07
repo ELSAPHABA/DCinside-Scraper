@@ -1116,3 +1116,39 @@
 **Approval Prompt**: "UOW-006 Infrastructure Design 산출물 검토가 필요합니다. 승인하면 UOW-006 Code Generation으로 진행합니다."
 
 **Context**: CONSTRUCTION - Infrastructure Design Review - UOW-006
+
+---
+
+## CONSTRUCTION - Infrastructure Design Approval And Code Generation - UOW-006
+
+**Timestamp**: 2026-08-07T14:44:41Z
+
+**User Input**: "좋아요. 코드 생성을 진행해 주세요."
+
+**AI Response**: "Recorded UOW-006 Infrastructure Design approval, generated UOW-006 output/storage code, generated code-stage documentation, ran focused storage tests, ran the full test suite, ran compileall, and moved AI-DLC state to UOW-006 Code Generation review."
+
+**Approval Status**: "UOW-006 Infrastructure Design approved."
+
+**Verification**: "`python -m pytest tests\\test_outputs_storage.py tests\\test_outputs_properties.py -q -p no:cacheprovider --basetemp .tmp\\pytest-uow006-focused-build` passed with 10 passed. `python -m pytest -q -p no:cacheprovider --basetemp .tmp\\pytest-uow006-all-build` passed with 76 passed and 2 skipped. `python -m compileall -q src\\dcinside_scraper` and `git diff --check` passed."
+
+**Approval Prompt**: "UOW-006 Code Generation 산출물 검토가 필요합니다. 승인하면 UOW-006 Build and Test로 진행합니다."
+
+**Context**: CONSTRUCTION - Code Generation Review - UOW-006
+
+---
+
+## CONSTRUCTION - Code Generation Approval And Build/Test - UOW-006
+
+**Timestamp**: 2026-08-07T14:53:58Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-006 Code Generation approval, executed Build and Test in a clean Python 3.13.9 temporary venv, generated Build/Test instruction and summary artifacts, and moved AI-DLC state to UOW-006 Build and Test review."
+
+**Approval Status**: "UOW-006 Code Generation approved."
+
+**Verification**: "Build succeeded, `pip check` passed, focused storage tests passed with 10 passed, full pytest passed with 76 passed and 2 skipped, security-relevant tests passed with 4 passed, and compileall passed."
+
+**Approval Prompt**: "UOW-006 Build and Test 산출물 검토가 필요합니다. 승인하면 UOW-005 Job Runner And Checkpoint로 진행합니다."
+
+**Context**: CONSTRUCTION - Build and Test Review - UOW-006
