@@ -34,6 +34,13 @@ from dcinside_scraper.models.error import ErrorResult
 from dcinside_scraper.models.job import JobConfig
 from dcinside_scraper.models.post import PostResult
 from dcinside_scraper.models.report import JobReport
+from dcinside_scraper.outputs import (
+    LocalCheckpointStore,
+    LocalMediaStore,
+    LocalOutputStore,
+    OutputRunLayout,
+    S3ObjectStore,
+)
 from dcinside_scraper.post_detail import (
     CommentService,
     ContentBlockParser,
@@ -69,13 +76,18 @@ __all__ = [
     "JobConfigValidator",
     "JobReport",
     "LinkCollectorService",
+    "LocalCheckpointStore",
+    "LocalMediaStore",
+    "LocalOutputStore",
     "NetworkFailureError",
+    "OutputRunLayout",
     "ParseFailureError",
     "PostResult",
     "PostDetailService",
     "PostMetadataParser",
     "ProxyConfig",
     "RuntimePolicyService",
+    "S3ObjectStore",
     "ScraperError",
     "StorageFailureError",
     "UnavailableContentError",

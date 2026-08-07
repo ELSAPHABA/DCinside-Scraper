@@ -209,6 +209,11 @@ tempCodeRunnerFile.py
 # PyPI configuration file
 .pypirc
 
+# DCinside Scraper runtime outputs
+/.tmp/
+/outputs/
+/Checkpoint.json
+
 # Marimo
 marimo/_static/
 marimo/_lsp/
