@@ -367,7 +367,7 @@
 
 ## Build and Test Status - UOW-004
 - **Current Unit**: UOW-004 Post Detail And Content Parsing
-- **Status**: Review
+- **Status**: Approved
 - **Started At**: 2026-08-06T15:04:55Z
 - **Instruction Artifacts**: `build-instructions.md`, `unit-test-instructions.md`, `integration-test-instructions.md`, `performance-test-instructions.md`, `security-test-instructions.md`
 - **Completed At**: 2026-08-06T15:19:37Z
@@ -379,6 +379,52 @@
 - **Dependency Check**: temp Python 3.13 venv `pip check` passed
 - **Unit Test Status**: temp Python 3.13 venv `pytest -q` passed, 66 tests, 2 skipped
 - **Security-Relevant Test Status**: passed, 4 tests
+- **Approved At**: 2026-08-07T01:35:14Z
+
+## Functional Design Status - UOW-006
+- **Current Unit**: UOW-006 Output And Storage
+- **Plan**: Created
+- **Plan Created At**: 2026-08-07T01:35:14Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-006-output-and-storage-functional-design-plan.md`
+- **Answers Confirmed At**: 2026-08-07T02:22:49Z
+- **Generated At**: 2026-08-07T02:22:49Z
+- **Artifacts**: `business-logic-model.md`, `business-rules.md`, `domain-entities.md`
+- **Questionnaire Note**: Q5 selected A with added safe context fields `proxy_host` and `user_agent`; proxy ID/PW, cookies, tokens, raw headers, and raw HTML remain excluded
+- **Approved At**: 2026-08-07T02:30:27Z
+
+## NFR Requirements Status - UOW-006
+- **Current Unit**: UOW-006 Output And Storage
+- **Plan**: Created
+- **Plan Created At**: 2026-08-07T02:30:27Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-006-output-and-storage-nfr-requirements-plan.md`
+- **Answers Confirmed At**: 2026-08-07T14:08:15Z
+- **Generated At**: 2026-08-07T14:08:15Z
+- **Artifacts**: `nfr-requirements.md`, `tech-stack-decisions.md`
+- **Approved At**: 2026-08-07T14:12:22Z
+
+## NFR Design Status - UOW-006
+- **Current Unit**: UOW-006 Output And Storage
+- **Plan**: Created
+- **Plan Created At**: 2026-08-07T14:12:22Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-006-output-and-storage-nfr-design-plan.md`
+- **Answers Confirmed At**: 2026-08-07T14:18:19Z
+- **Generated At**: 2026-08-07T14:18:19Z
+- **Artifacts**: `nfr-design-patterns.md`, `logical-components.md`
+- **Approved At**: 2026-08-07T14:21:34Z
+
+## Infrastructure Design Status - UOW-006
+- **Current Unit**: UOW-006 Output And Storage
+- **Plan**: Created
+- **Plan Created At**: 2026-08-07T14:21:34Z
+- **Status**: Review
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-006-output-and-storage-infrastructure-design-plan.md`
+- **Answers Confirmed At**: 2026-08-07T14:31:49Z
+- **Generated At**: 2026-08-07T14:31:49Z
+- **Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
+- **Shared Infrastructure Artifact**: Not required for UOW-006
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md

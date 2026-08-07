@@ -988,3 +988,131 @@
 **Approval Prompt**: "UOW-004 Build and Test 산출물 검토가 필요합니다. 승인하면 다음 Unit Of Work로 진행합니다."
 
 **Context**: CONSTRUCTION - Build and Test Review - UOW-004
+
+---
+
+## CONSTRUCTION - Build/Test Approval And Functional Design Planning - UOW-006
+
+**Timestamp**: 2026-08-07T01:35:14Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-004 Build and Test approval, followed the approved Unit of Work build sequence, and created the UOW-006 Output And Storage Functional Design questionnaire."
+
+**Approval Status**: "UOW-004 Build and Test approved."
+
+**Approval Prompt**: "UOW-006 Functional Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-006-output-and-storage-functional-design-plan.md`의 Q1-Q8을 채워 주세요."
+
+**Context**: CONSTRUCTION - Functional Design Planning - UOW-006
+
+---
+
+## CONSTRUCTION - Functional Design Generated - UOW-006
+
+**Timestamp**: 2026-08-07T02:22:49Z
+
+**User Input**: "질문지의 답변들을 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-006 Functional Design answers, generated 3 Functional Design artifacts, treated Q5 proxy host and user-agent as safe failure context while excluding credentials, and moved AI-DLC state to UOW-006 Functional Design review."
+
+**Artifacts**: `business-logic-model.md`, `business-rules.md`, `domain-entities.md`
+
+**Approval Prompt**: "UOW-006 Functional Design 산출물 검토가 필요합니다. 승인하면 UOW-006 NFR Requirements로 진행합니다."
+
+**Context**: CONSTRUCTION - Functional Design Review - UOW-006
+
+---
+
+## CONSTRUCTION - Functional Design Approval And NFR Requirements Planning - UOW-006
+
+**Timestamp**: 2026-08-07T02:30:27Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-006 Functional Design approval, moved AI-DLC to UOW-006 NFR Requirements Planning, created the NFR Requirements questionnaire, and paused for required answers before generating NFR artifacts."
+
+**Approval Status**: "UOW-006 Functional Design approved."
+
+**Approval Prompt**: "UOW-006 NFR Requirements 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-006-output-and-storage-nfr-requirements-plan.md`의 Q1-Q8을 채워 주세요."
+
+**Context**: CONSTRUCTION - NFR Requirements Planning - UOW-006
+
+---
+
+## CONSTRUCTION - NFR Requirements Generated - UOW-006
+
+**Timestamp**: 2026-08-07T14:08:15Z
+
+**User Input**: "질문지의 답변들을 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-006 NFR Requirements answers, generated 2 NFR artifacts, and moved AI-DLC state to UOW-006 NFR Requirements review."
+
+**Artifacts**: `nfr-requirements.md`, `tech-stack-decisions.md`
+
+**Approval Prompt**: "UOW-006 NFR Requirements 산출물 검토가 필요합니다. 승인하면 UOW-006 NFR Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - NFR Requirements Review - UOW-006
+
+---
+
+## CONSTRUCTION - NFR Requirements Approval And NFR Design Planning - UOW-006
+
+**Timestamp**: 2026-08-07T14:12:22Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-006 NFR Requirements approval, moved AI-DLC to UOW-006 NFR Design Planning, created the NFR Design questionnaire, and paused for required answers before generating NFR Design artifacts."
+
+**Approval Status**: "UOW-006 NFR Requirements approved."
+
+**Approval Prompt**: "UOW-006 NFR Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-006-output-and-storage-nfr-design-plan.md`의 Q1-Q8을 채워 주세요."
+
+**Context**: CONSTRUCTION - NFR Design Planning - UOW-006
+
+---
+
+## CONSTRUCTION - NFR Design Generated - UOW-006
+
+**Timestamp**: 2026-08-07T14:18:19Z
+
+**User Input**: "질문지의 답변들을 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-006 NFR Design answers, generated 2 NFR Design artifacts, confirmed Security/Resiliency/PBT compliance, and moved AI-DLC state to UOW-006 NFR Design review."
+
+**Artifacts**: `nfr-design-patterns.md`, `logical-components.md`
+
+**Approval Prompt**: "UOW-006 NFR Design 산출물 검토가 필요합니다. 승인하면 UOW-006 Infrastructure Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - NFR Design Review - UOW-006
+
+---
+
+## CONSTRUCTION - NFR Design Approval And Infrastructure Design Planning - UOW-006
+
+**Timestamp**: 2026-08-07T14:21:34Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-006 NFR Design approval, moved AI-DLC to UOW-006 Infrastructure Design Planning, created the Infrastructure Design questionnaire, and paused for required answers before generating Infrastructure Design artifacts."
+
+**Approval Status**: "UOW-006 NFR Design approved."
+
+**Approval Prompt**: "UOW-006 Infrastructure Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-006-output-and-storage-infrastructure-design-plan.md`의 Q1-Q8을 채워 주세요."
+
+**Context**: CONSTRUCTION - Infrastructure Design Planning - UOW-006
+
+---
+
+## CONSTRUCTION - Infrastructure Design Generated - UOW-006
+
+**Timestamp**: 2026-08-07T14:31:49Z
+
+**User Input**: "질문지의 답변들을 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-006 Infrastructure Design answers, generated 2 Infrastructure Design artifacts, determined that no shared infrastructure artifact is required for this unit, and moved AI-DLC state to UOW-006 Infrastructure Design review."
+
+**Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
+
+**Approval Prompt**: "UOW-006 Infrastructure Design 산출물 검토가 필요합니다. 승인하면 UOW-006 Code Generation으로 진행합니다."
+
+**Context**: CONSTRUCTION - Infrastructure Design Review - UOW-006
