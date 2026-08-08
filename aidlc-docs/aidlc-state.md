@@ -492,12 +492,21 @@
 - **Current Unit**: UOW-005 Job Runner And Checkpoint
 - **Plan**: Created
 - **Plan Created At**: 2026-08-08T00:17:57Z
-- **Status**: Review
+- **Status**: Approved
 - **Plan Artifact**: `aidlc-docs/construction/plans/uow-005-job-runner-and-checkpoint-infrastructure-design-plan.md`
 - **Answers Confirmed At**: 2026-08-08T00:23:00Z
 - **Generated At**: 2026-08-08T00:23:00Z
 - **Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
 - **Shared Infrastructure Artifact**: Not required for UOW-005
+- **Approved At**: 2026-08-08T00:26:51Z
+
+## Code Generation Status - UOW-005
+- **Current Unit**: UOW-005 Job Runner And Checkpoint
+- **Status**: Review
+- **Generated At**: 2026-08-08T00:35:17Z
+- **Artifacts**: `src/dcinside_scraper/runner/`, `src/dcinside_scraper/core/api.py`, `src/dcinside_scraper/__init__.py`, `pyproject.toml`, `tests/test_job_runner.py`, `tests/test_job_runner_properties.py`, `tests/strategies/job_runner.py`, `tests/test_api_ports.py`, `public-contracts.md`, `code-generation-summary.md`
+- **Verification**: `C:\ProgramData\anaconda3\python.exe -m pytest tests\test_job_runner.py tests\test_job_runner_properties.py -q -p no:cacheprovider --basetemp .tmp\pytest-uow005-focused` passed, 11 tests; `C:\ProgramData\anaconda3\python.exe -m pytest -q -p no:cacheprovider --basetemp .tmp\pytest-uow005-all` passed, 87 tests, 2 skipped; `C:\ProgramData\anaconda3\python.exe -m compileall -q src\dcinside_scraper` passed; `git diff --check` passed
+- **Implementation Note**: UOW-005 is implemented as an importable in-process runner library; distributed queue/DLQ scheduling, CLI signal handling, containers, Garage, PostgreSQL, and MCP remain deferred
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md

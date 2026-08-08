@@ -1280,3 +1280,21 @@
 **Approval Prompt**: "UOW-005 Infrastructure Design 산출물 검토가 필요합니다. 승인하면 UOW-005 Code Generation으로 진행합니다."
 
 **Context**: CONSTRUCTION - Infrastructure Design Review - UOW-005
+
+---
+
+## CONSTRUCTION - Infrastructure Design Approval And Code Generation - UOW-005
+
+**Timestamp**: 2026-08-08T00:35:17Z
+
+**User Input**: "좋습니다. 승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-005 Infrastructure Design approval, generated UOW-005 JobRunner code and tests, added anyio as a direct dependency, updated public API delegation, ran focused runner tests, ran the full test suite, ran compileall, and moved AI-DLC state to UOW-005 Code Generation review."
+
+**Approval Status**: "UOW-005 Infrastructure Design approved."
+
+**Verification**: "`C:\\ProgramData\\anaconda3\\python.exe -m pytest tests\\test_job_runner.py tests\\test_job_runner_properties.py -q -p no:cacheprovider --basetemp .tmp\\pytest-uow005-focused` passed with 11 passed. `C:\\ProgramData\\anaconda3\\python.exe -m pytest -q -p no:cacheprovider --basetemp .tmp\\pytest-uow005-all` passed with 87 passed and 2 skipped. `C:\\ProgramData\\anaconda3\\python.exe -m compileall -q src\\dcinside_scraper` and `git diff --check` passed."
+
+**Approval Prompt**: "UOW-005 Code Generation 산출물 검토가 필요합니다. 승인하면 UOW-005 Build and Test로 진행합니다."
+
+**Context**: CONSTRUCTION - Code Generation Review - UOW-005
