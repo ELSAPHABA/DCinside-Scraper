@@ -1470,3 +1470,49 @@
 **Approval Prompt**: "UOW-007 Infrastructure Design 산출물 검토가 필요합니다. 승인하면 UOW-007 Code Generation으로 진행합니다."
 
 **Context**: CONSTRUCTION - Infrastructure Design Review - UOW-007
+
+---
+
+## CONSTRUCTION - Infrastructure Design Approval And Code Generation - UOW-007
+
+**Timestamp**: 2026-08-08T14:30:00Z
+
+**User Input**: "좋아요. 승인합니다. 다음 단계를 진행해주세요."
+
+**AI Response**: "Recorded UOW-007 Infrastructure Design approval, generated the stdlib CLI adapter, wizard command flow, root wrapper, console script entry, CLI tests, code-stage documentation, and verified the focused CLI tests plus full default test suite."
+
+**Approval Status**: "UOW-007 Infrastructure Design approved."
+
+**Artifacts**: `src/dcinside_scraper/adapters/cli.py`, `src/dcinside_scraper/adapters/__init__.py`, `main.py`, `pyproject.toml`, `.gitignore`, `tests/test_cli_adapter.py`, `tests/test_cli_properties.py`, `tests/strategies/cli.py`, `aidlc-docs/construction/uow-007-cli-adapter/code/public-contracts.md`, `aidlc-docs/construction/uow-007-cli-adapter/code/code-generation-summary.md`
+
+**Verification**: "`pytest tests/test_cli_adapter.py tests/test_cli_properties.py` passed with 14 passed. `pytest` passed with 101 passed and 2 skipped. `python -m compileall -q src\\dcinside_scraper`, `git diff --check`, and CLI help smoke checks passed."
+
+**Approval Prompt**: "UOW-007 Code Generation 산출물 검토가 필요합니다. 승인하면 UOW-007 Build and Test로 진행합니다."
+
+**Context**: CONSTRUCTION - Code Generation Review - UOW-007
+
+---
+
+## CONSTRUCTION - Code Generation Approval And Build/Test - UOW-007
+
+**Timestamp**: 2026-08-08T14:45:00Z
+
+**User Input**: "좋아요. 승인합니다. 다음 단계를 진행해 주세요. 그리고 pydantic을 설치했으니 다시 시도해 주세요."
+
+**AI Response**: "Confirmed that the default `python` environment now runs the CLI help path after pydantic installation. Recorded UOW-007 Code Generation approval, executed Build and Test in a clean Python 3.13.9 temporary venv, built the wheel, verified focused/full/security tests, verified entrypoint help paths, generated Build/Test instruction and summary artifacts, and moved AI-DLC state to UOW-007 Build and Test review."
+
+**Approval Status**: "UOW-007 Code Generation approved."
+
+**Verification**: "Default `python main.py --help` and `PYTHONPATH=src python -m dcinside_scraper.adapters.cli --help` passed after pydantic installation. Clean venv `pip check` passed. Focused CLI tests passed with 14 passed. Full pytest passed with 101 passed and 2 skipped. Security-relevant tests passed with 6 passed. Compile check, wheel build, console script help, and `git diff --check` passed; `git diff --check` reported CRLF normalization warnings only."
+
+**Build Artifact**: `dist/dcinside_scraper-0.1.0-py3-none-any.whl`
+
+**Build Artifact Size**: 72,409 bytes
+
+**Build Artifact SHA256**: `0B661646FC769B25B83CB29BCE4AC9901683E1667DD2B163C8C84654ECF1372D`
+
+**Artifacts**: `aidlc-docs/construction/uow-007-cli-adapter/build-and-test/build-instructions.md`, `unit-test-instructions.md`, `integration-test-instructions.md`, `performance-test-instructions.md`, `security-test-instructions.md`, `build-and-test-summary.md`
+
+**Approval Prompt**: "UOW-007 Build and Test 산출물 검토가 필요합니다. 승인하면 UOW-008 Functional Design Planning으로 진행합니다."
+
+**Context**: CONSTRUCTION - Build and Test Review - UOW-007
