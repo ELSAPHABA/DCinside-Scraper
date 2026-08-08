@@ -502,11 +502,27 @@
 
 ## Code Generation Status - UOW-005
 - **Current Unit**: UOW-005 Job Runner And Checkpoint
-- **Status**: Review
+- **Status**: Approved
 - **Generated At**: 2026-08-08T00:35:17Z
 - **Artifacts**: `src/dcinside_scraper/runner/`, `src/dcinside_scraper/core/api.py`, `src/dcinside_scraper/__init__.py`, `pyproject.toml`, `tests/test_job_runner.py`, `tests/test_job_runner_properties.py`, `tests/strategies/job_runner.py`, `tests/test_api_ports.py`, `public-contracts.md`, `code-generation-summary.md`
 - **Verification**: `C:\ProgramData\anaconda3\python.exe -m pytest tests\test_job_runner.py tests\test_job_runner_properties.py -q -p no:cacheprovider --basetemp .tmp\pytest-uow005-focused` passed, 11 tests; `C:\ProgramData\anaconda3\python.exe -m pytest -q -p no:cacheprovider --basetemp .tmp\pytest-uow005-all` passed, 87 tests, 2 skipped; `C:\ProgramData\anaconda3\python.exe -m compileall -q src\dcinside_scraper` passed; `git diff --check` passed
 - **Implementation Note**: UOW-005 is implemented as an importable in-process runner library; distributed queue/DLQ scheduling, CLI signal handling, containers, Garage, PostgreSQL, and MCP remain deferred
+- **Approved At**: 2026-08-08T00:42:17Z
+
+## Build and Test Status - UOW-005
+- **Current Unit**: UOW-005 Job Runner And Checkpoint
+- **Status**: Review
+- **Started At**: 2026-08-08T00:42:17Z
+- **Instruction Artifacts**: `build-instructions.md`, `unit-test-instructions.md`, `integration-test-instructions.md`, `performance-test-instructions.md`, `security-test-instructions.md`
+- **Completed At**: 2026-08-08T00:42:17Z
+- **Summary Artifact**: `build-and-test-summary.md`
+- **Build Artifact**: `dist/dcinside_scraper-0.1.0-py3-none-any.whl`
+- **Build Artifact Size**: 64,771 bytes
+- **Build Artifact SHA256**: `847516FC5AF391DD94D6FEFF9D9C35E1E0CD226BFB221D29FF2D3EF2935A127C`
+- **Build Status**: Success
+- **Dependency Check**: temp Python 3.13.9 venv `pip check` passed
+- **Unit Test Status**: temp Python 3.13.9 venv `pytest -q` passed, 87 tests, 2 skipped
+- **Security-Relevant Test Status**: passed, 4 tests
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md
