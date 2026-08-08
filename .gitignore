@@ -213,6 +213,7 @@ tempCodeRunnerFile.py
 /.tmp/
 /outputs/
 /Checkpoint.json
+/user-agents.txt
 
 # Marimo
 marimo/_static/
