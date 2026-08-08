@@ -1152,3 +1152,131 @@
 **Approval Prompt**: "UOW-006 Build and Test 산출물 검토가 필요합니다. 승인하면 UOW-005 Job Runner And Checkpoint로 진행합니다."
 
 **Context**: CONSTRUCTION - Build and Test Review - UOW-006
+
+---
+
+## CONSTRUCTION - Build/Test Approval And Functional Design Planning - UOW-005
+
+**Timestamp**: 2026-08-07T14:59:38Z
+
+**User Input**: "좋아요. 승인합니다. 다음 단게를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-006 Build and Test approval, followed the approved Unit of Work build sequence, and created the UOW-005 Job Runner And Checkpoint Functional Design questionnaire."
+
+**Approval Status**: "UOW-006 Build and Test approved."
+
+**Approval Prompt**: "UOW-005 Functional Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-005-job-runner-and-checkpoint-functional-design-plan.md`의 Q1-Q8을 채워 주세요."
+
+**Context**: CONSTRUCTION - Functional Design Planning - UOW-005
+
+---
+
+## CONSTRUCTION - Functional Design Generated - UOW-005
+
+**Timestamp**: 2026-08-07T22:40:45Z
+
+**User Input**: "질문지의 답변을 확정하였습니다. 다음 단계를 진행해주세요."
+
+**AI Response**: "Confirmed UOW-005 Functional Design answers, generated 3 Functional Design artifacts, clarified that Q2 queue items are post candidates/links within a Job, and moved AI-DLC state to UOW-005 Functional Design review."
+
+**Artifacts**: `business-logic-model.md`, `business-rules.md`, `domain-entities.md`
+
+**Approval Prompt**: "UOW-005 Functional Design 산출물 검토가 필요합니다. 승인하면 UOW-005 NFR Requirements로 진행합니다."
+
+**Context**: CONSTRUCTION - Functional Design Review - UOW-005
+
+---
+
+## CONSTRUCTION - Functional Design Approval And NFR Requirements Planning - UOW-005
+
+**Timestamp**: 2026-08-07T22:46:11Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해주세요."
+
+**AI Response**: "Recorded UOW-005 Functional Design approval and created the UOW-005 Job Runner And Checkpoint NFR Requirements questionnaire."
+
+**Approval Status**: "UOW-005 Functional Design approved."
+
+**Approval Prompt**: "UOW-005 NFR Requirements 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-005-job-runner-and-checkpoint-nfr-requirements-plan.md`의 Q1-Q9를 채워 주세요."
+
+**Context**: CONSTRUCTION - NFR Requirements Planning - UOW-005
+
+---
+
+## CONSTRUCTION - NFR Requirements Generated - UOW-005
+
+**Timestamp**: 2026-08-07T23:57:39Z
+
+**User Input**: "질문지를 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-005 NFR Requirements answers, generated 2 NFR Requirements artifacts, recorded the Q1 anyio decision, and moved AI-DLC state to UOW-005 NFR Requirements review."
+
+**Artifacts**: `nfr-requirements.md`, `tech-stack-decisions.md`
+
+**Approval Prompt**: "UOW-005 NFR Requirements 산출물 검토가 필요합니다. 승인하면 UOW-005 NFR Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - NFR Requirements Review - UOW-005
+
+---
+
+## CONSTRUCTION - NFR Requirements Approval And NFR Design Planning - UOW-005
+
+**Timestamp**: 2026-08-08T00:01:58Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-005 NFR Requirements approval and created the UOW-005 Job Runner And Checkpoint NFR Design questionnaire."
+
+**Approval Status**: "UOW-005 NFR Requirements approved."
+
+**Approval Prompt**: "UOW-005 NFR Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-005-job-runner-and-checkpoint-nfr-design-plan.md`의 Q1-Q9를 채워 주세요."
+
+**Context**: CONSTRUCTION - NFR Design Planning - UOW-005
+
+---
+
+## CONSTRUCTION - NFR Design Generated - UOW-005
+
+**Timestamp**: 2026-08-08T00:14:34Z
+
+**User Input**: "질문지의 답변들을 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-005 NFR Design answers, generated 2 NFR Design artifacts, recorded that separate DLQ orchestration remains out of UOW-005 scope, and moved AI-DLC state to UOW-005 NFR Design review."
+
+**Artifacts**: `nfr-design-patterns.md`, `logical-components.md`
+
+**Approval Prompt**: "UOW-005 NFR Design 산출물 검토가 필요합니다. 승인하면 UOW-005 Infrastructure Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - NFR Design Review - UOW-005
+
+---
+
+## CONSTRUCTION - NFR Design Approval And Infrastructure Design Planning - UOW-005
+
+**Timestamp**: 2026-08-08T00:17:57Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-005 NFR Design approval and created the UOW-005 Job Runner And Checkpoint Infrastructure Design questionnaire."
+
+**Approval Status**: "UOW-005 NFR Design approved."
+
+**Approval Prompt**: "UOW-005 Infrastructure Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-005-job-runner-and-checkpoint-infrastructure-design-plan.md`의 Q1-Q8을 채워 주세요."
+
+**Context**: CONSTRUCTION - Infrastructure Design Planning - UOW-005
+
+---
+
+## CONSTRUCTION - Infrastructure Design Generated - UOW-005
+
+**Timestamp**: 2026-08-08T00:23:00Z
+
+**User Input**: "질문지를 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-005 Infrastructure Design answers, generated 2 Infrastructure Design artifacts, determined that no shared infrastructure artifact is required for this unit, and moved AI-DLC state to UOW-005 Infrastructure Design review."
+
+**Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
+
+**Approval Prompt**: "UOW-005 Infrastructure Design 산출물 검토가 필요합니다. 승인하면 UOW-005 Code Generation으로 진행합니다."
+
+**Context**: CONSTRUCTION - Infrastructure Design Review - UOW-005

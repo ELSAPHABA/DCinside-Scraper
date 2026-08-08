@@ -438,7 +438,7 @@
 
 ## Build and Test Status - UOW-006
 - **Current Unit**: UOW-006 Output And Storage
-- **Status**: Review
+- **Status**: Approved
 - **Started At**: 2026-08-07T14:49:31Z
 - **Instruction Artifacts**: `build-instructions.md`, `unit-test-instructions.md`, `integration-test-instructions.md`, `performance-test-instructions.md`, `security-test-instructions.md`
 - **Completed At**: 2026-08-07T14:53:58Z
@@ -450,6 +450,54 @@
 - **Dependency Check**: temp Python 3.13.9 venv `pip check` passed
 - **Unit Test Status**: temp Python 3.13.9 venv `pytest -q` passed, 76 tests, 2 skipped
 - **Security-Relevant Test Status**: passed, 4 tests
+- **Approved At**: 2026-08-07T14:59:38Z
+
+## Functional Design Status - UOW-005
+- **Current Unit**: UOW-005 Job Runner And Checkpoint
+- **Plan**: Created
+- **Plan Created At**: 2026-08-07T14:59:38Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-005-job-runner-and-checkpoint-functional-design-plan.md`
+- **Answers Confirmed At**: 2026-08-07T22:40:45Z
+- **Generated At**: 2026-08-07T22:40:45Z
+- **Artifacts**: `business-logic-model.md`, `business-rules.md`, `domain-entities.md`
+- **Questionnaire Note**: Q2 queue topology means `PostCandidate`/post link items are queued within one Job; Jobs themselves are not queue items
+- **Approved At**: 2026-08-07T22:46:11Z
+
+## NFR Requirements Status - UOW-005
+- **Current Unit**: UOW-005 Job Runner And Checkpoint
+- **Plan**: Created
+- **Plan Created At**: 2026-08-07T22:46:11Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-005-job-runner-and-checkpoint-nfr-requirements-plan.md`
+- **Answers Confirmed At**: 2026-08-07T23:57:39Z
+- **Generated At**: 2026-08-07T23:57:39Z
+- **Artifacts**: `nfr-requirements.md`, `tech-stack-decisions.md`
+- **Questionnaire Note**: Q1 selected B; UOW-005 uses `anyio` for task group/cancellation while preserving `asyncio.Queue[PostCandidate]` as the candidate queue contract
+- **Approved At**: 2026-08-08T00:01:58Z
+
+## NFR Design Status - UOW-005
+- **Current Unit**: UOW-005 Job Runner And Checkpoint
+- **Plan**: Created
+- **Plan Created At**: 2026-08-08T00:01:58Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-005-job-runner-and-checkpoint-nfr-design-plan.md`
+- **Answers Confirmed At**: 2026-08-08T00:14:34Z
+- **Generated At**: 2026-08-08T00:14:34Z
+- **Artifacts**: `nfr-design-patterns.md`, `logical-components.md`
+- **Design Note**: separate DLQ orchestration is out of UOW-005 scope; future retry units may consume `failures.jsonl`
+- **Approved At**: 2026-08-08T00:17:57Z
+
+## Infrastructure Design Status - UOW-005
+- **Current Unit**: UOW-005 Job Runner And Checkpoint
+- **Plan**: Created
+- **Plan Created At**: 2026-08-08T00:17:57Z
+- **Status**: Review
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-005-job-runner-and-checkpoint-infrastructure-design-plan.md`
+- **Answers Confirmed At**: 2026-08-08T00:23:00Z
+- **Generated At**: 2026-08-08T00:23:00Z
+- **Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
+- **Shared Infrastructure Artifact**: Not required for UOW-005
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md
