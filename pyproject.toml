@@ -9,6 +9,7 @@ description = "DCinside scraper core contracts"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+  "anyio>=4,<5",
   "beautifulsoup4>=4.12,<5",
   "httpx>=0.28,<1",
   "pydantic>=2,<3",

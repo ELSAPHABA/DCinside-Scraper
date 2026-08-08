@@ -47,6 +47,7 @@ from dcinside_scraper.post_detail import (
     PostDetailService,
     PostMetadataParser,
 )
+from dcinside_scraper.runner import CheckpointCoordinator, JobRunner, RunnerEventBuilder, StopController
 from dcinside_scraper.search import (
     CandidateDeduper,
     GallerySearchCollector,
@@ -65,6 +66,7 @@ __all__ = [
     "Comment",
     "CommentService",
     "ContentBlockParser",
+    "CheckpointCoordinator",
     "ErrorResult",
     "GallerySearchCollector",
     "GallerySearchUrlBuilder",
@@ -75,6 +77,7 @@ __all__ = [
     "JobConfig",
     "JobConfigValidator",
     "JobReport",
+    "JobRunner",
     "LinkCollectorService",
     "LocalCheckpointStore",
     "LocalMediaStore",
@@ -87,9 +90,11 @@ __all__ = [
     "PostMetadataParser",
     "ProxyConfig",
     "RuntimePolicyService",
+    "RunnerEventBuilder",
     "S3ObjectStore",
     "ScraperError",
     "StorageFailureError",
+    "StopController",
     "UnavailableContentError",
     "UnsupportedSourceError",
     "UserAgentConfig",

@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import pytest
 
 from dcinside_scraper.core import api
-from dcinside_scraper.core.errors import UnavailableContentError, ValidationFailure
+from dcinside_scraper.core.errors import ValidationFailure
 from dcinside_scraper.core.ports import (
     CheckpointStorePort,
     ClockPort,
@@ -101,6 +101,6 @@ def test_public_search_api_requires_injected_client() -> None:
         asyncio.run(api.search_gallery(request))
 
 
-def test_resume_placeholder_is_import_safe() -> None:
-    with pytest.raises(UnavailableContentError):
+def test_resume_requires_runner_dependencies() -> None:
+    with pytest.raises(ValidationFailure):
         asyncio.run(api.resume_job(ResumeRequest(job_id="job-1")))

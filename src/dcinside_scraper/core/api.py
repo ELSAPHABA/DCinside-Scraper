@@ -6,8 +6,8 @@ library import-safe and establish stable type contracts for adapters.
 
 from __future__ import annotations
 
-from dcinside_scraper.core.errors import UnavailableContentError, ValidationFailure
-from dcinside_scraper.core.ports import HttpPort
+from dcinside_scraper.core.errors import ValidationFailure
+from dcinside_scraper.core.ports import CheckpointStorePort, ClockPort, HttpPort, LoggerPort, OutputStorePort
 from dcinside_scraper.models.comment import Comment
 from dcinside_scraper.models.job import (
     CommentRequest,
@@ -22,6 +22,7 @@ from dcinside_scraper.models.job import (
 from dcinside_scraper.models.post import PostResult
 from dcinside_scraper.models.report import JobReport
 from dcinside_scraper.post_detail import CommentService, PostDetailService
+from dcinside_scraper.runner import JobRunner
 from dcinside_scraper.search import GallerySearchCollector, IntegratedSearchCollector
 
 
@@ -49,9 +50,57 @@ async def fetch_comments(request: CommentRequest, http_client: HttpPort | None =
     return await CommentService(http_client).fetch_comments(request)
 
 
-async def run_job(config: JobConfig) -> JobReport:
-    raise UnavailableContentError("run_job is implemented in UOW-005")
+async def run_job(
+    config: JobConfig,
+    *,
+    runner: JobRunner | None = None,
+    collector=None,
+    post_detail=None,
+    output_store: OutputStorePort | None = None,
+    checkpoint_store: CheckpointStorePort | None = None,
+    logger: LoggerPort | None = None,
+    clock: ClockPort | None = None,
+) -> JobReport:
+    if runner is not None:
+        return await runner.run(config)
+    if collector is None or post_detail is None or output_store is None or checkpoint_store is None:
+        raise ValidationFailure(
+            "runner dependencies are required",
+            details={"reason": "runner_dependencies_required"},
+        )
+    return await JobRunner(
+        collector=collector,
+        post_detail=post_detail,
+        output_store=output_store,
+        checkpoint_store=checkpoint_store,
+        logger=logger,
+        clock=clock,
+    ).run(config)
 
 
-async def resume_job(request: ResumeRequest) -> JobReport:
-    raise UnavailableContentError("resume_job is implemented in UOW-005")
+async def resume_job(
+    request: ResumeRequest,
+    *,
+    runner: JobRunner | None = None,
+    collector=None,
+    post_detail=None,
+    output_store: OutputStorePort | None = None,
+    checkpoint_store: CheckpointStorePort | None = None,
+    logger: LoggerPort | None = None,
+    clock: ClockPort | None = None,
+) -> JobReport:
+    if runner is not None:
+        return await runner.resume(request)
+    if collector is None or post_detail is None or output_store is None or checkpoint_store is None:
+        raise ValidationFailure(
+            "runner dependencies are required",
+            details={"reason": "runner_dependencies_required"},
+        )
+    return await JobRunner(
+        collector=collector,
+        post_detail=post_detail,
+        output_store=output_store,
+        checkpoint_store=checkpoint_store,
+        logger=logger,
+        clock=clock,
+    ).resume(request)
