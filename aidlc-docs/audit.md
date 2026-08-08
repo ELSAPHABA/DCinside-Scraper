@@ -1316,3 +1316,157 @@
 **Approval Prompt**: "UOW-005 Build and Test 산출물 검토가 필요합니다. 승인하면 다음 Unit of Work로 진행합니다."
 
 **Context**: CONSTRUCTION - Build and Test Review - UOW-005
+
+---
+
+## CONSTRUCTION - Build/Test Approval And Functional Design Planning - UOW-007
+
+**Timestamp**: 2026-08-08T04:55:15Z
+
+**User Input**: "좋아요. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-005 Build and Test approval, followed the approved Unit of Work sequence, and created the UOW-007 CLI Adapter Functional Design questionnaire."
+
+**Approval Status**: "UOW-005 Build and Test approved."
+
+**Approval Prompt**: "UOW-007 Functional Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-007-cli-adapter-functional-design-plan.md`의 Q1-Q10을 채워 주세요."
+
+**Context**: CONSTRUCTION - Functional Design Planning - UOW-007
+
+---
+
+## CONSTRUCTION - Functional Design Plan Note - UOW-007
+
+**Timestamp**: 2026-08-08T07:46:10Z
+
+**User Input**: "알았어요. 다만, 마법사는 차후 개발 사항으로 꼭 문서에 명시해 주세요."
+
+**AI Response**: "Documented the interactive wizard/menu CLI as a future development item outside the first UOW-007 CLI Adapter scope."
+
+**Superseded By**: "2026-08-08T12:44:07Z UOW-007 scope change moved `wizard` into the current unit."
+
+**Context**: CONSTRUCTION - Functional Design Planning - UOW-007
+
+---
+
+## CONSTRUCTION - Functional Design Generated - UOW-007
+
+**Timestamp**: 2026-08-08T07:50:00Z
+
+**User Input**: "질문지를 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-007 Functional Design answers, generated 3 Functional Design artifacts, recorded the Q9 traceback note with redaction boundaries, and moved AI-DLC state to UOW-007 Functional Design review."
+
+**Artifacts**: `business-logic-model.md`, `business-rules.md`, `domain-entities.md`
+
+**Approval Prompt**: "UOW-007 Functional Design 산출물 검토가 필요합니다. 승인하면 UOW-007 NFR Requirements로 진행합니다."
+
+**Context**: CONSTRUCTION - Functional Design Review - UOW-007
+
+---
+
+## CONSTRUCTION - Functional Design Approval And NFR Requirements Planning - UOW-007
+
+**Timestamp**: 2026-08-08T07:56:44Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-007 Functional Design approval and created the UOW-007 CLI Adapter NFR Requirements questionnaire."
+
+**Approval Status**: "UOW-007 Functional Design approved."
+
+**Approval Prompt**: "UOW-007 NFR Requirements 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-007-cli-adapter-nfr-requirements-plan.md`의 Q1-Q10을 채워 주세요."
+
+**Context**: CONSTRUCTION - NFR Requirements Planning - UOW-007
+
+---
+
+## CONSTRUCTION - Scope Change - UOW-007 Wizard Included
+
+**Timestamp**: 2026-08-08T12:44:07Z
+
+**User Input**: "계획을 바꿉시다. 그냥 이번 단계에 마법사도 같이 만듭시다."
+
+**AI Response**: "Updated UOW-007 Functional Design and NFR Requirements planning so the interactive `wizard` subcommand is included in this unit while reusing the same command-mode builders and core API."
+
+**Context**: CONSTRUCTION - NFR Requirements Planning - UOW-007
+
+---
+
+## CONSTRUCTION - NFR Requirements Generated - UOW-007
+
+**Timestamp**: 2026-08-08T12:55:27Z
+
+**User Input**: "질문지의 답변을 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-007 NFR Requirements answers, generated 2 NFR Requirements artifacts, recorded the stdlib CLI/wizard dependency decision, and moved AI-DLC state to UOW-007 NFR Requirements review."
+
+**Artifacts**: `nfr-requirements.md`, `tech-stack-decisions.md`
+
+**Approval Prompt**: "UOW-007 NFR Requirements 산출물 검토가 필요합니다. 승인하면 UOW-007 NFR Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - NFR Requirements Review - UOW-007
+
+---
+
+## CONSTRUCTION - NFR Requirements Approval And NFR Design Planning - UOW-007
+
+**Timestamp**: 2026-08-08T13:00:28Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-007 NFR Requirements approval and created the UOW-007 CLI Adapter NFR Design questionnaire."
+
+**Approval Status**: "UOW-007 NFR Requirements approved."
+
+**Approval Prompt**: "UOW-007 NFR Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-007-cli-adapter-nfr-design-plan.md`의 Q1-Q10을 채워 주세요."
+
+**Context**: CONSTRUCTION - NFR Design Planning - UOW-007
+
+---
+
+## CONSTRUCTION - NFR Design Generated - UOW-007
+
+**Timestamp**: 2026-08-08T14:13:55Z
+
+**User Input**: "질문지의 답변들을 모두 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-007 NFR Design answers, generated 2 NFR Design artifacts, interpreted Q10 A+B as console script plus `python -m` plus a thin root `main.py` compatibility wrapper, and moved AI-DLC state to UOW-007 NFR Design review."
+
+**Artifacts**: `nfr-design-patterns.md`, `logical-components.md`
+
+**Approval Prompt**: "UOW-007 NFR Design 산출물 검토가 필요합니다. 승인하면 UOW-007 Infrastructure Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - NFR Design Review - UOW-007
+
+---
+
+## CONSTRUCTION - NFR Design Approval And Infrastructure Design Planning - UOW-007
+
+**Timestamp**: 2026-08-08T14:17:23Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-007 NFR Design approval and created the UOW-007 CLI Adapter Infrastructure Design questionnaire."
+
+**Approval Status**: "UOW-007 NFR Design approved."
+
+**Approval Prompt**: "UOW-007 Infrastructure Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-007-cli-adapter-infrastructure-design-plan.md`의 Q1-Q9를 채워 주세요."
+
+**Context**: CONSTRUCTION - Infrastructure Design Planning - UOW-007
+
+---
+
+## CONSTRUCTION - Infrastructure Design Generated - UOW-007
+
+**Timestamp**: 2026-08-08T14:21:27Z
+
+**User Input**: "질문지를 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-007 Infrastructure Design answers, generated 2 Infrastructure Design artifacts, determined that no shared infrastructure artifact is required for this local CLI adapter, and moved AI-DLC state to UOW-007 Infrastructure Design review."
+
+**Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
+
+**Approval Prompt**: "UOW-007 Infrastructure Design 산출물 검토가 필요합니다. 승인하면 UOW-007 Code Generation으로 진행합니다."
+
+**Context**: CONSTRUCTION - Infrastructure Design Review - UOW-007

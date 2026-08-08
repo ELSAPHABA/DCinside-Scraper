@@ -511,7 +511,7 @@
 
 ## Build and Test Status - UOW-005
 - **Current Unit**: UOW-005 Job Runner And Checkpoint
-- **Status**: Review
+- **Status**: Approved
 - **Started At**: 2026-08-08T00:42:17Z
 - **Instruction Artifacts**: `build-instructions.md`, `unit-test-instructions.md`, `integration-test-instructions.md`, `performance-test-instructions.md`, `security-test-instructions.md`
 - **Completed At**: 2026-08-08T00:42:17Z
@@ -523,6 +523,58 @@
 - **Dependency Check**: temp Python 3.13.9 venv `pip check` passed
 - **Unit Test Status**: temp Python 3.13.9 venv `pytest -q` passed, 87 tests, 2 skipped
 - **Security-Relevant Test Status**: passed, 4 tests
+- **Approved At**: 2026-08-08T04:55:15Z
+
+## Functional Design Status - UOW-007
+- **Current Unit**: UOW-007 CLI Adapter
+- **Plan**: Created
+- **Plan Created At**: 2026-08-08T04:55:15Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-007-cli-adapter-functional-design-plan.md`
+- **Answers Confirmed At**: 2026-08-08T07:50:00Z
+- **Generated At**: 2026-08-08T07:50:00Z
+- **Artifacts**: `business-logic-model.md`, `business-rules.md`, `domain-entities.md`
+- **Questionnaire Note**: Q9 selected A plus traceback output; terminal output must still preserve safe summary and redaction boundaries
+- **Approved At**: 2026-08-08T07:56:44Z
+- **Scope Change At**: 2026-08-08T12:44:07Z
+- **Scope Change Note**: interactive `wizard` subcommand moved into UOW-007 implementation scope; it must reuse command-mode builders and core API
+
+## NFR Requirements Status - UOW-007
+- **Current Unit**: UOW-007 CLI Adapter
+- **Plan**: Created
+- **Plan Created At**: 2026-08-08T07:56:44Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-007-cli-adapter-nfr-requirements-plan.md`
+- **Scope Change At**: 2026-08-08T12:44:07Z
+- **Scope Change Note**: NFR questionnaire updated to cover wizard UX, wizard tests, and wizard answer mapping
+- **Answers Confirmed At**: 2026-08-08T12:55:27Z
+- **Generated At**: 2026-08-08T12:55:27Z
+- **Artifacts**: `nfr-requirements.md`, `tech-stack-decisions.md`
+- **Questionnaire Note**: Q1-Q10 all selected A; UOW-007 uses stdlib CLI/wizard primitives and adds no CLI/TUI dependency
+- **Approved At**: 2026-08-08T13:00:28Z
+
+## NFR Design Status - UOW-007
+- **Current Unit**: UOW-007 CLI Adapter
+- **Plan**: Created
+- **Plan Created At**: 2026-08-08T13:00:28Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-007-cli-adapter-nfr-design-plan.md`
+- **Answers Confirmed At**: 2026-08-08T14:13:55Z
+- **Generated At**: 2026-08-08T14:13:55Z
+- **Artifacts**: `nfr-design-patterns.md`, `logical-components.md`
+- **Questionnaire Note**: Q10 selected A + B; root `main.py` is allowed only as a thin compatibility wrapper around `dcinside_scraper.adapters.cli.main`
+- **Approved At**: 2026-08-08T14:17:23Z
+
+## Infrastructure Design Status - UOW-007
+- **Current Unit**: UOW-007 CLI Adapter
+- **Plan**: Created
+- **Plan Created At**: 2026-08-08T14:17:23Z
+- **Status**: Review
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-007-cli-adapter-infrastructure-design-plan.md`
+- **Answers Confirmed At**: 2026-08-08T14:21:27Z
+- **Generated At**: 2026-08-08T14:21:27Z
+- **Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
+- **Shared Infrastructure Artifact**: Not required for UOW-007
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md
