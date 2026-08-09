@@ -1868,3 +1868,43 @@
 **Approval Prompt**: "UOW-009 Infrastructure Design 산출물 검토가 필요합니다. 승인하면 UOW-009 Code Generation으로 진행합니다."
 
 **Context**: CONSTRUCTION - Infrastructure Design Review - UOW-009
+
+---
+
+## CONSTRUCTION - Infrastructure Design Approval And Code Generation - UOW-009
+
+**Timestamp**: 2026-08-09T17:31:31Z
+
+**User Input**: "좋아요. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-009 Infrastructure Design approval, generated the parser failure retry service, CLI/container retry-failures entrypoints, retry report metadata propagation, README usage, tests, and Code Generation artifacts, then moved AI-DLC state to Code Generation review."
+
+**Approval Status**: "UOW-009 Infrastructure Design approved."
+
+**Artifacts**: `src/dcinside_scraper/retry/parser_failures.py`, `src/dcinside_scraper/retry/__init__.py`, `src/dcinside_scraper/adapters/cli.py`, `src/dcinside_scraper/adapters/container.py`, `src/dcinside_scraper/models/job.py`, `src/dcinside_scraper/runner/core.py`, `src/dcinside_scraper/__init__.py`, `tests/test_parser_failure_retry.py`, `tests/test_parser_failure_retry_properties.py`, `tests/test_cli_adapter.py`, `README.md`, `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/code/public-contracts.md`, `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/code/code-generation-summary.md`
+
+**Verification**: "`python -m pytest tests/test_parser_failure_retry.py tests/test_parser_failure_retry_properties.py tests/test_cli_adapter.py tests/test_job_runner.py -q` passed with 27 passed. `python -m pytest -q` passed with 123 passed and 2 skipped. `python -m compileall -q src\\dcinside_scraper` passed. `git diff --check` passed with existing LF/CRLF warnings only."
+
+**Approval Prompt**: "UOW-009 Code Generation 산출물 검토가 필요합니다. 승인하면 UOW-009 Build and Test로 진행합니다."
+
+**Context**: CONSTRUCTION - Code Generation Review - UOW-009
+
+---
+
+## CONSTRUCTION - Code Generation Approval And Build/Test Review - UOW-009
+
+**Timestamp**: 2026-08-09T17:52:28Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-009 Code Generation approval, ran Build/Test verification in a clean Python 3.12 environment, generated Build/Test instruction and summary artifacts, and moved AI-DLC state to Build/Test review."
+
+**Approval Status**: "UOW-009 Code Generation approved."
+
+**Artifacts**: `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/build-and-test/build-instructions.md`, `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/build-and-test/unit-test-instructions.md`, `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/build-and-test/integration-test-instructions.md`, `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/build-and-test/performance-test-instructions.md`, `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/build-and-test/security-test-instructions.md`, `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/build-and-test/build-and-test-summary.md`
+
+**Verification**: "Clean Python 3.12 venv install passed. `pip check` passed. Focused UOW-009 tests passed with 24 passed. Security-relevant tests passed with 6 passed. Full default suite passed with 122 passed and 3 skipped. `compileall` passed. Wheel build succeeded as `dist/dcinside_scraper-0.1.0-py3-none-any.whl`, 96,000 bytes, SHA256 `8536FF428DB948F8D7A833640C83C492C6925BC89AC8096A3300A94CC17E49F2`. Import side-effect check printed `False False False`. Docker was available. `git diff --check` passed with existing LF/CRLF warnings only. Optional S3/Garage/live retry smoke and Docker image build/start smoke were not run."
+
+**Approval Prompt**: "UOW-009 Build and Test 산출물 검토가 필요합니다. 승인하면 UOW-010 AWS CDK Infrastructure IaC Functional Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - Build and Test Review - UOW-009

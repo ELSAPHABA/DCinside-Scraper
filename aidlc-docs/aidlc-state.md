@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-07-22T08:16:24Z
-- **Current Stage**: CONSTRUCTION - Infrastructure Design Review - UOW-009
+- **Current Stage**: CONSTRUCTION - Build and Test Review - UOW-009
 
 ## Workspace State
 - **Existing Code**: No
@@ -103,7 +103,9 @@
 - [x] Functional Design - APPROVED - UOW-009
 - [x] NFR Requirements - APPROVED - UOW-009
 - [x] NFR Design - APPROVED - UOW-009
-- [ ] Infrastructure Design - REVIEW - UOW-009
+- [x] Infrastructure Design - APPROVED - UOW-009
+- [x] Code Generation - APPROVED - UOW-009
+- [ ] Build and Test - REVIEW - UOW-009
 - [ ] Functional Design - PLANNED - UOW-010
 
 ### OPERATIONS PHASE
@@ -111,9 +113,9 @@
 
 ## Current Status
 - **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: Infrastructure Design Review - UOW-009 Parser Failure Retry Reprocessor
-- **Next Step**: User reviews UOW-009 Infrastructure Design artifacts and approves progression to Code Generation
-- **Status**: UOW-009 Infrastructure Design artifacts generated from confirmed questionnaire answers.
+- **Current Stage**: Build and Test Review - UOW-009 Parser Failure Retry Reprocessor
+- **Next Step**: User reviews UOW-009 Build and Test artifacts and approves progression to UOW-010 Functional Design
+- **Status**: UOW-009 Build/Test completed. Clean Python 3.12 verification, focused tests, security-relevant tests, full suite, compile check, wheel build, import side-effect check, Docker availability check, and `git diff --check` passed; optional S3/Garage/live/Docker image smoke checks were not run.
 
 ## Execution Plan Summary
 - **Total Stages**: 12
@@ -749,13 +751,35 @@
 - **Current Unit**: UOW-009 Parser Failure Retry Reprocessor
 - **Plan**: Created
 - **Plan Created At**: 2026-08-09T16:40:51Z
-- **Status**: Review Required
+- **Status**: Approved
 - **Plan Artifact**: `aidlc-docs/construction/plans/uow-009-parser-failure-retry-reprocessor-infrastructure-design-plan.md`
 - **Answers Confirmed At**: 2026-08-09T17:10:57Z
 - **Generated At**: 2026-08-09T17:10:57Z
 - **Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
 - **Questionnaire Note**: Q1-Q5 and Q7-Q10 selected A; Q6 selected A plus local-only `--existing-posts-root`; no new production infrastructure, container image, DB table, DLQ, scheduler, or shared infrastructure artifact is added.
+- **Approved At**: 2026-08-09T17:31:31Z
 - **Scope Note**: The questionnaire defines how retry-failures maps to existing local/container/S3 runtime boundaries without adding new production infrastructure.
+
+## Code Generation Status - UOW-009
+- **Current Unit**: UOW-009 Parser Failure Retry Reprocessor
+- **Status**: Approved
+- **Generated At**: 2026-08-09T17:31:31Z
+- **Artifacts**: `src/dcinside_scraper/retry/parser_failures.py`, `src/dcinside_scraper/retry/__init__.py`, `src/dcinside_scraper/adapters/cli.py`, `src/dcinside_scraper/adapters/container.py`, `src/dcinside_scraper/models/job.py`, `src/dcinside_scraper/runner/core.py`, `src/dcinside_scraper/__init__.py`, `tests/test_parser_failure_retry.py`, `tests/test_parser_failure_retry_properties.py`, `tests/test_cli_adapter.py`, `README.md`, `public-contracts.md`, `code-generation-summary.md`
+- **Verification**: focused UOW-009 tests passed, 27 passed; full `python -m pytest -q` passed, 123 passed and 2 skipped; `python -m compileall -q src\dcinside_scraper` passed; `git diff --check` passed with existing LF/CRLF warnings only
+- **Implementation Note**: UOW-009 adds no new production infrastructure, container image, DB table, DLQ, or scheduler. `--existing-posts-root` is local-only; S3/Garage input uses explicit object refs.
+- **Approved At**: 2026-08-09T17:52:28Z
+
+## Build and Test Status - UOW-009
+- **Current Unit**: UOW-009 Parser Failure Retry Reprocessor
+- **Status**: Review Required
+- **Started At**: 2026-08-09T17:52:28Z
+- **Generated At**: 2026-08-09T17:52:28Z
+- **Completed At**: 2026-08-09T17:52:28Z
+- **Artifacts**: `build-instructions.md`, `unit-test-instructions.md`, `integration-test-instructions.md`, `performance-test-instructions.md`, `security-test-instructions.md`, `build-and-test-summary.md`
+- **Verification**: clean Python 3.12 venv install passed; `pip check` passed; focused UOW-009 tests passed, 24 passed; security-relevant tests passed, 6 passed; full default suite passed, 122 passed and 3 skipped; compileall passed; wheel build succeeded with SHA256 `8536FF428DB948F8D7A833640C83C492C6925BC89AC8096A3300A94CC17E49F2`; import side-effect check printed `False False False`; Docker was available; `git diff --check` passed with existing LF/CRLF warnings only
+- **Build Artifact**: `dist/dcinside_scraper-0.1.0-py3-none-any.whl`
+- **Build Artifact Size**: 96,000 bytes
+- **Implementation Note**: default shell `python` is Python 3.10 and does not satisfy project `requires-python >=3.11` for wheel builds, so Build/Test used `py -3.12`. S3/Garage input smoke, live DCinside retry smoke, and Docker image build/start smoke were not run because they are optional gates.
 
 ## Planned Status - UOW-010
 - **Current Unit**: UOW-010 AWS CDK Infrastructure IaC
