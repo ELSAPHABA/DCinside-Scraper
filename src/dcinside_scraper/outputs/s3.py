@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+import anyio
+
 from dcinside_scraper.core.errors import StorageFailureError
 from dcinside_scraper.models.report import StoredObjectRef
 from dcinside_scraper.outputs.local import OutputRunLayout
@@ -22,6 +24,7 @@ class S3ObjectStore:
         region_name: str | None = None,
         access_key_id: str | None = None,
         secret_access_key: str | None = None,
+        force_path_style: bool = False,
     ) -> None:
         self.bucket = bucket
         self.layout = layout
@@ -30,6 +33,7 @@ class S3ObjectStore:
         self.region_name = region_name
         self.access_key_id = access_key_id
         self.secret_access_key = secret_access_key
+        self.force_path_style = force_path_style
 
     def object_ref(self, key: str) -> StoredObjectRef:
         object_key = self.layout.prefixed_key(key)
@@ -50,7 +54,7 @@ class S3ObjectStore:
         if content_type:
             kwargs["ContentType"] = content_type
         try:
-            self._get_client().put_object(**kwargs)
+            await anyio.to_thread.run_sync(lambda: self._get_client().put_object(**kwargs))
         except Exception as exc:
             raise StorageFailureError(
                 "s3 object write failed",
@@ -77,5 +81,14 @@ class S3ObjectStore:
             kwargs["aws_access_key_id"] = self.access_key_id
         if self.secret_access_key:
             kwargs["aws_secret_access_key"] = self.secret_access_key
+        if self.force_path_style:
+            try:
+                from botocore.config import Config
+            except ImportError as exc:
+                raise StorageFailureError(
+                    "s3 extra is required",
+                    details={"stage": "s3", "reason": "missing_s3_dependency"},
+                ) from exc
+            kwargs["config"] = Config(s3={"addressing_style": "path"})
         self._client = boto3.client("s3", **kwargs)
         return self._client

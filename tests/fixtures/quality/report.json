@@ -1,0 +1,1 @@
+{"schema_version":"dcinside.job_report.v1","job_id":"job-1","status":"completed","success_count":1,"failure_count":1,"deduped_count":0,"filtered_count":0,"started_at":"2026-08-09T00:00:00Z","finished_at":"2026-08-09T00:01:00Z","failures":[],"output_refs":[],"metadata":{}}

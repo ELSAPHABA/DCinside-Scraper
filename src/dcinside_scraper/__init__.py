@@ -40,6 +40,7 @@ from dcinside_scraper.outputs import (
     LocalOutputStore,
     OutputRunLayout,
     S3ObjectStore,
+    S3OutputStore,
 )
 from dcinside_scraper.post_detail import (
     CommentService,
@@ -92,6 +93,7 @@ __all__ = [
     "RuntimePolicyService",
     "RunnerEventBuilder",
     "S3ObjectStore",
+    "S3OutputStore",
     "ScraperError",
     "StorageFailureError",
     "StopController",
