@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-07-22T08:16:24Z
-- **Current Stage**: CONSTRUCTION - Code Generation Review - UOW-008
+- **Current Stage**: CONSTRUCTION - Build and Test Review - UOW-008
 
 ## Workspace State
 - **Existing Code**: No
@@ -81,9 +81,9 @@
 
 ## Current Status
 - **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: Code Generation Review - UOW-008 Container, MCP, And Test Harness
-- **Next Step**: UOW-008 Code Generation 산출물 검토 및 승인 후 Build and Test 진행
-- **Status**: UOW-008 Code Generation completed, awaiting user approval
+- **Current Stage**: Build and Test Review - UOW-008 Container, MCP, And Test Harness
+- **Next Step**: UOW-008 Build and Test 산출물 검토 및 승인
+- **Status**: UOW-008 Build and Test completed, awaiting user approval
 
 ## Execution Plan Summary
 - **Total Stages**: 12
@@ -654,11 +654,21 @@
 
 ## Code Generation Status - UOW-008
 - **Current Unit**: UOW-008 Container, MCP, And Test Harness
-- **Status**: Review
+- **Status**: Approved
 - **Generated At**: 2026-08-09T03:21:16Z
 - **Artifacts**: `Dockerfile`, `src/dcinside_scraper/adapters/container.py`, `src/dcinside_scraper/adapters/mcp.py`, `src/dcinside_scraper/adapters/safe_errors.py`, `src/dcinside_scraper/outputs/postgres_checkpoint.py`, `src/dcinside_scraper/outputs/s3_output.py`, `src/dcinside_scraper/outputs/s3.py`, `pyproject.toml`, `tests/test_container_adapter.py`, `tests/test_s3_output_and_postgres.py`, `tests/test_mcp_adapter.py`, `tests/test_quality_harness.py`, `tests/fixtures/quality/`, `public-contracts.md`, `code-generation-summary.md`
 - **Verification**: focused UOW-008 tests passed, 12 passed and 1 skipped; full `python -m pytest -q` passed, 113 passed and 3 skipped; `python -m compileall -q src\dcinside_scraper` passed; import side-effect check in temp cwd printed `False False`
 - **Implementation Note**: Compose file was not generated; compose remains local/smoke-only while PostgreSQL/Garage remain shared platform infrastructure outside the DCinside worker lifecycle
+- **Approved At**: 2026-08-09T03:46:21Z
+
+## Build and Test Status - UOW-008
+- **Current Unit**: UOW-008 Container, MCP, And Test Harness
+- **Status**: Review
+- **Started At**: 2026-08-09T03:46:21Z
+- **Generated At**: 2026-08-09T03:46:21Z
+- **Artifacts**: `build-instructions.md`, `unit-test-instructions.md`, `integration-test-instructions.md`, `performance-test-instructions.md`, `security-test-instructions.md`, `build-and-test-summary.md`
+- **Verification**: clean venv install and `pip check` passed; focused UOW-008 tests passed, 12 passed and 1 skipped; security-focused tests passed, 6 passed; full default suite passed, 113 passed and 3 skipped; compileall passed; wheel build succeeded with SHA256 `AEF0A3970D85F30465556C448834DE63FA18FB60E9888C2C0DAAB573C957AC04`; import side-effect check printed `False False`
+- **Implementation Note**: Docker was available but image build was not run because Docker/Garage/PostgreSQL/MCP/live smoke checks are optional and outside the default gate
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md
