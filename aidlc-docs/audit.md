@@ -1516,3 +1516,167 @@
 **Approval Prompt**: "UOW-007 Build and Test 산출물 검토가 필요합니다. 승인하면 UOW-008 Functional Design Planning으로 진행합니다."
 
 **Context**: CONSTRUCTION - Build and Test Review - UOW-007
+
+---
+
+## CONSTRUCTION - Build/Test Approval And Functional Design Planning - UOW-008
+
+**Timestamp**: 2026-08-08T14:56:03Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-007 Build and Test approval, followed the approved Unit of Work sequence, and created the UOW-008 Container, MCP, And Test Harness Functional Design questionnaire."
+
+**Approval Status**: "UOW-007 Build and Test approved."
+
+**Plan Artifact**: `aidlc-docs/construction/plans/uow-008-container-mcp-and-test-harness-functional-design-plan.md`
+
+**Approval Prompt**: "UOW-008 Functional Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-008-container-mcp-and-test-harness-functional-design-plan.md`의 Q1-Q10을 채워 주세요."
+
+**Context**: CONSTRUCTION - Functional Design Planning - UOW-008
+
+---
+
+## CONSTRUCTION - Functional Design Generated - UOW-008
+
+**Timestamp**: 2026-08-08T15:12:50Z
+
+**User Input**: "질문지의 답변을 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-008 Functional Design answers, treated blank Q5 as recommended A to preserve the durable storage before checkpoint progress contract, generated 3 Functional Design artifacts, and moved AI-DLC state to UOW-008 Functional Design review."
+
+**Artifacts**: `business-logic-model.md`, `business-rules.md`, `domain-entities.md`
+
+**Questionnaire Note**: "Q1-Q4 and Q6-Q10 were explicitly answered A. Q5 was blank and treated as A."
+
+**Approval Prompt**: "UOW-008 Functional Design 산출물 검토가 필요합니다. 승인하면 UOW-008 NFR Requirements로 진행합니다."
+
+**Context**: CONSTRUCTION - Functional Design Review - UOW-008
+
+---
+
+## CONSTRUCTION - Functional Design Approval And NFR Requirements Planning - UOW-008
+
+**Timestamp**: 2026-08-08T15:16:48Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해주세요."
+
+**AI Response**: "Recorded UOW-008 Functional Design approval and created the UOW-008 Container, MCP, And Test Harness NFR Requirements questionnaire."
+
+**Approval Status**: "UOW-008 Functional Design approved."
+
+**Plan Artifact**: `aidlc-docs/construction/plans/uow-008-container-mcp-and-test-harness-nfr-requirements-plan.md`
+
+**Approval Prompt**: "UOW-008 NFR Requirements 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-008-container-mcp-and-test-harness-nfr-requirements-plan.md`의 Q1-Q10을 채워 주세요."
+
+**Context**: CONSTRUCTION - NFR Requirements Planning - UOW-008
+
+---
+
+## CONSTRUCTION - NFR Requirements Generated - UOW-008
+
+**Timestamp**: 2026-08-08T17:36:59Z
+
+**User Input**: "질문지의 답변을 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-008 NFR Requirements answers, generated 2 NFR Requirements artifacts, recorded optional-extra boundaries for PostgreSQL, S3, MCP, and Polars, and moved AI-DLC state to UOW-008 NFR Requirements review."
+
+**Artifacts**: `nfr-requirements.md`, `tech-stack-decisions.md`
+
+**Questionnaire Note**: "Q1-Q10 all selected A."
+
+**Approval Prompt**: "UOW-008 NFR Requirements 산출물 검토가 필요합니다. 승인하면 UOW-008 NFR Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - NFR Requirements Review - UOW-008
+
+---
+
+## CONSTRUCTION - NFR Requirements Approval And NFR Design Planning - UOW-008
+
+**Timestamp**: 2026-08-08T17:39:43Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-008 NFR Requirements approval and created the UOW-008 Container, MCP, And Test Harness NFR Design questionnaire."
+
+**Approval Status**: "UOW-008 NFR Requirements approved."
+
+**Plan Artifact**: `aidlc-docs/construction/plans/uow-008-container-mcp-and-test-harness-nfr-design-plan.md`
+
+**Approval Prompt**: "UOW-008 NFR Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-008-container-mcp-and-test-harness-nfr-design-plan.md`의 Q1-Q10을 채워 주세요."
+
+**Context**: CONSTRUCTION - NFR Design Planning - UOW-008
+
+---
+
+## CONSTRUCTION - NFR Design Generated - UOW-008
+
+**Timestamp**: 2026-08-08T18:39:29Z
+
+**User Input**: "질문지의 답변을 완료하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-008 NFR Design answers, generated 2 NFR Design artifacts, recorded the flat adapter module layout, `anyio.to_thread.run_sync` boundaries for sync DB/S3 calls, test-only quality harness, optional smoke marker pattern, and moved AI-DLC state to UOW-008 NFR Design review."
+
+**Artifacts**: `nfr-design-patterns.md`, `logical-components.md`
+
+**Questionnaire Note**: "Q1-Q10 all selected A."
+
+**Approval Prompt**: "UOW-008 NFR Design 산출물 검토가 필요합니다. 승인하면 UOW-008 Infrastructure Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - NFR Design Review - UOW-008
+
+---
+
+## CONSTRUCTION - NFR Design Approval And Infrastructure Design Planning - UOW-008
+
+**Timestamp**: 2026-08-08T18:42:08Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-008 NFR Design approval and created the UOW-008 Container, MCP, And Test Harness Infrastructure Design questionnaire."
+
+**Approval Status**: "UOW-008 NFR Design approved."
+
+**Plan Artifact**: `aidlc-docs/construction/plans/uow-008-container-mcp-and-test-harness-infrastructure-design-plan.md`
+
+**Approval Prompt**: "UOW-008 Infrastructure Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-008-container-mcp-and-test-harness-infrastructure-design-plan.md`의 Q1-Q10을 채워 주세요."
+
+**Context**: CONSTRUCTION - Infrastructure Design Planning - UOW-008
+
+---
+
+## CONSTRUCTION - Infrastructure Design Generation - UOW-008
+
+**Timestamp**: 2026-08-09T02:49:44Z
+
+**User Input**: "좋아요. 질문지에 그렇게 작성해 주세요. 그리고 다음, 질문지의 답변을 완료하였으니 다음 단계를 진행해 주세요."
+
+**AI Response**: "Confirmed UOW-008 Infrastructure Design answers, clarified that compose is optional local/smoke infrastructure only, generated 2 Infrastructure Design artifacts, documented shared PostgreSQL/Garage as platform infrastructure outside the DCinside worker lifecycle, and moved AI-DLC state to UOW-008 Infrastructure Design review."
+
+**Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
+
+**Questionnaire Note**: "Q1-Q10 all selected A. Compose is local/smoke-only; production/shared operation separates worker containers from PostgreSQL/Garage lifecycle."
+
+**Approval Prompt**: "UOW-008 Infrastructure Design 산출물 검토가 필요합니다. `aidlc-docs/construction/uow-008-container-mcp-and-test-harness/infrastructure-design/` 아래의 infrastructure-design.md, deployment-architecture.md를 검토해 주세요. 승인하면 UOW-008 Code Generation으로 진행합니다."
+
+**Context**: CONSTRUCTION - Infrastructure Design Review - UOW-008
+
+---
+
+## CONSTRUCTION - Infrastructure Design Approval And Code Generation - UOW-008
+
+**Timestamp**: 2026-08-09T03:21:16Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-008 Infrastructure Design approval, generated the container adapter, PostgreSQL checkpoint store, S3/Garage output store, MCP handler adapter, Dockerfile, optional dependency extras, quality harness fixtures/tests, code-stage documentation, and verified focused plus full default tests."
+
+**Approval Status**: "UOW-008 Infrastructure Design approved."
+
+**Artifacts**: `Dockerfile`, `src/dcinside_scraper/adapters/container.py`, `src/dcinside_scraper/adapters/mcp.py`, `src/dcinside_scraper/adapters/safe_errors.py`, `src/dcinside_scraper/outputs/postgres_checkpoint.py`, `src/dcinside_scraper/outputs/s3_output.py`, `src/dcinside_scraper/outputs/s3.py`, `pyproject.toml`, `tests/test_container_adapter.py`, `tests/test_s3_output_and_postgres.py`, `tests/test_mcp_adapter.py`, `tests/test_quality_harness.py`, `tests/fixtures/quality/`, `aidlc-docs/construction/uow-008-container-mcp-and-test-harness/code/public-contracts.md`, `aidlc-docs/construction/uow-008-container-mcp-and-test-harness/code/code-generation-summary.md`
+
+**Verification**: "`python -m pytest tests/test_container_adapter.py tests/test_s3_output_and_postgres.py tests/test_mcp_adapter.py tests/test_quality_harness.py -q` passed with 12 passed and 1 skipped. `python -m pytest -q` passed with 113 passed and 3 skipped. `python -m compileall -q src\\dcinside_scraper` passed. Temp-cwd import side-effect check printed `False False`."
+
+**Approval Prompt**: "UOW-008 Code Generation 산출물 검토가 필요합니다. 승인하면 UOW-008 Build and Test로 진행합니다."
+
+**Context**: CONSTRUCTION - Code Generation Review - UOW-008

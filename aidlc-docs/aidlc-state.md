@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-07-22T08:16:24Z
-- **Current Stage**: CONSTRUCTION - Build and Test Review - UOW-007
+- **Current Stage**: CONSTRUCTION - Code Generation Review - UOW-008
 
 ## Workspace State
 - **Existing Code**: No
@@ -81,9 +81,9 @@
 
 ## Current Status
 - **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: Build and Test Review - UOW-007 CLI Adapter
-- **Next Step**: UOW-007 Build and Test 산출물 승인 후 UOW-008 Functional Design Planning 진행
-- **Status**: UOW-007 Build and Test completed successfully
+- **Current Stage**: Code Generation Review - UOW-008 Container, MCP, And Test Harness
+- **Next Step**: UOW-008 Code Generation 산출물 검토 및 승인 후 Build and Test 진행
+- **Status**: UOW-008 Code Generation completed, awaiting user approval
 
 ## Execution Plan Summary
 - **Total Stages**: 12
@@ -588,7 +588,7 @@
 
 ## Build and Test Status - UOW-007
 - **Current Unit**: UOW-007 CLI Adapter
-- **Status**: Review
+- **Status**: Approved
 - **Started At**: 2026-08-08T14:45:00Z
 - **Instruction Artifacts**: `build-instructions.md`, `unit-test-instructions.md`, `integration-test-instructions.md`, `performance-test-instructions.md`, `security-test-instructions.md`
 - **Completed At**: 2026-08-08T14:45:00Z
@@ -602,6 +602,63 @@
 - **Focused CLI Test Status**: passed, 14 tests
 - **Security-Relevant Test Status**: passed, 6 tests
 - **Entrypoint Smoke Status**: temp venv console script, root `main.py`, and `python -m` help checks passed; default `python` retry passed after pydantic installation
+- **Approved At**: 2026-08-08T14:56:03Z
+
+## Functional Design Status - UOW-008
+- **Current Unit**: UOW-008 Container, MCP, And Test Harness
+- **Plan**: Created
+- **Plan Created At**: 2026-08-08T14:56:03Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-008-container-mcp-and-test-harness-functional-design-plan.md`
+- **Answers Confirmed At**: 2026-08-08T15:12:50Z
+- **Generated At**: 2026-08-08T15:12:50Z
+- **Artifacts**: `business-logic-model.md`, `business-rules.md`, `domain-entities.md`
+- **Questionnaire Note**: Q5 was blank at confirmation and was treated as the recommended A option because it preserves the UOW-005 durable storage before checkpoint progress contract
+- **Approved At**: 2026-08-08T15:16:48Z
+
+## NFR Requirements Status - UOW-008
+- **Current Unit**: UOW-008 Container, MCP, And Test Harness
+- **Plan**: Created
+- **Plan Created At**: 2026-08-08T15:16:48Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-008-container-mcp-and-test-harness-nfr-requirements-plan.md`
+- **Answers Confirmed At**: 2026-08-08T17:36:59Z
+- **Generated At**: 2026-08-08T17:36:59Z
+- **Artifacts**: `nfr-requirements.md`, `tech-stack-decisions.md`
+- **Questionnaire Note**: Q1-Q10 all selected A; PostgreSQL, S3, MCP, and Polars capabilities remain optional extra or optional smoke/test-gated
+- **Approved At**: 2026-08-08T17:39:43Z
+
+## NFR Design Status - UOW-008
+- **Current Unit**: UOW-008 Container, MCP, And Test Harness
+- **Plan**: Created
+- **Plan Created At**: 2026-08-08T17:39:43Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-008-container-mcp-and-test-harness-nfr-design-plan.md`
+- **Answers Confirmed At**: 2026-08-08T18:39:29Z
+- **Generated At**: 2026-08-08T18:39:29Z
+- **Artifacts**: `nfr-design-patterns.md`, `logical-components.md`
+- **Questionnaire Note**: Q1-Q10 all selected A; adapter modules stay flat, sync DB/S3 calls are wrapped with `anyio.to_thread.run_sync`, and quality harness remains test-only
+- **Approved At**: 2026-08-08T18:42:08Z
+
+## Infrastructure Design Status - UOW-008
+- **Current Unit**: UOW-008 Container, MCP, And Test Harness
+- **Plan**: Created
+- **Plan Created At**: 2026-08-08T18:42:08Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-008-container-mcp-and-test-harness-infrastructure-design-plan.md`
+- **Answers Confirmed At**: 2026-08-09T02:49:44Z
+- **Generated At**: 2026-08-09T02:49:44Z
+- **Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
+- **Questionnaire Note**: Q1-Q10 all selected A; optional compose is limited to local/smoke use and shared PostgreSQL/Garage remain platform infrastructure outside the DCinside worker lifecycle
+- **Approved At**: 2026-08-09T03:21:16Z
+
+## Code Generation Status - UOW-008
+- **Current Unit**: UOW-008 Container, MCP, And Test Harness
+- **Status**: Review
+- **Generated At**: 2026-08-09T03:21:16Z
+- **Artifacts**: `Dockerfile`, `src/dcinside_scraper/adapters/container.py`, `src/dcinside_scraper/adapters/mcp.py`, `src/dcinside_scraper/adapters/safe_errors.py`, `src/dcinside_scraper/outputs/postgres_checkpoint.py`, `src/dcinside_scraper/outputs/s3_output.py`, `src/dcinside_scraper/outputs/s3.py`, `pyproject.toml`, `tests/test_container_adapter.py`, `tests/test_s3_output_and_postgres.py`, `tests/test_mcp_adapter.py`, `tests/test_quality_harness.py`, `tests/fixtures/quality/`, `public-contracts.md`, `code-generation-summary.md`
+- **Verification**: focused UOW-008 tests passed, 12 passed and 1 skipped; full `python -m pytest -q` passed, 113 passed and 3 skipped; `python -m compileall -q src\dcinside_scraper` passed; import side-effect check in temp cwd printed `False False`
+- **Implementation Note**: Compose file was not generated; compose remains local/smoke-only while PostgreSQL/Garage remain shared platform infrastructure outside the DCinside worker lifecycle
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md
