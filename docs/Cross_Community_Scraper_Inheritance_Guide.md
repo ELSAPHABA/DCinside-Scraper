@@ -621,6 +621,7 @@ Source config
 조사해야 할 항목:
 
 - 제목 selector/API field
+- 제목 container 안에 말머리, repost marker, 모바일/앱 작성 표시, 접근성용 hidden/blind 텍스트가 섞이는지 여부
 - 작성자 selector/API field
 - 작성자 고유 ID 존재 여부
 - 닉네임 유형 구분 가능 여부
@@ -631,6 +632,7 @@ Source config
 - 본문 container
 - 본문 텍스트 순서 보존 방식
 - 이미지 원본 URL 구조
+- 이미지 URL query 값이 안정적인 파일 ID인지, 일회성 서명 토큰인지 여부
 - 첨부파일 구조
 - 동영상 embed 구조
 - 외부 동영상 embed 구조
@@ -646,6 +648,12 @@ Source config
 - 삭제 댓글 표시
 - 블라인드 댓글 표시
 - 댓글 추천/비추천 존재 여부
+
+Smoke test에서 반드시 확인할 parser 방어 규칙:
+
+- 제목은 실제 제목 field만 저장하고 기기 표시, 접근성용 blind 텍스트, 말머리, repost marker를 제목으로 오인하지 않습니다.
+- 이미지 query 값이 긴 서명 토큰이면 `media_id`로 저장하지 않고 URL에만 보존합니다.
+- parser-stage 실패는 원본 실패 기록을 보존한 채 실패 게시글만 재처리할 수 있어야 합니다.
 
 ### UOW-005. Job Runner and Checkpoint
 
@@ -1257,6 +1265,13 @@ python -m pytest -q -m live
 ```
 
 live test는 안정적인 공개 게시글 1개와 작은 검색 페이지 1개만 대상으로 합니다.
+
+Live smoke 후 확인할 항목:
+
+- 저장된 제목에 모바일/앱 작성 표시나 hidden/blind 텍스트가 섞이지 않았는지 확인합니다.
+- 이미지/동영상 URL이 긴 서명 토큰을 포함해도 저장 모델 validation을 깨지 않는지 확인합니다.
+- `failure_count`가 발생하면 대표 실패 URL을 단건 재시도해 일시 실패인지 parser regression인지 분리합니다.
+- 일시 parser-stage 실패는 전체 Job 재실행보다 실패 URL 재처리로 회수합니다.
 
 ## 커뮤니티 조사 체크리스트
 

@@ -321,6 +321,8 @@ _system/
 - 민감정보를 제거한 safe failure만 저장합니다.
 - proxy password, access key, cookie, authorization header를 저장하지 않습니다.
 - 실패 stage, reason, retryable 여부를 포함합니다.
+- parser-stage 게시글 실패 재처리의 입력으로 사용할 수 있으므로 원본 파일을 직접 수정하지 않습니다.
+- 재처리 결과는 새 run의 `posts.jsonl`, `failures.jsonl`, `report.json`으로 남기고, 원본 failure row는 감사와 재현을 위해 보존합니다.
 
 `report.json`:
 
@@ -619,7 +621,7 @@ create table if not exists community_scraper.failures (
 - parser 장애 추적
 - site별 장애율 분석
 
-현재는 `failures.jsonl`을 source of truth로 둡니다. 이 table은 운영 검색과 재처리를 위해 추가합니다.
+현재는 `failures.jsonl`을 source of truth로 둡니다. 이 table은 운영 검색과 재처리를 위해 추가합니다. 실사이트 smoke test에서 `post title missing` 같은 parser-stage 실패가 재시도 시 회수되는 사례가 확인되었으므로, failure summary table을 도입하더라도 원본 `failures.jsonl`과 재처리 run의 관계를 추적할 수 있어야 합니다.
 
 ## Checkpoint 규칙
 

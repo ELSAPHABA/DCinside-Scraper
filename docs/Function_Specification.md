@@ -745,6 +745,9 @@
   - 제목: `.title_subject`
     - `(펌)` 게시글이면 JSON 저장용 제목에서 `(펌)` 문자열을 제거
     - 예: `.title_subject` 값이 `(펌) 이거 뭐냐?` 이면 `"title": "이거 뭐냐?"`
+    - 실사이트 smoke test 반영: `h3.title` 전체 텍스트에는 말머리, `(펌)`, 모바일/앱 작성 표시가 같이 들어갈 수 있으므로 JSON 저장용 제목은 우선 `.title_subject` 텍스트만 사용
+    - `.title_subject`가 없을 때만 `h3.title`, `.gallview_head .title`, `<title>`을 fallback으로 사용하고, fallback 텍스트에서는 `b.font_blue009`, `.title_headtext`, `.headtext`, `.title_device`, `.blind` 값을 제거
+    - `"모바일에서 작성"`, `"앱에서 작성"` 같은 기기 표시 또는 blind 접근성 텍스트는 제목으로 저장하지 않음
   - 말머리
     - 마이너 갤러리 상세 페이지에서 `h3.title > span.title_headtext` 값을 수집
     - 값의 앞뒤 `[` `]`를 제거해 `subject_head.name`으로 저장
@@ -777,6 +780,9 @@
     - 이미지, DC 업로드 동영상, inline mp4, 디시콘은 URL/메타데이터만 저장하거나 파일 다운로드 가능
     - YouTube 등 외부 임베드는 URL/메타데이터만 저장하고 파일 다운로드 대상에서 제외
     - 다운로드 파일 경로는 각 블록의 `download.path`에 저장
+    - 실사이트 smoke test 반영: `viewimage.php?no=` 값이 항상 짧은 파일 번호가 아닐 수 있으며, 긴 서명 토큰 형태로 내려오면 이를 `media_id` 또는 `file_no`로 저장하지 않음
+    - 긴 이미지 식별자/서명 토큰은 원본 `url` 또는 `source_url`에만 보존하고, `media_id`는 `null`로 저장
+    - `movie_view?no=<숫자>`처럼 짧고 안정적인 자체 동영상 번호는 기존처럼 `media_id`로 저장 가능
   - `(펌)` 원 게시글 정보
     - 렌더링된 DOM 기준 원글 카드: `#pum_container.cloned_card`
     - BeautifulSoup + requests 기준으로는 JavaScript가 실행되지 않으므로 `.write_div script` 에서 `/ajax/pum_ajax/get_contents` 호출을 찾고 직접 AJAX 요청
@@ -990,7 +996,9 @@ DCinside-Scraper/
 - 입력: 실패 기록의 `gallery_id`, `post_no`, `url`, `failed_fields`, `failure_reason`, `parser_version`
 - 동작: 파서 수정 이후 실패 게시글만 다시 요청 또는 재파싱하고, 성공 시 기존 실패 기록을 보정
 - 제외: CAPTCHA 감지, 차단, 네트워크 실패, 저장소 실패는 기존 상태/체크포인트 및 Job 재시도 흐름에서 처리
-- 개발 시점: 게시글 상세/본문/댓글 파싱 안정화 이후 별도 Unit Of Work로 검토
+- 실사이트 smoke test 반영: `post title missing` 실패가 일시적인 비정상/부분 응답으로 발생하고 같은 URL 재시도 시 정상 파싱되는 사례가 확인됨
+- 재처리 유닛은 원본 `failures.jsonl`을 수정하지 않고, 실패 URL만 direct-post 재수집 경로로 재시도한 뒤 새 `posts.jsonl`, `failures.jsonl`, `report.json`에 결과를 저장
+- 개발 시점: UOW-009 `Parser Failure Retry Reprocessor`로 AI-DLC Functional Design 진행
 
 ## ?. 미들웨어 활용 계획
 MCP, 라이브러리, KubeRay, 커뮤니티 통합 스크래퍼

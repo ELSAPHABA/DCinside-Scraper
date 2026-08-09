@@ -739,7 +739,48 @@ resume: python -m dcinside_scraper.adapters.cli resume --job-id ...
 
 CAPTCHA 자동 우회는 구현하지 않습니다.
 
-### 3. S3/Garage 쓰기 실패
+### 3. Parser-stage 게시글 실패
+
+증상:
+
+- 작업 자체는 `completed`이나 `failure_count`가 증가
+- `failures.jsonl`의 `stage`가 `post`
+- `reason`이 `post title missing`, `post author missing`, `post identity missing` 같은 parser-stage 사유
+- 같은 URL을 브라우저나 단건 direct-post로 다시 열면 정상 게시글인 경우가 있음
+
+실사이트 smoke test에서 확인한 사례:
+
+- 검색 Job 1차 실행 중 `post title missing`이 다수 발생
+- 같은 실패 URL만 direct-post 경로로 재시도하자 모두 회수됨
+- 원인은 삭제글이 아니라 요청 시점의 일시적 비정상/부분 응답 또는 parser가 허용하지 않은 상세 구조일 수 있음
+
+조치:
+
+1. 실패 URL 대표 1개를 브라우저 또는 단건 direct-post로 확인합니다.
+2. 정상 게시글이면 전체 검색 Job을 다시 돌리지 말고 실패 URL만 재처리합니다.
+3. UOW-009 구현 전에는 `failures.jsonl`에서 URL을 추출해 direct-post Job으로 재시도합니다.
+4. UOW-009 구현 후에는 parser failure retry 명령을 사용해 원본 실패 파일은 보존하고 새 run에 회수 결과를 저장합니다.
+5. 같은 reason이 계속 남으면 parser fixture를 추가하고 selector를 수정합니다.
+
+원본 `failures.jsonl`은 감사와 재현을 위해 삭제하거나 직접 수정하지 않습니다.
+
+### 4. 미디어 ID 길이 검증 오류
+
+증상:
+
+- 게시글 상세 수집 중 validation 오류
+- 오류 필드가 `MediaItem.media_id`
+- 메시지가 `String should have at most 200 characters` 계열
+- 이미지 URL의 `viewimage.php?no=` 값이 긴 서명 토큰 형태
+
+조치:
+
+1. 스크래퍼가 긴 `viewimage.php?no=` 값을 `media_id`로 저장하지 않는 버전인지 확인합니다.
+2. 긴 이미지 서명 토큰은 `url` 또는 `source_url`에만 보존하고 `media_id=null`로 저장해야 합니다.
+3. `movie_view?no=<숫자>`처럼 짧고 안정적인 자체 동영상 번호는 `media_id`로 유지할 수 있습니다.
+4. 오래된 결과에서 이 오류가 발생했다면 해당 게시글만 direct-post 또는 UOW-009 재처리 경로로 다시 수집합니다.
+
+### 5. S3/Garage 쓰기 실패
 
 증상:
 
@@ -756,7 +797,7 @@ CAPTCHA 자동 우회는 구현하지 않습니다.
 5. 네트워크 DNS와 방화벽을 확인합니다.
 6. 실패 후에는 PostgreSQL checkpoint 기준으로 resume합니다.
 
-### 4. PostgreSQL 체크포인트 실패
+### 6. PostgreSQL 체크포인트 실패
 
 증상:
 
@@ -781,7 +822,7 @@ order by updated_at desc
 limit 20;
 ```
 
-### 5. 출력은 있는데 report가 없음
+### 7. 출력은 있는데 report가 없음
 
 원인:
 
@@ -795,7 +836,7 @@ limit 20;
 2. checkpoint가 남아 있으면 resume합니다.
 3. resume 완료 후 새 run의 `report.json`을 기준으로 최종 집계합니다.
 
-### 6. 댓글 수집이 너무 느림
+### 8. 댓글 수집이 너무 느림
 
 원인:
 
@@ -809,7 +850,7 @@ limit 20;
 2. 댓글이 필요하지만 너무 느리면 `--max-comment-pages`를 낮춥니다.
 3. 대량 수집에서는 먼저 게시글 본문만 수집하고 댓글 수집은 별도 Job으로 나누는 방식을 검토합니다.
 
-### 7. JSONL을 Polars가 읽지 못함
+### 9. JSONL을 Polars가 읽지 못함
 
 조치:
 
