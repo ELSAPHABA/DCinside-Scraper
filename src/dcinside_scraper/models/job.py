@@ -112,7 +112,7 @@ class StorageConfig(MetadataModel):
 
 class DirectPostSource(MetadataModel):
     type: Literal["direct_post"] = "direct_post"
-    urls: list[str] = Field(min_length=1, max_length=500)
+    urls: list[str] = Field(min_length=1, max_length=100_000)
 
     @field_validator("urls")
     @classmethod

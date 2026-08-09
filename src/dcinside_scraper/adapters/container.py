@@ -32,6 +32,7 @@ from dcinside_scraper.models.job import (
 from dcinside_scraper.outputs import OutputRunLayout, S3ObjectStore, S3OutputStore
 from dcinside_scraper.outputs.postgres_checkpoint import PostgresCheckpointStore
 from dcinside_scraper.post_detail import PostDetailService
+from dcinside_scraper.retry import CompositeFailureInputReader, ParserFailureRetryService, S3FailureInputReader
 from dcinside_scraper.runner import JobRunner
 from dcinside_scraper.search import LinkCollectorService
 
@@ -160,14 +161,37 @@ async def run_container_async(
             with ContainerSignalController(runner, output=error_output):
                 report = await resume_job(request, runner=runner)
         else:
-            command = _parse_run_command(argv)
-            config = cli.build_job_config(command, env=env)
-            config = config.model_copy(update={"storage_config": env_config.storage_config()})
-            if runner is None:
-                runtime = build_container_runtime(config, env_config)
-                runner = runtime.runner
-            with ContainerSignalController(runner, output=error_output):
-                report = await run_job(config, runner=runner)
+            command = _parse_container_command(argv)
+            if command.get("subcommand") == "retry-failures":
+                request = cli.build_parser_failure_retry_request(command, storage_config=env_config.storage_config())
+
+                async def _execute_retry(config: JobConfig) -> Any:
+                    nonlocal runtime, runner
+                    if runner is None:
+                        runtime = build_container_runtime(config, env_config)
+                        runner = runtime.runner
+                        config = runtime.config
+                    with ContainerSignalController(runner, output=error_output):
+                        return await run_job(config, runner=runner)
+
+                reader = CompositeFailureInputReader(
+                    s3=S3FailureInputReader(
+                        endpoint_url=env_config.s3_endpoint_url,
+                        region_name=env_config.s3_region,
+                        access_key_id=env_config.s3_access_key_id,
+                        secret_access_key=env_config.s3_secret_access_key,
+                        force_path_style=env_config.s3_force_path_style,
+                    )
+                )
+                report = await ParserFailureRetryService(reader).retry(request, execute_job=_execute_retry)
+            else:
+                config = cli.build_job_config(command, env=env)
+                config = config.model_copy(update={"storage_config": env_config.storage_config()})
+                if runner is None:
+                    runtime = build_container_runtime(config, env_config)
+                    runner = runtime.runner
+                with ContainerSignalController(runner, output=error_output):
+                    report = await run_job(config, runner=runner)
         _write_json(output, {"ok": True, "report": report.model_dump(mode="json")})
         return EXIT_SUCCESS if report.status == JobReportStatus.COMPLETED else EXIT_RUNTIME_ERROR
     except (ValidationFailure, ValidationError) as exc:
@@ -219,15 +243,15 @@ def main(argv: list[str] | None = None) -> int:
     return anyio.run(_run)
 
 
-def _parse_run_command(argv: list[str] | None) -> dict[str, Any]:
+def _parse_container_command(argv: list[str] | None) -> dict[str, Any]:
     parser = cli.build_parser()
     try:
         args = parser.parse_args(argv)
     except SystemExit as exc:
         raise ValidationFailure("invalid container arguments", details={"reason": "invalid_args"}) from exc
     command = cli.normalize_command(args)
-    if command.get("subcommand") != "run":
-        raise ValidationFailure("container entrypoint supports run or RESUME=true", details={"reason": "unsupported_command"})
+    if command.get("subcommand") not in {"run", "retry-failures"}:
+        raise ValidationFailure("container entrypoint supports run, retry-failures, or RESUME=true", details={"reason": "unsupported_command"})
     return command
 
 

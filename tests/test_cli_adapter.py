@@ -39,6 +39,7 @@ def test_parser_accepts_confirmed_subcommands() -> None:
 
     assert parser.parse_args(["wizard"]).subcommand == "wizard"
     assert parser.parse_args(["resume"]).subcommand == "resume"
+    assert parser.parse_args(["retry-failures", "--failure-file", "failures.jsonl"]).subcommand == "retry-failures"
     assert parser.parse_args(["import-user-agents", "agents.txt"]).subcommand == "import-user-agents"
     assert parser.parse_args(["configure-proxy", "--host", "proxy.local:8080"]).subcommand == "configure-proxy"
     args = parser.parse_args(["run", "--source", "direct-post", "--url", "https://gall.dcinside.com/board/view/?id=dcbest&no=1"])

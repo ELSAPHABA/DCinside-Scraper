@@ -48,6 +48,7 @@ from dcinside_scraper.post_detail import (
     PostDetailService,
     PostMetadataParser,
 )
+from dcinside_scraper.retry import ParserFailureRetryService
 from dcinside_scraper.runner import CheckpointCoordinator, JobRunner, RunnerEventBuilder, StopController
 from dcinside_scraper.search import (
     CandidateDeduper,
@@ -89,6 +90,7 @@ __all__ = [
     "PostResult",
     "PostDetailService",
     "PostMetadataParser",
+    "ParserFailureRetryService",
     "ProxyConfig",
     "RuntimePolicyService",
     "RunnerEventBuilder",

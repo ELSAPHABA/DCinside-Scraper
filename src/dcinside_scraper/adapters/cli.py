@@ -48,6 +48,7 @@ from dcinside_scraper.models.job import (
 )
 from dcinside_scraper.outputs import LocalCheckpointStore, LocalOutputStore, OutputRunLayout
 from dcinside_scraper.post_detail import PostDetailService
+from dcinside_scraper.retry import ParserFailureRetryRequest, ParserFailureRetryService
 from dcinside_scraper.runner import JobRunner
 from dcinside_scraper.search import LinkCollectorService
 
@@ -86,6 +87,16 @@ def build_parser() -> argparse.ArgumentParser:
     resume = subcommands.add_parser("resume", help="resume from local checkpoint")
     resume.add_argument("--job-id")
     _add_runtime_options(resume)
+
+    retry = subcommands.add_parser("retry-failures", help="retry parser-stage post failures from failures.jsonl")
+    retry.add_argument("--failure-file", dest="failure_files", action="append")
+    retry.add_argument("--failure-ref", dest="failure_refs", action="append")
+    retry.add_argument("--existing-posts", dest="existing_post_refs", action="append")
+    retry.add_argument("--existing-posts-root", dest="existing_post_roots", action="append")
+    retry.add_argument("--from-report")
+    retry.add_argument("--from-checkpoint")
+    retry.add_argument("--job-id")
+    _add_runtime_options(retry)
 
     import_uas = subcommands.add_parser("import-user-agents", help="copy a UTF-8 User-Agent list to ./user-agents.txt")
     import_uas.add_argument("source_path")
@@ -158,6 +169,26 @@ def build_job_config(command: Mapping[str, Any], *, env: Mapping[str, str] | Non
 def build_resume_request(command: Mapping[str, Any]) -> ResumeRequest:
     command = normalize_command(command)
     return ResumeRequest(job_id=_blank_none(command.get("job_id")))
+
+
+def build_parser_failure_retry_request(
+    command: Mapping[str, Any],
+    *,
+    storage_config: StorageConfig | None = None,
+) -> ParserFailureRetryRequest:
+    command = normalize_command(command)
+    if command.get("from_report") and command.get("from_checkpoint"):
+        raise ValidationFailure("from_report and from_checkpoint cannot be combined", details={"reason": "restore_source_conflict"})
+    failure_refs = tuple(str(ref) for ref in [*(command.get("failure_files") or ()), *(command.get("failure_refs") or ())])
+    return ParserFailureRetryRequest(
+        failure_refs=failure_refs,
+        existing_post_refs=tuple(str(ref) for ref in command.get("existing_post_refs") or ()),
+        existing_post_roots=tuple(str(ref) for ref in command.get("existing_post_roots") or ()),
+        job_id=_blank_none(command.get("job_id")),
+        scrape_options=_build_scrape_options(command),
+        worker_config=_build_worker_config(command),
+        storage_config=storage_config or StorageConfig(base_output_path=_blank_none(command.get("output_path"))),
+    )
 
 
 def _build_source(command: Mapping[str, Any]) -> Any:
@@ -356,6 +387,36 @@ async def resume_scrape_command_async(
     return _exit_code_for_report(report)
 
 
+async def retry_failures_command_async(
+    command: Mapping[str, Any],
+    *,
+    runner: Any | None = None,
+    output: TextIO | None = None,
+    error_output: TextIO | None = None,
+) -> int:
+    output = output or sys.stdout
+    error_output = error_output or sys.stderr
+    command = normalize_command(command)
+    request = build_parser_failure_retry_request(command)
+    service = ParserFailureRetryService()
+
+    async def _execute(config: JobConfig) -> Any:
+        client = None
+        actual_runner = runner
+        if actual_runner is None:
+            client, actual_runner = build_local_runtime(command, job_id=config.job_id, storage_config=config.storage_config)
+        try:
+            with InterruptController(actual_runner, output=error_output):
+                return await run_job(config, runner=actual_runner)
+        finally:
+            if client is not None:
+                await client.close()
+
+    report = await service.retry(request, execute_job=_execute)
+    _print_retry_report(report, request.storage_config.base_output_path, output)
+    return _exit_code_for_report(report)
+
+
 def import_user_agents(source: str | Path, destination: str | Path) -> None:
     source_path = Path(source)
     destination_path = Path(destination)
@@ -526,6 +587,8 @@ def _dispatch_command(command: Mapping[str, Any]) -> int:
         return asyncio.run(run_scrape_command_async(command))
     if subcommand == "resume":
         return asyncio.run(resume_scrape_command_async(command))
+    if subcommand == "retry-failures":
+        return asyncio.run(retry_failures_command_async(command))
     if subcommand == "import-user-agents":
         import_user_agents(str(command["source_path"]), Path.cwd() / "user-agents.txt")
         print("Imported User-Agent file to user-agents.txt")
@@ -576,6 +639,18 @@ def _print_report(report: Any, output_path: str | None, output: TextIO) -> None:
     output.write(f"filtered_count: {report.filtered_count}\n")
     output.write(f"resume: {_resume_command(report.job_id, output_path)}\n")
     output.flush()
+
+
+def _print_retry_report(report: Any, output_path: str | None, output: TextIO) -> None:
+    metadata = getattr(report, "metadata", {}).get("parser_failure_retry", {})
+    output.write(
+        "retry "
+        f"selected={metadata.get('selected_retry_count', 0)} "
+        f"skipped_existing={metadata.get('skipped_existing_count', 0)} "
+        f"success={metadata.get('success_count', report.success_count)} "
+        f"remaining_failure={metadata.get('remaining_failure_count', report.failure_count)}\n"
+    )
+    _print_report(report, output_path, output)
 
 
 def _resume_command(job_id: str, output_path: str | None) -> str:

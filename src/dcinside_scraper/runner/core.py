@@ -451,6 +451,13 @@ class JobRunner:
         context.failure_count += 1
 
     def _build_report(self, context: JobRunContext, *, status: CheckpointStatus) -> JobReport:
+        metadata = dict(context.job_config.metadata)
+        retry_metadata = metadata.get("parser_failure_retry")
+        if isinstance(retry_metadata, dict):
+            retry_metadata = dict(retry_metadata)
+            retry_metadata["success_count"] = context.success_count
+            retry_metadata["remaining_failure_count"] = context.failure_count
+            metadata["parser_failure_retry"] = retry_metadata
         return JobReport(
             job_id=context.job_config.job_id,
             status=report_status_for_checkpoint(status),
@@ -462,6 +469,7 @@ class JobRunner:
             finished_at=self.clock.now_utc(),
             failures=list(context.failures),
             output_refs=list(context.output_refs),
+            metadata=metadata,
         )
 
     def _log(self, level: str, event: str, context: JobRunContext, **fields: Any) -> None:
