@@ -63,6 +63,8 @@
 | UOW-006 | Output and Storage | 로컬 JSONL/리포트/실패 파일, 로컬 체크포인트, S3 호환 저장소, PostgreSQL 체크포인트 |
 | UOW-007 | CLI Adapter | `run`, `resume`, User-Agent import, Proxy 설정, 터미널 마법사 |
 | UOW-008 | Container, MCP, and Test Harness | 컨테이너 엔트리포인트, MCP 도구 핸들러, 선택적 통합 테스트 구조 |
+| UOW-009 | Parser Failure Retry Reprocessor | 파싱 실패 게시글 실패 파일 선별, direct-post 재처리, 재처리 결과 리포트 |
+| UOW-010 | AWS CDK Infrastructure IaC | AWS CDK 기반 배포 인프라 정의, 환경 분리, synth/deploy 문서화 |
 
 ## 설치
 
@@ -565,7 +567,7 @@ CAPTCHA는 자동 우회하지 않습니다. 감지되면 작업을 중단하고
 
 게시글 하나의 파싱 실패는 가능한 경우 `failures.jsonl`에 기록하고 다음 게시글로 진행합니다. 작업 전체 중단이 필요한 오류는 `report.json`과 체크포인트에 반영됩니다.
 
-향후 계획에는 파싱 실패한 메타데이터가 속한 게시글만 별도로 재시도하는 유닛이 포함되어 있습니다.
+파싱 실패한 메타데이터가 속한 게시글만 별도로 재시도하는 유닛은 UOW-009로 설계 진행 중입니다.
 
 ## 컨테이너 실행
 
