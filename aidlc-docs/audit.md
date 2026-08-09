@@ -1718,3 +1718,153 @@
 **Operations Note**: "Deployment planning, monitoring, incident response, maintenance, and production readiness workflows remain future AI-DLC scope."
 
 **Context**: COMPLETE - Operations Placeholder Reached
+
+---
+
+## CONSTRUCTION - Functional Design Planning - UOW-009
+
+**Timestamp**: 2026-08-09T14:04:09Z
+
+**User Input**: "맞아요. `파싱 실패 게시글만 나중에 재시도하는 유닛`도 개발 계획으로 가지고 있었어요. 이것도 지금 바로 만듭시다. AI-DLC 개발 과정을 시작합시다."
+
+**AI Response**: "Added UOW-009 Parser Failure Retry Reprocessor as an incremental Unit of Work, updated AI-DLC unit/dependency/story-map/state artifacts, and created the UOW-009 Functional Design plan with questions."
+
+**Context**: CONSTRUCTION - Functional Design Planning - UOW-009
+
+---
+
+## CONSTRUCTION - UOW Sequence Update
+
+**Timestamp**: 2026-08-09T14:25:19Z
+
+**User Input**: "좋아요. 그리고, AWS CDK로 IaC도 만들어 두고 싶어요. 일단 UoW 9부터 만들고 이어서 만드는 것으로 합시다."
+
+**AI Response**: "Recorded AWS CDK Infrastructure IaC as UOW-010 planned after UOW-009, without creating the UOW-010 plan yet."
+
+**Context**: UOW-009 remains the active Functional Design Planning stage; UOW-010 is queued as the next incremental unit.
+
+---
+
+## CONSTRUCTION - Functional Design Review - UOW-009
+
+**Timestamp**: 2026-08-09T15:28:31Z
+
+**User Input**: "좋아요. 질문지를 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Validated confirmed UOW-009 Functional Design answers, generated the retry reprocessor business logic model, business rules, and domain entities artifacts, and moved AI-DLC state to Functional Design review."
+
+**Artifacts**: `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/functional-design/business-logic-model.md`, `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/functional-design/business-rules.md`, `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/functional-design/domain-entities.md`
+
+**Questionnaire Note**: "Q1 selected local plus S3/Garage failure inputs. Q6 selected normal retry options plus `--from-report` and `--from-checkpoint` restoration helpers. Q2-Q5 and Q7-Q10 selected A."
+
+**Approval Prompt**: "UOW-009 Functional Design 산출물 검토가 필요합니다. 승인하면 UOW-009 NFR Requirements로 진행합니다."
+
+**Context**: CONSTRUCTION - Functional Design Review - UOW-009
+
+---
+
+## CONSTRUCTION - Functional Design Approval And NFR Requirements Planning - UOW-009
+
+**Timestamp**: 2026-08-09T15:38:06Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-009 Functional Design approval, moved AI-DLC state to NFR Requirements Planning, and created the UOW-009 NFR Requirements questionnaire."
+
+**Approval Status**: "UOW-009 Functional Design approved."
+
+**Artifacts**: `aidlc-docs/construction/plans/uow-009-parser-failure-retry-reprocessor-nfr-requirements-plan.md`
+
+**Approval Prompt**: "UOW-009 NFR Requirements 질문지 답변이 필요합니다. 답변이 확정되면 NFR Requirements 산출물 2개를 생성합니다."
+
+**Context**: CONSTRUCTION - NFR Requirements Planning - UOW-009
+
+---
+
+## CONSTRUCTION - NFR Requirements Review - UOW-009
+
+**Timestamp**: 2026-08-09T16:28:27Z
+
+**User Input**: "질문지의 답변을 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Validated confirmed UOW-009 NFR Requirements answers, generated the NFR requirements and tech stack decisions artifacts, and moved AI-DLC state to NFR Requirements review."
+
+**Artifacts**: `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/nfr-requirements/nfr-requirements.md`, `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/nfr-requirements/tech-stack-decisions.md`
+
+**Questionnaire Note**: "Q1-Q10 all selected A. Retry input reads stay streaming/key-set based, S3/Garage support reuses the existing optional S3 boundary, and default tests avoid external services."
+
+**Approval Prompt**: "UOW-009 NFR Requirements 산출물 검토가 필요합니다. 승인하면 UOW-009 NFR Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - NFR Requirements Review - UOW-009
+
+---
+
+## CONSTRUCTION - NFR Requirements Approval And NFR Design Planning - UOW-009
+
+**Timestamp**: 2026-08-09T16:30:52Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-009 NFR Requirements approval, moved AI-DLC state to NFR Design Planning, and created the UOW-009 NFR Design questionnaire."
+
+**Approval Status**: "UOW-009 NFR Requirements approved."
+
+**Artifacts**: `aidlc-docs/construction/plans/uow-009-parser-failure-retry-reprocessor-nfr-design-plan.md`
+
+**Approval Prompt**: "UOW-009 NFR Design 질문지 답변이 필요합니다. 답변이 확정되면 NFR Design 산출물 2개를 생성합니다."
+
+**Context**: CONSTRUCTION - NFR Design Planning - UOW-009
+
+---
+
+## CONSTRUCTION - NFR Design Review - UOW-009
+
+**Timestamp**: 2026-08-09T16:37:53Z
+
+**User Input**: "질문지의 답변을 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Validated confirmed UOW-009 NFR Design answers, generated NFR design patterns and logical components artifacts, and moved AI-DLC state to NFR Design review."
+
+**Artifacts**: `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/nfr-design/nfr-design-patterns.md`, `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/nfr-design/logical-components.md`
+
+**Questionnaire Note**: "Q1-Q10 all selected A. UOW-009 implementation stays in one small retry module plus a thin CLI subcommand, selection remains streaming and pure-testable, report counters use `JobReport.metadata`, and default tests use fixtures/fakes/PBT."
+
+**Approval Prompt**: "UOW-009 NFR Design 산출물 검토가 필요합니다. 승인하면 UOW-009 Infrastructure Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - NFR Design Review - UOW-009
+
+---
+
+## CONSTRUCTION - NFR Design Approval And Infrastructure Design Planning - UOW-009
+
+**Timestamp**: 2026-08-09T16:40:51Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-009 NFR Design approval, moved AI-DLC state to Infrastructure Design Planning, and created the UOW-009 Infrastructure Design questionnaire."
+
+**Approval Status**: "UOW-009 NFR Design approved."
+
+**Artifacts**: `aidlc-docs/construction/plans/uow-009-parser-failure-retry-reprocessor-infrastructure-design-plan.md`
+
+**Approval Prompt**: "UOW-009 Infrastructure Design 질문지 답변이 필요합니다. 답변이 확정되면 Infrastructure Design 산출물 2개를 생성합니다."
+
+**Context**: CONSTRUCTION - Infrastructure Design Planning - UOW-009
+
+---
+
+## CONSTRUCTION - Infrastructure Design Review - UOW-009
+
+**Timestamp**: 2026-08-09T17:10:57Z
+
+**User Input**: "질문지의 답변을 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Validated confirmed UOW-009 Infrastructure Design answers, generated infrastructure design and deployment architecture artifacts, and moved AI-DLC state to Infrastructure Design review."
+
+**Artifacts**: `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/infrastructure-design/infrastructure-design.md`, `aidlc-docs/construction/uow-009-parser-failure-retry-reprocessor/infrastructure-design/deployment-architecture.md`
+
+**Questionnaire Note**: "Q1-Q5 and Q7-Q10 selected A. Q6 selected A plus local-only `--existing-posts-root`. UOW-009 adds no new production infrastructure, container image, DB table, DLQ, scheduler, or shared infrastructure artifact."
+
+**Approval Prompt**: "UOW-009 Infrastructure Design 산출물 검토가 필요합니다. 승인하면 UOW-009 Code Generation으로 진행합니다."
+
+**Context**: CONSTRUCTION - Infrastructure Design Review - UOW-009

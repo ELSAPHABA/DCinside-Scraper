@@ -2,7 +2,7 @@
 
 ## Decomposition Decision
 
-확정 답변에 따라 기능 흐름 기준으로 8개 Unit of Work를 둡니다. 단일 Python 패키지 `dcinside_scraper` 안에서 구현하며, CLI, container, MCP는 같은 core API를 호출합니다.
+확정 답변에 따라 기능 흐름 기준으로 8개 Unit of Work를 두었습니다. 이후 실사이트 smoke test에서 파싱 실패 게시글 전용 재처리 필요성이 확인되어 UOW-009를 증분 추가합니다. AWS CDK 기반 IaC는 UOW-009 완료 후 UOW-010으로 진행합니다. 단일 Python 패키지 `dcinside_scraper` 안에서 구현하며, CLI, container, MCP는 같은 core API를 호출합니다.
 
 ## Units
 
@@ -16,6 +16,8 @@
 | UOW-006 | Output And Storage | local JSONL/media, failure records, S3-compatible output port, Garage default object storage, local checkpoint port | storage |
 | UOW-007 | CLI Adapter | terminal options, Job creation, resume command, image/dccon options, Proxy/User-Agent import flow | adapters |
 | UOW-008 | Container, MCP, And Test Harness | one-shot container contract, PostgreSQL checkpoint adapter, MCP tools, fixture tests, PBT, smoke test wiring | adapters/tests |
+| UOW-009 | Parser Failure Retry Reprocessor | parse-failure records ingestion, direct-post retry batch creation, retry output/report generation, optional existing-success skip | retry/adapters |
+| UOW-010 | AWS CDK Infrastructure IaC | AWS CDK app/stacks for deployable scraper infrastructure, environment configuration, synth/deploy documentation | infrastructure |
 
 ## Code Organization Strategy
 
@@ -78,6 +80,8 @@ tests/
 6. UOW-005 Job Runner And Checkpoint
 7. UOW-007 CLI Adapter
 8. UOW-008 Container, MCP, And Test Harness
+9. UOW-009 Parser Failure Retry Reprocessor
+10. UOW-010 AWS CDK Infrastructure IaC
 
 Storage is implemented before `JobRunner` integration so result writes and checkpoint commits have concrete ports available.
 
@@ -146,6 +150,21 @@ Storage is implemented before `JobRunner` integration so result writes and check
 - Provides MCP tools for search, fetch, Job run, and resume.
 - Adds parser fixture tests, Hypothesis PBT, import side-effect tests, adapter validation tests, and optional live smoke test hooks.
 
+### UOW-009. Parser Failure Retry Reprocessor
+
+- Reads one or more `failures.jsonl` files and selects only parser-stage post failures that can be retried after parser fixes.
+- Builds a retry batch from failed post URLs using the existing `DirectPostSource` and `JobRunner` path.
+- Writes retry results to a new output run instead of mutating the original failure file.
+- Optionally reads existing `posts.jsonl` outputs to skip already recovered post IDs.
+- Preserves CAPTCHA, block, network, storage, and checkpoint failures outside this unit; those remain owned by UOW-002, UOW-005, and UOW-006.
+
+### UOW-010. AWS CDK Infrastructure IaC
+
+- Provides AWS CDK infrastructure code after UOW-009 is complete.
+- Defines deployable infrastructure for running scraper workers and their required storage/checkpoint/logging dependencies.
+- Final AWS resource choices are not fixed here; they must be decided in UOW-010 Functional Design and Infrastructure Design.
+- Must avoid embedding secrets in source code and must document environment-specific deployment flow.
+
 ## Boundary Rules
 
 - Parser components do not perform network or storage I/O.
@@ -153,4 +172,5 @@ Storage is implemented before `JobRunner` integration so result writes and check
 - All result, media, and checkpoint writes go through storage ports.
 - Adapters do not contain scraping logic.
 - Core import must not start a scrape, prompt the terminal, or create files.
-
+- UOW-009 must not duplicate post parsing, HTTP policy, or storage logic; it should compose UOW-005 direct-post execution and UOW-006 failure/output records.
+- UOW-010 must not change scraper runtime behavior; it only provisions and documents infrastructure around the existing container/core contracts.

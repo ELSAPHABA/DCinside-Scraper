@@ -22,9 +22,11 @@
 | US-014 | CAPTCHA 또는 차단 감지 시 중단점을 저장하고 멈춘다 | UOW-005 | UOW-002, UOW-006 |
 | US-015 | 사용자가 중단한 Job을 재개한다 | UOW-005 | UOW-006, UOW-007, UOW-008 |
 | US-016 | 실패한 게시글 요청을 재시도하고 실패 기록을 남긴다 | UOW-002 | UOW-005, UOW-006 |
+| US-016A | 파싱 실패 게시글만 별도 재처리한다 | UOW-009 | UOW-004, UOW-005, UOW-006, UOW-007 |
 | US-017 | Python 라이브러리 API를 제공한다 | UOW-001 | UOW-005, UOW-007 |
 | US-018 | 워커 컨테이너 모드를 제공한다 | UOW-008 | UOW-005, UOW-006 |
 | US-019 | MCP tool 인터페이스를 제공한다 | UOW-008 | UOW-001, UOW-005 |
+| US-020 | AWS CDK로 배포 인프라를 정의한다 | UOW-010 | UOW-006, UOW-008, UOW-009 |
 
 ## Unit Story Load
 
@@ -38,6 +40,8 @@
 | UOW-006 Output And Storage | US-012 |
 | UOW-007 CLI Adapter | US-001 |
 | UOW-008 Container, MCP, And Test Harness | US-013, US-018, US-019 |
+| UOW-009 Parser Failure Retry Reprocessor | US-016A |
+| UOW-010 AWS CDK Infrastructure IaC | US-020 |
 
 ## Coverage Check
 
@@ -61,9 +65,11 @@ All user stories are assigned to at least one primary unit:
 - US-014
 - US-015
 - US-016
+- US-016A
 - US-017
 - US-018
 - US-019
+- US-020
 
 ## Functional Design Implications
 
@@ -72,4 +78,5 @@ All user stories are assigned to at least one primary unit:
 - UOW-005 needs Functional Design for Job lifecycle, checkpoint ordering, resume semantics, stop reasons, and worker queue behavior.
 - UOW-006 needs Functional Design for JSONL write semantics, resume output naming, S3-compatible upload behavior, and failure report structure.
 - UOW-008 needs NFR and Infrastructure Design input before final container runtime and MCP packaging.
-
+- UOW-009 needs Functional Design for failure selection rules, retry batch creation, existing-success skipping, retry output semantics, and adapter/API boundaries.
+- UOW-010 needs Functional Design, NFR Requirements, NFR Design, and Infrastructure Design for AWS CDK resource choices, environment separation, secret handling, deployment safety, and synth/deploy workflow.

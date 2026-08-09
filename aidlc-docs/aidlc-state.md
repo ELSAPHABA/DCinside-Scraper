@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-07-22T08:16:24Z
-- **Current Stage**: COMPLETE - Operations Placeholder Reached
+- **Current Stage**: CONSTRUCTION - Infrastructure Design Review - UOW-009
 
 ## Workspace State
 - **Existing Code**: No
@@ -38,6 +38,7 @@
   - Approved Proxy questionnaire answers still mention `Proxy-Profile.txt`; reconcile those answers before resuming AI-DLC.
   - Approved checkpoint questionnaire answer Q10 is superseded by the latest status/checkpoint revision: save every 10 completed posts and immediately on stop/error/CAPTCHA.
   - Container JSONL/media storage default changed from MinIO to Garage-based S3-compatible object storage; SeaweedFS remains a future alternative for large media/small-file, FUSE, or Iceberg requirements.
+  - AWS CDK infrastructure-as-code is planned as UOW-010 after UOW-009 Parser Failure Retry Reprocessor is completed.
 
 ## Stage Progress
 
@@ -99,15 +100,20 @@
 - [x] Infrastructure Design - APPROVED - UOW-008
 - [x] Code Generation - APPROVED - UOW-008
 - [x] Build and Test - APPROVED - UOW-008
+- [x] Functional Design - APPROVED - UOW-009
+- [x] NFR Requirements - APPROVED - UOW-009
+- [x] NFR Design - APPROVED - UOW-009
+- [ ] Infrastructure Design - REVIEW - UOW-009
+- [ ] Functional Design - PLANNED - UOW-010
 
 ### OPERATIONS PHASE
 - [x] Operations - PLACEHOLDER
 
 ## Current Status
-- **Lifecycle Phase**: OPERATIONS
-- **Current Stage**: Operations Placeholder
-- **Next Step**: AI-DLC workflow complete for the planned 8 UOWs; future deployment/monitoring workflows are outside the current AI-DLC placeholder scope
-- **Status**: UOW-008 Build and Test approved; Construction phase complete; Operations placeholder reached
+- **Lifecycle Phase**: CONSTRUCTION
+- **Current Stage**: Infrastructure Design Review - UOW-009 Parser Failure Retry Reprocessor
+- **Next Step**: User reviews UOW-009 Infrastructure Design artifacts and approves progression to Code Generation
+- **Status**: UOW-009 Infrastructure Design artifacts generated from confirmed questionnaire answers.
 
 ## Execution Plan Summary
 - **Total Stages**: 12
@@ -699,6 +705,63 @@
 - **Status**: Placeholder reached
 - **Reached At**: 2026-08-09T04:19:55Z
 - **Workflow Note**: Current AI-DLC Operations phase is a placeholder. All planned construction units are complete; deployment planning, monitoring, incident response, maintenance, and production readiness workflows are future AI-DLC scope.
+
+## Functional Design Status - UOW-009
+- **Current Unit**: UOW-009 Parser Failure Retry Reprocessor
+- **Plan**: Created
+- **Plan Created At**: 2026-08-09T14:04:09Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-009-parser-failure-retry-reprocessor-functional-design-plan.md`
+- **Answers Confirmed At**: 2026-08-09T15:28:31Z
+- **Generated At**: 2026-08-09T15:28:31Z
+- **Artifacts**: `business-logic-model.md`, `business-rules.md`, `domain-entities.md`
+- **Questionnaire Note**: Q1 selected local plus S3/Garage failure inputs; Q6 selected normal retry options plus `--from-report` and `--from-checkpoint` restoration helpers; all other questions selected the recommended A option.
+- **Approved At**: 2026-08-09T15:38:06Z
+- **Scope Note**: The unit reprocesses parser-stage post failures from `failures.jsonl` by creating direct-post retry batches and writing retry results to new output runs.
+
+## NFR Requirements Status - UOW-009
+- **Current Unit**: UOW-009 Parser Failure Retry Reprocessor
+- **Plan**: Created
+- **Plan Created At**: 2026-08-09T15:38:06Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-009-parser-failure-retry-reprocessor-nfr-requirements-plan.md`
+- **Answers Confirmed At**: 2026-08-09T16:28:27Z
+- **Generated At**: 2026-08-09T16:28:27Z
+- **Artifacts**: `nfr-requirements.md`, `tech-stack-decisions.md`
+- **Questionnaire Note**: Q1-Q10 all selected A; retry input reads remain streaming/key-set based, S3/Garage input uses the existing optional S3 boundary, default tests use fakes/fixtures/PBT, and retry speed follows normal direct-post policies.
+- **Approved At**: 2026-08-09T16:30:52Z
+- **Scope Note**: The questionnaire defines non-functional requirements for retry input scale, local/S3 reads, failure validation tolerance, report compatibility, option restoration safety, import safety, and default/optional test gates.
+
+## NFR Design Status - UOW-009
+- **Current Unit**: UOW-009 Parser Failure Retry Reprocessor
+- **Plan**: Created
+- **Plan Created At**: 2026-08-09T16:30:52Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-009-parser-failure-retry-reprocessor-nfr-design-plan.md`
+- **Answers Confirmed At**: 2026-08-09T16:37:53Z
+- **Generated At**: 2026-08-09T16:37:53Z
+- **Artifacts**: `nfr-design-patterns.md`, `logical-components.md`
+- **Questionnaire Note**: Q1-Q10 all selected A; implementation stays in one small retry module plus a thin CLI subcommand, selection remains streaming and pure-testable, report counters use `JobReport.metadata`, and default tests use fixtures/fakes/PBT.
+- **Approved At**: 2026-08-09T16:40:51Z
+- **Scope Note**: The questionnaire defines implementation patterns for the retry service, input resolution, streaming selector, fakeable S3 reads, option restoration, report metadata, CLI output, and tests.
+
+## Infrastructure Design Status - UOW-009
+- **Current Unit**: UOW-009 Parser Failure Retry Reprocessor
+- **Plan**: Created
+- **Plan Created At**: 2026-08-09T16:40:51Z
+- **Status**: Review Required
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-009-parser-failure-retry-reprocessor-infrastructure-design-plan.md`
+- **Answers Confirmed At**: 2026-08-09T17:10:57Z
+- **Generated At**: 2026-08-09T17:10:57Z
+- **Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
+- **Questionnaire Note**: Q1-Q5 and Q7-Q10 selected A; Q6 selected A plus local-only `--existing-posts-root`; no new production infrastructure, container image, DB table, DLQ, scheduler, or shared infrastructure artifact is added.
+- **Scope Note**: The questionnaire defines how retry-failures maps to existing local/container/S3 runtime boundaries without adding new production infrastructure.
+
+## Planned Status - UOW-010
+- **Current Unit**: UOW-010 AWS CDK Infrastructure IaC
+- **Status**: Planned After UOW-009
+- **Plan Artifact**: Not created yet
+- **Scope Note**: AWS CDK IaC will be designed and implemented after UOW-009 is complete; resource choices, environment separation, and deploy/synth workflow remain open until UOW-010 Functional Design.
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md

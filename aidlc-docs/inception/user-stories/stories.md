@@ -483,6 +483,26 @@
 
 - mock transport로 timeout, 5xx, 404, 접근 제한 응답을 분리해 테스트한다.
 
+### US-016A. 파싱 실패 게시글만 별도 재처리한다
+
+**페르소나**: P-002 Python 라이브러리 개발자, P-005 유지보수자
+
+**User Story**: 유지보수자로서, parser 수정 이후 전체 수집 Job을 다시 실행하지 않고 파싱 실패한 게시글만 재처리하고 싶다. 그래서 요청 수를 줄이고 이미 성공한 결과를 보존하면서 누락분을 회수할 수 있다.
+
+**요구사항 추적**: FR-008, NFR-002
+
+**인수조건**
+
+- [ ] 하나 이상의 `failures.jsonl`에서 parser-stage 게시글 실패만 선별한다.
+- [ ] CAPTCHA, 차단, 네트워크, 저장소, 체크포인트 실패는 이 재처리 유닛의 대상에서 제외한다.
+- [ ] 실패 URL은 기존 직접 게시글 수집 경로로 재시도한다.
+- [ ] 재처리 결과는 원본 실패 파일을 수정하지 않고 새 `posts.jsonl`, `failures.jsonl`, `report.json`으로 저장한다.
+- [ ] 이미 성공 저장된 게시글을 입력받은 경우 중복 재처리를 건너뛸 수 있다.
+
+**검증 메모**
+
+- fixture failure 파일로 parser-stage allowlist, 제외 reason, 중복 제거, 기존 성공 skip, retry report 집계를 테스트한다.
+
 ## 에픽 7. 라이브러리, 컨테이너, MCP 통합
 
 ### US-017. Python 라이브러리 API를 제공한다
@@ -549,6 +569,26 @@
 **검증 메모**
 
 - MCP adapter 테스트는 core function을 mock해 입력 validation과 오류 masking을 확인한다.
+
+### US-020. AWS CDK로 배포 인프라를 정의한다
+
+**페르소나**: P-003 워커 컨테이너 운영자, P-005 유지보수자
+
+**User Story**: 운영자로서, 스크래퍼 워커와 저장소/체크포인트/로그 인프라를 AWS CDK로 재현 가능하게 정의하고 싶다. 그래서 로컬 smoke 이후 AWS 환경 배포를 코드로 관리할 수 있다.
+
+**요구사항 추적**: NFR-004, NFR-005
+
+**인수조건**
+
+- [ ] AWS CDK app 또는 stack은 UOW-008 컨테이너 실행 계약과 환경변수 계약을 기준으로 인프라를 정의한다.
+- [ ] 오브젝트 저장소, 체크포인트 저장소, secret, log, worker 실행 리소스의 AWS 리소스 선택은 UOW-010 설계 단계에서 확정한다.
+- [ ] secret 값은 CDK source에 평문으로 저장하지 않는다.
+- [ ] dev/staging/prod 같은 환경별 설정 분리 방식을 문서화한다.
+- [ ] `cdk synth` 또는 이에 준하는 template 생성 검증이 가능해야 한다.
+
+**검증 메모**
+
+- CDK stack은 snapshot 또는 synth smoke test로 기본 template 생성 여부를 확인한다.
 
 ## 향후 확장 범위
 
