@@ -257,7 +257,7 @@ class ContentBlockParser:
             alt=_attr(node, "alt") or _attr(node, "title") or None,
         )
         content.blocks.append(block)
-        content.images.append(MediaItem(media_type=MediaType.IMAGE, url=url, source_url=block.source_url, media_id=_query_value(url, "no")))
+        content.images.append(MediaItem(media_type=MediaType.IMAGE, url=url, source_url=block.source_url, media_id=_media_id(_query_value(url, "no"))))
 
     def _append_iframe(self, node: Tag, content: ParsedContent, *, base_url: str) -> None:
         src = urljoin(base_url, _attr(node, "src"))
@@ -749,6 +749,12 @@ def _youtube_id(url: str) -> str | None:
 def _query_value(url: str, key: str) -> str | None:
     values = parse_qs(urlsplit(url).query).get(key)
     return values[0] if values else None
+
+
+def _media_id(value: str | None) -> str | None:
+    if value and len(value) <= 200:
+        return value
+    return None
 
 
 def _text(node: Tag | None) -> str:

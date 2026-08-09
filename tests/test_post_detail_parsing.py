@@ -75,6 +75,16 @@ def test_metadata_and_content_parser_extract_detail_shape() -> None:
     assert content.links[0].url == "https://example.com/article"
 
 
+def test_content_parser_ignores_oversized_image_media_id() -> None:
+    token = "x" * 201
+    html = f'<div class="write_div"><img src="/viewimage.php?no={token}"></div>'
+
+    content = ContentBlockParser().parse(html, base_url="https://gall.dcinside.com/board/view/?id=x&no=1")
+
+    assert content.images[0].media_id is None
+    assert content.images[0].url.endswith(token)
+
+
 def test_post_detail_service_fetches_video_comments_and_uses_public_api() -> None:
     html = (FIXTURES / "normal_post.html").read_text(encoding="utf-8")
     client = FakeClient(html)
