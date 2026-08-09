@@ -6,9 +6,9 @@
 - **목표**: 
   - 디시인사이드 갤러리의 게시글 및 댓글을 스크래핑하여 데이터베이스에 저장
   - 빠르고 다양한 게시글 검색 기능
-- **기술 스택**: `beautifulsoup`, `requests`, `user-agents`, `json`, `polars`
-  - **스크래핑**: BeautifulSoup + Requests
-  - **데이터 저장**: JSON + 이미지 (기본) MongoDB (확장)
+- **기술 스택**: `beautifulsoup`, `httpx`, `user-agents`, `json`, `polars`
+  - **스크래핑**: BeautifulSoup + httpx 기반 비동기 요청
+  - **데이터 저장**: 로컬 JSONL/미디어 파일, 컨테이너 환경의 S3 호환 객체 저장소, PostgreSQL 체크포인트
 
 ### 1.1. 사용 형태
 - 단독 실행형 스크래퍼
@@ -86,6 +86,8 @@
     - 실시간 전체 수집
       - 환경변수로 활성화
       - 지정 갤러리의 최신 목록을 반복 확인해 새 게시글만 수집
+    - 파싱 실패 게시글 재처리
+      - 전체 Job을 다시 실행하지 않고 기존 `failures.jsonl`의 parser-stage 실패 게시글만 재수집
   - 댓글 수집 옵션
     - 전체 댓글 수집
     - 특정 댓글 수집
@@ -139,7 +141,7 @@
       - 비동기 멀티 워커 실행 시에도 컨테이너/프로세스 내부 공용 요청 카운터 기준으로 교체
       - 컨테이너 간 User-Agent 교체 카운터는 공유하지 않음
     - Proxy
-      - Proxy를 통해 requests 요청 전송
+      - Proxy를 통해 httpx 요청 전송
       - Proxy 설정은 실행 파일과 같은 위치의 `.env` 파일에 저장
       - `.env`는 사용자가 직접 편집할 수 있도록 비인코딩 평문으로 저장
       - 저장 변수
@@ -229,7 +231,7 @@
   - 게시글 하나는 JSON 객체 한 줄로 append
   - Job 실행 조건과 요약 정보는 별도 metadata JSON 파일로 저장 가능
   - 이미지/동영상/디시콘 파일은 별도의 `media/` 폴더에 저장
-  - MongoDB를 활용한 확장 가능 (선택 사항)
+  - 컨테이너 운영 시 JSONL과 미디어는 S3 호환 객체 저장소에 저장하고 체크포인트는 PostgreSQL에 저장
   - 파일명: `job_YYYYMMDD_HHMMSS.jsonl` (예: `job_20230101_120000.jsonl`)
   - Job 메타데이터 예시:
     ```json
@@ -552,7 +554,7 @@
       - 글쓴이: `search_name`
       - 댓글: `search_comment`
     - 키워드: `s_keyword=<키워드>`
-      - `requests`의 `params`로 전달하거나, 직접 URL 생성 시 UTF-8 URL 인코딩
+      - httpx 요청의 `params`로 전달하거나, 직접 URL 생성 시 UTF-8 URL 인코딩
     - 페이지 번호: `page=<페이지_번호>`
     - 말머리 필터: `search_head=<말머리_ID>` (마이너 갤러리 전용)
       - 특정 말머리 게시글만 수집할 때 사용
@@ -785,7 +787,7 @@
     - `movie_view?no=<숫자>`처럼 짧고 안정적인 자체 동영상 번호는 기존처럼 `media_id`로 저장 가능
   - `(펌)` 원 게시글 정보
     - 렌더링된 DOM 기준 원글 카드: `#pum_container.cloned_card`
-    - BeautifulSoup + requests 기준으로는 JavaScript가 실행되지 않으므로 `.write_div script` 에서 `/ajax/pum_ajax/get_contents` 호출을 찾고 직접 AJAX 요청
+    - BeautifulSoup + httpx 기준으로는 JavaScript가 실행되지 않으므로 `.write_div script` 에서 `/ajax/pum_ajax/get_contents` 호출을 찾고 직접 AJAX 요청
     - AJAX 요청: `POST https://gall.dcinside.com/ajax/pum_ajax/get_contents`
       - form data: `ci_t=<script의 ci_t>`, `_GALLTYPE_=<script의 _GALLTYPE_>`, `id=<원글 갤러리 ID>`, `no=<원글 번호>`
       - 요청 헤더: `X-Requested-With: XMLHttpRequest`, `Content-Type: application/x-www-form-urlencoded; charset=UTF-8`
@@ -853,6 +855,7 @@
   - 실패 처리
     - 게시글 요청 실패 시 같은 링크를 제한 횟수만 재시도
     - 제한 횟수 초과 시 실패 목록에 `(gallery_id, post_number, url, reason)` 저장
+    - parser-stage 게시글 실패는 원본 `failures.jsonl`을 보존한 뒤 `retry-failures` 재처리 경로로 별도 회수 가능
 
   #### 2.2.5. 실시간 수집 흐름
   - 대상
@@ -885,7 +888,7 @@
     - 수동 중단, 오류, CAPTCHA 감지 시 `status="stopped"`로 최종 체크포인트 저장
 
 ## 3. 기술 스택
-  - Proxy를 통한 requests 요청 전송
+  - Proxy를 통한 httpx 요청 전송
   - `.env` 파일 기반 Proxy 환경변수 로드
   - 요청별 세션 분리 (쿠키 reset)
   - BeautifulSoup 라이브러리를 활용한 HTML 파싱
@@ -928,7 +931,8 @@ DCinside-Scraper/
 
 ## ?. 향후 확장 계획
 ### ?.1. 데이터베이스 확장
-- MongoDB를 활용한 데이터베이스 확장
+- PostgreSQL 기반 Job 이력/실패 요약 테이블 확장
+- S3 호환 객체 저장소 기반 JSONL/미디어 보존 정책 확장
 - 임베딩 처리 및 벡터 유사도 검색 (Vector Search)
 - 데이터베이스 구조 설계 및 최적화
 - Polars를 활용한 데이터 분석 및 시각화 기능 추가
@@ -990,15 +994,37 @@ DCinside-Scraper/
   - 다른 커뮤니티도 `community JSONL -> common posts/comments/media` 변환기를 추가하는 방식으로 확장
   - 통합 분석 로직은 개별 커뮤니티 JSON이 아니라 공통 스키마만 대상으로 처리
 
-### ?.7. 메타데이터 파싱 실패 게시글 재시도 유닛
-- 목적: 전체 Job을 다시 실행하지 않고, 메타데이터 파싱에 실패한 게시글만 식별해 차후 재시도
-- 대상: 게시글 HTML 요청은 성공했지만 제목, 작성자, 작성일, 조회수, 추천수, 본문 block 등 메타데이터 파싱이 실패한 게시글
-- 입력: 실패 기록의 `gallery_id`, `post_no`, `url`, `failed_fields`, `failure_reason`, `parser_version`
-- 동작: 파서 수정 이후 실패 게시글만 다시 요청 또는 재파싱하고, 성공 시 기존 실패 기록을 보정
-- 제외: CAPTCHA 감지, 차단, 네트워크 실패, 저장소 실패는 기존 상태/체크포인트 및 Job 재시도 흐름에서 처리
-- 실사이트 smoke test 반영: `post title missing` 실패가 일시적인 비정상/부분 응답으로 발생하고 같은 URL 재시도 시 정상 파싱되는 사례가 확인됨
-- 재처리 유닛은 원본 `failures.jsonl`을 수정하지 않고, 실패 URL만 direct-post 재수집 경로로 재시도한 뒤 새 `posts.jsonl`, `failures.jsonl`, `report.json`에 결과를 저장
-- 개발 시점: UOW-009 `Parser Failure Retry Reprocessor`로 AI-DLC Functional Design 진행
+### ?.7. Parser-stage 게시글 실패 재처리 유닛
+- 목적: 전체 검색/수집 Job을 다시 실행하지 않고, 기존 실패 기록에서 parser-stage 게시글 실패만 골라 direct-post 경로로 재수집
+- 구현 상태: UOW-009 `Parser Failure Retry Reprocessor`에서 구현
+- 대상 실패
+  - `failures.jsonl`의 `stage == "post"`
+  - `reason`이 제목/작성자/게시글 식별자/metadata/content/comment 파싱 실패 계열
+  - 실사이트 smoke test에서 `post title missing`처럼 일시적 비정상/부분 응답 후 같은 URL 재시도 시 정상 파싱되는 사례를 회수하기 위한 용도
+- 제외 실패
+  - CAPTCHA, 차단, 네트워크, 저장소, 체크포인트, 수동 중단, 취소 계열 실패
+  - 위 실패는 기존 HTTP retry, checkpoint/resume, 운영 대응 절차에서 처리
+- 입력
+  - 로컬 실패 파일: `--failure-file <path>`
+  - 로컬/S3 호환 명시 ref: `--failure-ref <local-path|file://...|s3://bucket/key>`
+  - 이미 성공한 게시글 제외용 명시 파일: `--existing-posts <posts.jsonl|s3://bucket/key>`
+  - 이미 성공한 게시글 제외용 로컬 root scan: `--existing-posts-root <local-directory>`
+  - `--from-report`, `--from-checkpoint`는 기존 실행 결과에서 실패 입력과 호환 옵션을 복원하기 위한 예약 helper이며, 현재 실행 경로에서는 명시적인 `--failure-file` 또는 `--failure-ref` 입력을 우선 사용
+- 입력 규칙
+  - 하나 이상의 failure input이 필수
+  - `--from-report`와 `--from-checkpoint`는 동시에 지정하면 validation 오류
+  - `--existing-posts-root`는 로컬 파일시스템 전용
+  - S3/Garage 입력은 `s3://bucket/key` 명시 object ref만 지원하고 prefix listing은 수행하지 않음
+  - 원본 `failures.jsonl`은 읽기 전용으로 사용하며 직접 수정하지 않음
+- 동작
+  - 실패 record를 한 줄씩 읽고 잘못된 JSON/스키마 record는 카운트만 남기고 건너뜀
+  - 재처리 후보는 `(site_id, gallery_id, post_id)` 기준으로 중복 제거하며 마지막 유효 실패 record를 사용
+  - 기존 `posts.jsonl`에서 이미 성공한 `(site_id, gallery_id, post_id)`는 재처리 대상에서 제외
+  - 선택된 URL을 `DirectPostSource`로 변환해 기존 JobRunner를 통해 새 Job/run으로 실행
+  - 새 run에 `posts.jsonl`, `failures.jsonl`, `report.json`을 기록
+- 결과 메타데이터
+  - `JobReport.metadata["parser_failure_retry"]`에 재처리 요약을 저장
+  - 주요 필드: `initial_failure_count`, `invalid_failure_record_count`, `ineligible_failure_count`, `selected_retry_count`, `deduped_failure_count`, `skipped_existing_count`, `success_count`, `remaining_failure_count`
 
 ## ?. 미들웨어 활용 계획
 MCP, 라이브러리, KubeRay, 커뮤니티 통합 스크래퍼

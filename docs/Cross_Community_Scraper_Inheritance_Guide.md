@@ -654,6 +654,7 @@ Smoke test에서 반드시 확인할 parser 방어 규칙:
 - 제목은 실제 제목 field만 저장하고 기기 표시, 접근성용 blind 텍스트, 말머리, repost marker를 제목으로 오인하지 않습니다.
 - 이미지 query 값이 긴 서명 토큰이면 `media_id`로 저장하지 않고 URL에만 보존합니다.
 - parser-stage 실패는 원본 실패 기록을 보존한 채 실패 게시글만 재처리할 수 있어야 합니다.
+- 재처리는 전체 검색 Job 재실행이 아니라 기존 `failures.jsonl`에서 parser-stage 게시글 실패만 선택해 direct-post 경로로 실행합니다.
 
 ### UOW-005. Job Runner and Checkpoint
 
@@ -748,6 +749,7 @@ dedupe key 표준:
 ```text
 run
 resume
+retry-failures
 import-user-agents
 configure-proxy
 wizard
@@ -775,6 +777,21 @@ wizard
 --min-post-number
 --max-post-number
 ```
+
+재처리 명령 옵션:
+
+```text
+--failure-file
+--failure-ref
+--existing-posts
+--existing-posts-root
+--from-report
+--from-checkpoint
+```
+
+`--existing-posts-root`는 로컬 파일시스템 전용 편의 옵션입니다. S3 호환 저장소에서는 명시 object ref만 표준으로 둡니다.
+
+`--from-report`와 `--from-checkpoint`는 복원 helper로 둘 수 있지만 동시에 허용하지 않습니다. 복원 로직이 없는 초기 구현에서는 명시적인 `--failure-file` 또는 `--failure-ref`를 필수로 둡니다.
 
 커뮤니티별 source 옵션:
 
@@ -873,6 +890,48 @@ MCP 응답 envelope:
 }
 ```
 
+### UOW-009. Parser Failure Retry Reprocessor
+
+역할:
+
+- parser-stage 게시글 실패 선별
+- 원본 `failures.jsonl` 보존
+- 기존 성공 `posts.jsonl` 기반 중복 제외
+- 실패 URL direct-post 재수집 Job 생성
+- 재처리 결과 report metadata 기록
+
+공유해야 할 것:
+
+- failure JSONL line reader
+- parser-stage 실패 allowlist/exclusion 규칙
+- `(site_id, board_id, post_id)` 기준 dedupe
+- 기존 성공 게시글 skip index
+- `retry-failures` CLI 명령
+- 컨테이너 entrypoint의 `retry-failures` 명령 전달
+- `report.metadata.parser_failure_retry` 요약 구조
+
+커뮤니티별로 달라지는 것:
+
+- 게시글 URL 파서
+- canonical direct-post URL 생성 규칙
+- parser-stage failure reason 이름
+- board/post identity field 이름
+
+표준 제외 대상:
+
+- CAPTCHA
+- 차단
+- 네트워크 실패
+- 저장소 실패
+- 체크포인트 실패
+- 수동 중단 또는 취소
+
+S3 호환 저장소 규칙:
+
+- `failures.jsonl`과 `posts.jsonl` 입력은 `s3://bucket/key` 명시 object ref를 사용합니다.
+- prefix listing 자동 탐색은 공통 표준에 넣지 않습니다.
+- 로컬 directory scan은 로컬 CLI 편의 기능으로만 둡니다.
+
 ## 기능 계승 매트릭스
 
 | 기능 | 표준 상태 | 후속 스크래퍼 기준 | site-specific 필요 여부 |
@@ -897,6 +956,7 @@ MCP 응답 envelope:
 | 요청 속도 조절 | 필수 | 동일 기능 제공 | 공유 |
 | 멀티 워커 | 필수 | 동일 기능 제공 | 공유 |
 | 체크포인트/resume | 필수 | 동일 기능 제공 | 공유 |
+| Parser-stage 실패 재처리 | 필수 | 원본 failure 보존 후 실패 게시글만 재수집 | URL parser와 failure reason mapper 필요 |
 | 로컬 JSONL | 필수 | 동일 구조 유지 | 공유 |
 | S3 호환 저장 | 필수 | 동일 구조 유지 | 공유 |
 | PostgreSQL checkpoint | 필수 | 동일 구조 유지 | 공유 |
@@ -1074,6 +1134,7 @@ example-scraper run --source integrated-search --keyword "..."
 example-scraper run --source deep-search --keyword "..." --date-from "..." --date-to "..."
 example-scraper run --source no-keyword-range --board-id "..." --date-from "..." --date-to "..."
 example-scraper resume --job-id "..."
+example-scraper retry-failures --failure-file ".\outputs\job-a\run-1\failures.jsonl"
 example-scraper import-user-agents ".\user-agents.txt"
 example-scraper configure-proxy --host "http://proxy.example:8080"
 example-scraper wizard
@@ -1096,6 +1157,19 @@ example-scraper wizard
 --proxy-id
 --proxy-pw
 ```
+
+재처리 전용 옵션은 모든 후속 스크래퍼에서 같은 이름을 유지합니다.
+
+```powershell
+--failure-file
+--failure-ref
+--existing-posts
+--existing-posts-root
+--from-report
+--from-checkpoint
+```
+
+`--from-report`와 `--from-checkpoint`는 동시에 지정할 수 없으며, 복원 로직이 연결되지 않은 스크래퍼에서는 명시 failure input이 필요합니다.
 
 site-specific source option은 커뮤니티 조사 후 정합니다.
 
@@ -1272,6 +1346,7 @@ Live smoke 후 확인할 항목:
 - 이미지/동영상 URL이 긴 서명 토큰을 포함해도 저장 모델 validation을 깨지 않는지 확인합니다.
 - `failure_count`가 발생하면 대표 실패 URL을 단건 재시도해 일시 실패인지 parser regression인지 분리합니다.
 - 일시 parser-stage 실패는 전체 Job 재실행보다 실패 URL 재처리로 회수합니다.
+- `retry-failures` smoke를 실행해 원본 `failures.jsonl`이 보존되고 새 run의 `report.metadata.parser_failure_retry`가 생성되는지 확인합니다.
 
 ## 커뮤니티 조사 체크리스트
 
@@ -1356,7 +1431,8 @@ Live smoke 후 확인할 항목:
 9. UOW-005 JobRunner와 통합합니다.
 10. UOW-007 CLI와 wizard를 연결합니다.
 11. UOW-008 container/MCP/test harness를 연결합니다.
-12. Polars 정규화 mapper를 작성합니다.
+12. UOW-009 parser-stage 실패 재처리 명령을 연결합니다.
+13. Polars 정규화 mapper를 작성합니다.
 
 저장소를 JobRunner보다 먼저 구현하면 output write와 checkpoint advance 순서를 테스트하기 쉽습니다.
 
@@ -1492,6 +1568,7 @@ Live smoke 후 확인할 항목:
 - [ ] 로컬 `direct-post` smoke
 - [ ] 로컬 `board-search` smoke
 - [ ] resume smoke
+- [ ] `retry-failures` smoke
 - [ ] 컨테이너 direct-post smoke
 - [ ] S3 호환 저장소 output smoke
 - [ ] PostgreSQL checkpoint smoke

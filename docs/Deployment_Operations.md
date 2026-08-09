@@ -230,6 +230,41 @@ dcinside-scraper resume
 - 체크포인트와 출력 JSONL은 같은 `--output-path` 기준으로 관리하세요.
 - 저장소 파일만 옮기고 `Checkpoint.json`을 옮기지 않으면 resume이 실패할 수 있습니다.
 
+### 파싱 실패 게시글 재처리
+
+Job이 완료됐지만 `failures.jsonl`에 parser-stage 게시글 실패가 남았다면 전체 검색 Job을 다시 실행하지 말고 `retry-failures`를 사용합니다.
+
+기본 재처리:
+
+```powershell
+dcinside-scraper retry-failures `
+  --failure-file .\outputs\job-a\run-1\failures.jsonl `
+  --job-id "retry-parser-job-a-20260810120000"
+```
+
+이미 성공한 게시글을 제외:
+
+```powershell
+dcinside-scraper retry-failures `
+  --failure-file .\outputs\job-a\run-1\failures.jsonl `
+  --existing-posts .\outputs\job-b\run-2\posts.jsonl
+```
+
+여러 로컬 output 아래의 기존 성공 게시글을 한 번에 제외:
+
+```powershell
+dcinside-scraper retry-failures `
+  --failure-file .\outputs\job-a\run-1\failures.jsonl `
+  --existing-posts-root .\outputs
+```
+
+운영 규칙:
+
+- 원본 `failures.jsonl`은 삭제하거나 직접 수정하지 않습니다.
+- 재처리 결과는 새 run의 `posts.jsonl`, `failures.jsonl`, `report.json`에 저장됩니다.
+- `--existing-posts-root`는 로컬 파일시스템 전용입니다.
+- S3/Garage 입력은 `s3://bucket/key` 형태의 명시 object ref만 지원하며 prefix 자동 탐색은 하지 않습니다.
+
 ## 컨테이너 운영
 
 ### 컨테이너 환경 변수
@@ -327,6 +362,29 @@ docker run --rm `
 ```
 
 `JOB_ID`를 생략하고 `RESUME=true`만 지정하면 PostgreSQL 체크포인트 저장소의 최신 체크포인트를 로드하는 흐름을 사용합니다.
+
+컨테이너에서 S3/Garage의 실패 파일을 재처리:
+
+```powershell
+docker run --rm `
+  --env-file .\.env.container `
+  -e JOB_ID=retry-parser-20260810120000 `
+  dcinside-scraper-worker `
+  retry-failures `
+  --failure-ref s3://dcinside-scraper/outputs/job-a/run-1/failures.jsonl `
+  --existing-posts s3://dcinside-scraper/outputs/job-b/run-2/posts.jsonl
+```
+
+컨테이너에서 로컬 failure 파일을 재처리할 때는 host output을 read-only로 mount한 뒤 컨테이너 내부 경로를 입력합니다.
+
+```powershell
+docker run --rm `
+  --env-file .\.env.container `
+  -v D:\scraper-outputs:/inputs:ro `
+  dcinside-scraper-worker `
+  retry-failures `
+  --failure-file /inputs/job-a/run-1/failures.jsonl
+```
 
 ### 컨테이너 출력
 
@@ -758,8 +816,8 @@ CAPTCHA 자동 우회는 구현하지 않습니다.
 
 1. 실패 URL 대표 1개를 브라우저 또는 단건 direct-post로 확인합니다.
 2. 정상 게시글이면 전체 검색 Job을 다시 돌리지 말고 실패 URL만 재처리합니다.
-3. UOW-009 구현 전에는 `failures.jsonl`에서 URL을 추출해 direct-post Job으로 재시도합니다.
-4. UOW-009 구현 후에는 parser failure retry 명령을 사용해 원본 실패 파일은 보존하고 새 run에 회수 결과를 저장합니다.
+3. `retry-failures` 명령을 사용해 원본 실패 파일은 보존하고 새 run에 회수 결과를 저장합니다.
+4. 이미 성공한 게시글이 섞여 있으면 `--existing-posts` 또는 로컬 전용 `--existing-posts-root`로 제외합니다.
 5. 같은 reason이 계속 남으면 parser fixture를 추가하고 selector를 수정합니다.
 
 원본 `failures.jsonl`은 감사와 재현을 위해 삭제하거나 직접 수정하지 않습니다.
@@ -778,7 +836,7 @@ CAPTCHA 자동 우회는 구현하지 않습니다.
 1. 스크래퍼가 긴 `viewimage.php?no=` 값을 `media_id`로 저장하지 않는 버전인지 확인합니다.
 2. 긴 이미지 서명 토큰은 `url` 또는 `source_url`에만 보존하고 `media_id=null`로 저장해야 합니다.
 3. `movie_view?no=<숫자>`처럼 짧고 안정적인 자체 동영상 번호는 `media_id`로 유지할 수 있습니다.
-4. 오래된 결과에서 이 오류가 발생했다면 해당 게시글만 direct-post 또는 UOW-009 재처리 경로로 다시 수집합니다.
+4. 오래된 결과에서 이 오류가 발생했다면 해당 게시글만 direct-post 또는 `retry-failures` 재처리 경로로 다시 수집합니다.
 
 ### 5. S3/Garage 쓰기 실패
 
@@ -969,17 +1027,17 @@ posts = pl.read_ndjson("outputs/job/run/posts.jsonl")
 
 - 컨테이너는 하나의 프로세스가 하나의 Job을 실행하는 구조입니다.
 - 중앙 Job 큐 서비스는 아직 없습니다.
-- 실패 게시글 전용 DLQ는 아직 없습니다.
-- 별도 재처리 유닛은 UOW-009로 AI-DLC 진행 중입니다.
+- 실패 게시글 전용 중앙 DLQ는 아직 없습니다.
+- parser-stage 게시글 실패 재처리 명령은 제공되지만, scheduler나 중앙 큐에 자동 연결되지는 않습니다.
 - S3 출력은 append마다 spool된 JSONL 전체를 업로드합니다.
 - CAPTCHA 자동 우회는 제공하지 않습니다.
 - 기본 컨테이너 이미지는 MCP extra를 포함하지 않습니다.
 
 향후 과제:
 
-- UOW-009: 실패한 메타데이터 또는 게시글만 재시도하는 재처리 유닛
 - UOW-010: AWS CDK 기반 IaC
 - 커뮤니티별 스크래퍼 공통 운영 Job 큐
+- 실패 재처리 Job의 중앙 DLQ/scheduler 연동
 - 공통 스키마 정규화 파이프라인
 - PostgreSQL 기반 Job 이력 테이블
 - S3 JSONL 파티셔닝 또는 append 최적화

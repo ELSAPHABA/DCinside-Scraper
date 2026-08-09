@@ -128,6 +128,7 @@ deep-search
 no-keyword-range
 realtime-keyword
 realtime-all
+parser-failure-retry
 ```
 
 커뮤니티별 query 구조가 달라도 `source_type`은 공통 기능명을 사용합니다.
@@ -329,7 +330,34 @@ _system/
 - run 종료 시 한 번 씁니다.
 - Job 전체 요약입니다.
 - `success_count`, `failure_count`, `deduped_count`, `filtered_count`, `status`를 포함합니다.
+- parser-stage 실패 재처리 Job이면 `metadata.parser_failure_retry`에 입력 failure 수, 제외 수, 선택 수, 성공 수, 남은 실패 수를 포함합니다.
 - `report.json`이 없으면 run이 비정상 종료되었을 수 있습니다.
+
+### Parser-stage 실패 재처리 run 규약
+
+재처리 Job은 원본 수집 Job의 산출물을 직접 수정하지 않습니다.
+
+입력:
+
+- 원본 `failures.jsonl`
+- 선택적으로 기존 성공 `posts.jsonl`
+- 선택적으로 로컬 output root의 `posts.jsonl` 자동 탐색 결과
+
+저장:
+
+- 재처리 결과는 새 `job_id` 또는 새 run 아래의 `posts.jsonl`, `failures.jsonl`, `report.json`에 저장합니다.
+- 원본 `failures.jsonl` row는 감사와 재현을 위해 그대로 둡니다.
+- S3 호환 저장소 입력은 `s3://bucket/key` 명시 object ref만 사용합니다.
+- S3 prefix listing 기반 자동 탐색은 기본 저장소 계약에 포함하지 않습니다.
+- 로컬 `--existing-posts-root` 같은 directory scan 편의 기능은 로컬 실행 전용입니다.
+
+재처리 후보 key:
+
+```text
+(site_id, board_id|gallery_id, post_id)
+```
+
+운영자는 원본 Job과 재처리 Job의 관계를 `job_id`, `run_id`, `report.metadata.parser_failure_retry.retry_source_failure_refs`로 추적합니다.
 
 ### Manifest 규약
 
