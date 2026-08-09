@@ -1,2 +1,784 @@
 # DCinside-Scraper
-디시인사이드 갤러리 게시글 및 댓글 스크래퍼
+
+디시인사이드 갤러리 게시글, 검색 결과, 댓글, 본문 콘텐츠를 수집하는 Python 스크래퍼입니다.
+
+로컬 CLI 프로그램으로 단독 실행할 수 있고, 컨테이너 워커로 실행해 S3 호환 저장소와 PostgreSQL 체크포인트 저장소를 사용할 수 있습니다. 핵심 기능은 라이브러리로 import 할 수 있으며, MCP 도구 서버로 연결할 수 있도록 어댑터도 포함합니다.
+
+현재 구현은 BeautifulSoup 기반 HTML 파싱과 `httpx.AsyncClient` 기반 비동기 요청을 사용합니다. Playwright 같은 브라우저 자동화는 런타임 의존성이 아닙니다.
+
+주의: 현재 수집 결과는 게시글/댓글/콘텐츠 메타데이터 중심입니다. 이미지/DC 동영상/DCCON 다운로드를 위한 옵션과 저장소 포트는 정의되어 있지만, 기본 사용 흐름에서는 URL, 설명, 썸네일, 다운로드 후보 같은 메타데이터 보존을 우선합니다.
+
+## 주요 기능
+
+- 게시글 직접 수집: 디시인사이드 게시글 URL을 하나 이상 입력해 본문과 댓글을 수집합니다.
+- 갤러리 내 키워드 검색 수집: 특정 메이저/마이너/미니 갤러리에서 키워드 검색 결과를 순회하고 게시글을 수집합니다.
+- 통합 검색 수집: `search.dcinside.com` 통합 검색 결과를 최대 120페이지 범위에서 수집합니다.
+- 심층 검색 수집: 통합 검색으로 관련 갤러리를 찾은 뒤, 갤러리별 키워드 검색을 다시 수행해 더 넓은 범위를 수집합니다.
+- 노키워드 범위 수집: 공백 키워드와 날짜/글번호 범위를 이용해 특정 갤러리의 기간 또는 글번호 범위 게시글을 수집합니다.
+- 실시간 수집: 환경 변수로 실시간 키워드 또는 실시간 전체 수집을 활성화하고, 실행 시간 또는 종료 시각으로 종료 조건을 지정합니다.
+- 댓글 및 답글 수집: 루트 댓글과 하위 답글을 flat list로 저장하고, `depth`, `parent_comment_id`, `parent_comment_number`로 관계를 보존합니다.
+- 본문 콘텐츠 블록 저장: 텍스트, 이미지, DC 동영상, 유튜브, 링크, 시리즈, 알 수 없는 임베드를 순서 있는 `content` 블록으로 저장합니다.
+- `(펌)` 게시글 처리: 제목의 `(펌)` 표시는 제거하고, 원 게시글 갤러리/글번호/작성자/닉네임 유형/조회수/추천수를 `repost`에 저장합니다.
+- User-Agent 교체: `user-agents.txt` 파일을 읽고 기본 요청 10회마다 User-Agent를 교체합니다.
+- Proxy 사용: CLI 옵션 또는 `.env` 파일의 프록시 설정을 사용합니다.
+- 속도 조절: 요청 간격, 게시글 워커 수, 큐 크기, 댓글 최대 페이지 수를 조절합니다.
+- 중단 및 재개: 체크포인트를 저장하고 `resume` 명령으로 중단 지점부터 재개합니다.
+- CAPTCHA/차단 감지: CAPTCHA 또는 차단 신호가 보이면 자동 우회를 시도하지 않고 작업을 중단하며 체크포인트를 남깁니다.
+- 로컬/컨테이너 저장: 로컬 JSONL 파일 또는 컨테이너 환경의 S3 호환 저장소와 PostgreSQL을 사용할 수 있습니다.
+- Polars 가공 준비: JSONL 출력과 향후 공통 스키마 정규화 흐름을 전제로 합니다.
+
+## 프로젝트 구성
+
+```text
+.
+├── main.py                         # 로컬 개발용 CLI 진입점
+├── pyproject.toml                  # 패키지 메타데이터, 의존성, console script
+├── Dockerfile                      # 컨테이너 워커 이미지
+├── README.md
+├── docs/
+│   └── Function_Specification.md   # 기능 명세서
+├── aidlc-docs/                     # AI-DLC 산출 문서
+├── src/dcinside_scraper/
+│   ├── adapters/                   # CLI, 컨테이너, MCP 어댑터
+│   ├── core/                       # 포트, 예외, 공통 유스케이스 경계
+│   ├── http/                       # httpx 기반 요청 런타임, UA/Proxy/Rate 정책
+│   ├── models/                     # Pydantic 데이터 모델
+│   ├── post_detail/                # 게시글/댓글/본문 파서와 서비스
+│   ├── runner/                     # JobRunner, 체크포인트, 출력 orchestration
+│   └── search/                     # 검색 URL 빌더, 검색 파서, 링크 수집기
+└── tests/                          # 단위/계약/선택적 smoke 테스트
+```
+
+## 유닛 구성
+
+이 프로젝트는 AI-DLC의 Unit of Work 단위로 구현됩니다. 각 유닛의 역할은 아래와 같습니다.
+
+| UOW | 이름 | 역할 |
+| --- | --- | --- |
+| UOW-001 | Core Models and Config | Pydantic 모델, enum, 작업 설정, 저장 설정, 출력 스키마 정의 |
+| UOW-002 | HTTP Runtime Policy | `httpx.AsyncClient`, 요청 간격, 재시도, User-Agent 교체, Proxy, CAPTCHA/차단 감지 |
+| UOW-003 | Search and Link Collection | 갤러리 검색, 통합 검색, 노키워드 범위 검색, 심층 검색, 실시간 수집 후보 링크 수집 |
+| UOW-004 | Post Detail and Content Parsing | 게시글 메타데이터, 본문 콘텐츠 블록, 댓글/답글, `(펌)` 원글 정보 파싱 |
+| UOW-005 | Job Runner and Checkpoint | 단일 링크 수집 워커와 다중 게시글 워커, 큐, 중단/재개, 체크포인트 |
+| UOW-006 | Output and Storage | 로컬 JSONL/리포트/실패 파일, 로컬 체크포인트, S3 호환 저장소, PostgreSQL 체크포인트 |
+| UOW-007 | CLI Adapter | `run`, `resume`, User-Agent import, Proxy 설정, 터미널 마법사 |
+| UOW-008 | Container, MCP, and Test Harness | 컨테이너 엔트리포인트, MCP 도구 핸들러, 선택적 통합 테스트 구조 |
+
+## 설치
+
+Python 3.11 이상이 필요합니다.
+
+Windows PowerShell 예시:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -U pip
+python -m pip install -e .
+```
+
+선택 기능을 함께 설치하려면 extra를 붙입니다.
+
+```powershell
+# 테스트
+python -m pip install -e ".[test]"
+
+# S3 호환 저장소와 PostgreSQL 체크포인트
+python -m pip install -e ".[s3,postgres]"
+
+# MCP 서버
+python -m pip install -e ".[mcp]"
+
+# Polars 분석
+python -m pip install -e ".[analysis]"
+
+# 전부 설치
+python -m pip install -e ".[test,s3,postgres,mcp,analysis]"
+```
+
+설치 후 아래 세 가지 방식으로 CLI를 실행할 수 있습니다.
+
+```powershell
+dcinside-scraper --help
+python -m dcinside_scraper.adapters.cli --help
+python main.py --help
+```
+
+`dcinside-scraper`는 `pyproject.toml`에 등록된 console script입니다. 가상환경이 활성화되어 있으면 별도 Windows 환경 변수 등록 없이 사용할 수 있습니다.
+
+## 빠른 시작
+
+게시글 URL을 직접 수집:
+
+```powershell
+dcinside-scraper run `
+  --source direct-post `
+  --url "https://gall.dcinside.com/board/view/?id=dcbest&no=442937"
+```
+
+댓글 없이 게시글만 수집:
+
+```powershell
+dcinside-scraper run `
+  --source direct-post `
+  --url "https://gall.dcinside.com/board/view/?id=dcbest&no=442937" `
+  --no-comments
+```
+
+출력 경로를 지정:
+
+```powershell
+dcinside-scraper run `
+  --source direct-post `
+  --url "https://gall.dcinside.com/board/view/?id=dcbest&no=442937" `
+  --output-path ".\outputs"
+```
+
+중단된 작업 재개:
+
+```powershell
+dcinside-scraper resume --job-id "job-20260809-001"
+```
+
+대화형 마법사 실행:
+
+```powershell
+dcinside-scraper wizard
+```
+
+## CLI 명령
+
+### `run`
+
+새 스크래핑 작업을 실행합니다.
+
+```powershell
+dcinside-scraper run --source <source> [source 옵션] [공통 옵션]
+```
+
+지원하는 `--source` 값:
+
+| 값 | 의미 |
+| --- | --- |
+| `direct-post` | 게시글 URL을 직접 지정 |
+| `gallery-search` | 갤러리 내 키워드 검색 |
+| `integrated-search` | 디시인사이드 통합 검색 |
+| `deep-search` | 통합 검색으로 갤러리를 찾은 뒤 갤러리별 키워드 검색 |
+| `no-keyword-range` | 키워드 없이 기간/글번호 범위로 갤러리 수집 |
+
+### `resume`
+
+체크포인트를 읽어 중단된 작업을 재개합니다.
+
+```powershell
+dcinside-scraper resume --job-id <job-id>
+```
+
+`--job-id`를 생략하면 로컬 체크포인트 저장소에서 최신 작업을 찾는 흐름을 사용합니다.
+
+### `import-user-agents`
+
+UTF-8 User-Agent 목록 파일을 현재 실행 위치의 `user-agents.txt`로 복사합니다.
+
+```powershell
+dcinside-scraper import-user-agents ".\my-user-agents.txt"
+```
+
+파일은 한 줄에 하나의 User-Agent를 적습니다. 빈 파일은 거부됩니다.
+
+### `configure-proxy`
+
+프록시 정보를 현재 실행 위치의 `.env`에 평문으로 저장합니다.
+
+```powershell
+dcinside-scraper configure-proxy `
+  --host "http://proxy.example.com:8080" `
+  --id "username" `
+  --password "password"
+```
+
+`--id`, `--password`는 선택입니다. 비밀번호를 생략하면 터미널에서 입력받습니다.
+
+### `wizard`
+
+번호 선택 방식의 터미널 마법사를 실행합니다.
+
+```powershell
+dcinside-scraper wizard
+```
+
+마법사는 source, 갤러리 ID, 키워드, 범위, 출력 경로 같은 주요 옵션을 질문하고 내부적으로 `run` 또는 보조 명령을 실행합니다.
+
+## Source별 사용법
+
+### 1. 게시글 직접 수집
+
+하나 이상의 게시글 URL을 반복해서 지정할 수 있습니다.
+
+```powershell
+dcinside-scraper run `
+  --source direct-post `
+  --url "https://gall.dcinside.com/board/view/?id=dcbest&no=442937" `
+  --url "https://gall.dcinside.com/mgallery/board/view/?id=stockus&no=17025357"
+```
+
+URL은 `gall.dcinside.com`의 `/board/view/` 게시글 URL이어야 합니다.
+
+### 2. 갤러리 내 키워드 검색
+
+```powershell
+dcinside-scraper run `
+  --source gallery-search `
+  --gallery-type minor `
+  --gallery-id "singlebungle1472" `
+  --s-type "search_subject_memo" `
+  --keyword "싱글벙글" `
+  --page 1
+```
+
+주요 옵션:
+
+| 옵션 | 설명 |
+| --- | --- |
+| `--gallery-type` | `major`, `minor`, `mini` 중 하나 |
+| `--gallery-id` | URL의 `id` 값 |
+| `--s-type` | 검색 타입. 예: `search_subject_memo` |
+| `--keyword` | 검색어 |
+| `--page` | 시작 페이지. 기본값 `1` |
+| `--search-pos` | 갤러리 검색의 다음 검색 커서. 보통 최초 요청에서는 생략합니다. |
+| `--head-id` | 마이너 갤러리 말머리/탭 ID. 메이저 갤러리나 존재하지 않는 말머리는 실패 처리 대상입니다. |
+
+갤러리 검색의 `search_pos`는 직접 계산하지 않는 것을 기본 전략으로 합니다. 최초 요청에서는 생략하고, 파서가 페이지의 다음 검색 링크에서 얻은 `search_pos`를 다음 구간 조회에 사용합니다.
+
+### 3. 통합 검색
+
+```powershell
+dcinside-scraper run `
+  --source integrated-search `
+  --keyword "싱글벙글" `
+  --sort-mode relevance `
+  --page-start 1 `
+  --page-end 10
+```
+
+옵션:
+
+| 옵션 | 설명 |
+| --- | --- |
+| `--keyword` | 통합 검색어 |
+| `--sort-mode` | `relevance` 또는 `latest` |
+| `--page-start` | 시작 페이지 |
+| `--page-end` | 종료 페이지 |
+
+통합 검색은 디시인사이드 검색 페이지의 한계에 맞춰 최대 120페이지 범위를 전제로 합니다.
+
+### 4. 심층 검색
+
+통합 검색으로 검색 결과가 있는 갤러리를 먼저 찾고, 발견한 갤러리별로 다시 갤러리 내 키워드 검색을 수행합니다.
+
+```powershell
+dcinside-scraper run `
+  --source deep-search `
+  --keyword "싱글벙글" `
+  --seed-sort-mode relevance `
+  --date-from "2026-08-01" `
+  --date-to "2026-08-09"
+```
+
+심층 검색은 반드시 날짜 또는 글번호 범위 중 하나 이상이 필요합니다. 범위가 없으면 너무 넓은 검색이 되기 때문입니다.
+
+사용 가능한 범위 옵션:
+
+| 옵션 | 설명 |
+| --- | --- |
+| `--date-from` | 시작일, `YYYY-MM-DD` |
+| `--date-to` | 종료일, `YYYY-MM-DD` |
+| `--min-post-number` | 최소 글번호 |
+| `--max-post-number` | 최대 글번호 |
+
+### 5. 노키워드 범위 수집
+
+특정 갤러리에서 키워드 없이 기간 또는 글번호 범위를 기준으로 게시글을 수집합니다.
+
+```powershell
+dcinside-scraper run `
+  --source no-keyword-range `
+  --gallery-type minor `
+  --gallery-id "singlebungle1472" `
+  --date-from "2026-08-01" `
+  --date-to "2026-08-09"
+```
+
+이 모드는 내부적으로 공백 키워드 검색과 날짜 빠른 이동 흐름을 사용합니다. `deep-search`와 마찬가지로 날짜 또는 글번호 범위가 하나 이상 필요합니다.
+
+## 실시간 수집
+
+실시간 수집은 `--source`로 직접 선택하지 않고 환경 변수로 활성화합니다.
+
+공통 환경 변수:
+
+| 환경 변수 | 설명 |
+| --- | --- |
+| `DCINSIDE_REALTIME_ENABLED` | `true`이면 실시간 수집 활성화 |
+| `DCINSIDE_REALTIME_MODE` | `keyword` 또는 `all` |
+| `DCINSIDE_REALTIME_DURATION_SECONDS` | 실행 시간, 초 단위 |
+| `DCINSIDE_REALTIME_END_AT` | 종료 시각. ISO datetime 문자열 |
+| `DCINSIDE_REALTIME_POLL_INTERVAL_SECONDS` | 폴링 간격. 기본 모델 값은 30초 |
+
+종료 조건은 `DCINSIDE_REALTIME_DURATION_SECONDS`와 `DCINSIDE_REALTIME_END_AT` 중 정확히 하나만 설정해야 합니다. 둘 다 설정하거나 둘 다 생략하면 설정 오류입니다.
+
+실시간 키워드 수집:
+
+```powershell
+$env:DCINSIDE_REALTIME_ENABLED = "true"
+$env:DCINSIDE_REALTIME_MODE = "keyword"
+$env:DCINSIDE_REALTIME_KEYWORD = "싱글벙글"
+$env:DCINSIDE_REALTIME_DURATION_SECONDS = "3600"
+
+dcinside-scraper run --job-id "realtime-keyword-001"
+```
+
+실시간 전체 수집:
+
+```powershell
+$env:DCINSIDE_REALTIME_ENABLED = "true"
+$env:DCINSIDE_REALTIME_MODE = "all"
+$env:DCINSIDE_REALTIME_DURATION_SECONDS = "3600"
+
+dcinside-scraper run `
+  --job-id "realtime-all-001" `
+  --gallery-type minor `
+  --gallery-id "singlebungle1472"
+```
+
+## 공통 실행 옵션
+
+| 옵션 | 기본값 | 설명 |
+| --- | --- | --- |
+| `--job-id` | 자동 생성 | 작업 ID. 출력 경로와 체크포인트 키에 사용됩니다. |
+| `--output-path` | `outputs` | 로컬 출력 기본 경로. `StorageConfig.base_output_path`에 해당합니다. |
+| `--image-mode` | `metadata_only` | 이미지 처리 정책. `metadata_only` 또는 `download` |
+| `--dccon-mode` | `metadata` | DCCON 처리 정책. `skip`, `metadata`, `download` |
+| `--include-comments` | 기본 포함 | 댓글 수집 활성화 |
+| `--no-comments` | - | 댓글 수집 비활성화 |
+| `--request-interval-seconds` | `1.0` | 요청 간 최소 대기 시간 |
+| `--post-worker-count` | `1` | 게시글 상세 수집 워커 수 |
+| `--queue-max-size` | 제한 없음 | 링크 수집기와 게시글 워커 사이의 큐 최대 크기 |
+| `--max-comment-pages` | `100` | 게시글당 댓글 AJAX 최대 페이지 수 |
+| `--user-agent-file` | `user-agents.txt` 자동 탐색 | User-Agent 목록 파일 |
+| `--user-agent-rotate-every` | `10` | 요청 몇 회마다 User-Agent를 교체할지 |
+| `--proxy-host` | `.env` 자동 탐색 | 요청에 사용할 프록시 host |
+| `--proxy-id` | `.env` 자동 탐색 | 프록시 사용자 ID |
+| `--proxy-pw` | `.env` 자동 탐색 | 프록시 비밀번호 |
+
+## User-Agent 설정
+
+User-Agent 파일은 UTF-8 텍스트 파일이며 한 줄에 하나씩 User-Agent를 적습니다.
+
+```text
+Mozilla/5.0 ...
+Mozilla/5.0 ...
+```
+
+사용 순서:
+
+1. `--user-agent-file`을 지정하면 해당 파일을 사용합니다.
+2. 지정하지 않았고 실행 위치에 `user-agents.txt`가 있으면 자동 사용합니다.
+3. 파일이 없으면 기본 HTTP 클라이언트 설정을 사용합니다.
+
+기본 교체 주기는 요청 10회마다 1회입니다.
+
+```powershell
+dcinside-scraper run `
+  --source direct-post `
+  --url "https://gall.dcinside.com/board/view/?id=dcbest&no=442937" `
+  --user-agent-file ".\user-agents.txt" `
+  --user-agent-rotate-every 10
+```
+
+기존 파일을 프로젝트 실행 위치의 `user-agents.txt`로 가져오기:
+
+```powershell
+dcinside-scraper import-user-agents ".\downloaded-user-agents.txt"
+```
+
+## Proxy 설정
+
+Proxy 사용 우선순위:
+
+1. 실행 옵션으로 `--proxy-host`를 지정하면 해당 값을 우선 사용합니다.
+2. 실행 위치에 `.env`가 있고 `DCINSIDE_PROXY_HOST`가 있으면 자동 사용합니다.
+3. 둘 다 없으면 프록시 없이 요청합니다.
+
+`.env` 키:
+
+```dotenv
+DCINSIDE_PROXY_HOST=http://proxy.example.com:8080
+DCINSIDE_PROXY_ID=username
+DCINSIDE_PROXY_PW=password
+```
+
+CLI로 `.env` 생성 또는 갱신:
+
+```powershell
+dcinside-scraper configure-proxy `
+  --host "http://proxy.example.com:8080" `
+  --id "username" `
+  --password "password"
+```
+
+`.env`는 유저가 직접 편집할 수 있도록 평문으로 저장됩니다. 저장소에 커밋하지 마세요.
+
+## 요청 속도와 워커
+
+기본 구조는 링크 수집기 1개와 게시글 상세 수집 워커 N개입니다.
+
+```text
+검색/목록 수집기 1개
+  -> PostCandidate 큐
+  -> 게시글 상세 워커 N개
+  -> JSONL/실패/체크포인트 저장
+```
+
+예시:
+
+```powershell
+dcinside-scraper run `
+  --source gallery-search `
+  --gallery-type minor `
+  --gallery-id "singlebungle1472" `
+  --s-type "search_subject_memo" `
+  --keyword "싱글벙글" `
+  --request-interval-seconds 2.0 `
+  --post-worker-count 3 `
+  --queue-max-size 100
+```
+
+운영 권장값:
+
+- 처음 실행할 때는 `--post-worker-count 1`과 기본 요청 간격 `1.0`초로 시작하세요.
+- CAPTCHA나 차단이 자주 발생하면 워커 수를 줄이고 `--request-interval-seconds`를 늘리세요.
+- 큐는 게시글 링크 단위로 들어갑니다. Job 하나가 큐에 들어가는 것이 아니라, Job 안에서 발견한 게시글 후보 링크들이 큐에 쌓이고 워커가 하나씩 처리합니다.
+
+## 출력 파일
+
+로컬 실행 기본 출력 구조:
+
+```text
+outputs/
+└── <job_id>/
+    └── <run_id>/
+        ├── posts.jsonl
+        ├── failures.jsonl
+        ├── report.json
+        └── media/
+```
+
+체크포인트는 로컬 실행 위치의 `Checkpoint.json`에 저장됩니다.
+
+파일 설명:
+
+| 파일 | 설명 |
+| --- | --- |
+| `posts.jsonl` | 게시글 단위 JSON 객체를 한 줄씩 append |
+| `failures.jsonl` | 게시글별 실패 기록 |
+| `report.json` | 작업 결과 요약 |
+| `media/` | 미디어 저장 포트가 파일을 저장할 때 사용하는 위치 |
+| `Checkpoint.json` | 작업 재개를 위한 체크포인트 |
+
+JSONL은 한 줄이 하나의 게시글입니다. Polars로 읽을 때는 아래처럼 사용할 수 있습니다.
+
+```python
+import polars as pl
+
+posts = pl.read_ndjson("outputs/job-1/run-1/posts.jsonl")
+```
+
+## 게시글 JSON 구조
+
+게시글 출력의 최상위 모델은 `dcinside.post.v1`입니다.
+
+주요 필드:
+
+| 필드 | 설명 |
+| --- | --- |
+| `schema_version` | 현재 `dcinside.post.v1` |
+| `scrap_timestamp` | 수집 시각 |
+| `site_id` | `dcinside` |
+| `gallery_id` | 갤러리 ID |
+| `post_id` | 게시글 ID |
+| `post_number` | 글번호 |
+| `is_repost` | `(펌)` 게시글 여부 |
+| `repost` | `(펌)` 원 게시글 정보. 일반 게시글은 `null` |
+| `title` | 게시글 제목. `(펌)` 접두어는 제거됩니다. |
+| `author` | 작성자 정보 |
+| `nickname_type` | `fixed`, `semi_fixed`, `guest`, `unknown` |
+| `date` | 작성일 |
+| `views` | 조회수 |
+| `recommendations` | 추천/비추천 등 추천 정보 |
+| `comment_count` | 댓글 수 |
+| `content` | 순서 있는 본문 블록 |
+| `images` | 이미지 미디어 목록 |
+| `comments` | 댓글과 답글 목록 |
+| `links` | 본문 링크 목록 |
+
+`content` 블록 타입:
+
+| 타입 | 설명 |
+| --- | --- |
+| `text` | 일반 본문 텍스트 |
+| `image` | 이미지 URL, 원본 URL, alt, 저장 경로 또는 object key |
+| `dc_video` | DC 동영상 URL, 썸네일, 설명, 길이, 저장 경로 또는 object key |
+| `youtube` | 유튜브 URL, video ID, 제목 |
+| `link` | 일반 링크 URL, 텍스트, 제목 |
+| `series` | 시리즈/게시글 모음 제목, URL, 글 수 |
+| `unknown_embed` | 아직 분류하지 못한 임베드 |
+
+`dc_video.description`은 게시글의 동영상 설명 영역에서 파싱합니다. 설명이 없으면 `null`입니다.
+
+`(펌)` 게시글의 `repost`에는 원 게시글의 갤러리, 글번호, 작성자, 닉네임 유형, 조회수, 추천수를 저장합니다. 원 게시글의 댓글 수는 저장하지 않습니다.
+
+댓글은 중첩 객체가 아니라 flat list입니다.
+
+| 댓글 필드 | 설명 |
+| --- | --- |
+| `comment_id` | 댓글 ID |
+| `comment_number` | 댓글 번호 |
+| `parent_comment_id` | 답글이면 부모 댓글 ID |
+| `parent_comment_number` | 답글이면 부모 댓글 번호 |
+| `depth` | 루트 댓글 `0`, 답글 `1` 이상 |
+| `author` | 댓글 작성자 정보 |
+| `created_at` | 댓글 작성 시각 |
+
+## 실패와 중단 처리
+
+작업은 아래 상황에서 중단되거나 실패 기록을 남깁니다.
+
+- CAPTCHA 감지
+- 차단 페이지 또는 비정상 응답 감지
+- 저장소 쓰기 실패
+- 체크포인트 저장 실패
+- 게시글 단위 파싱 실패
+- 사용자의 Ctrl+C 또는 종료 신호
+
+CAPTCHA는 자동 우회하지 않습니다. 감지되면 작업을 중단하고 체크포인트를 저장하는 것이 기본 정책입니다.
+
+게시글 하나의 파싱 실패는 가능한 경우 `failures.jsonl`에 기록하고 다음 게시글로 진행합니다. 작업 전체 중단이 필요한 오류는 `report.json`과 체크포인트에 반영됩니다.
+
+향후 계획에는 파싱 실패한 메타데이터가 속한 게시글만 별도로 재시도하는 유닛이 포함되어 있습니다.
+
+## 컨테이너 실행
+
+컨테이너는 로컬 파일 저장 대신 S3 호환 저장소와 PostgreSQL 체크포인트 저장소를 사용하는 워커 모드입니다. S3 호환 저장소는 Garage를 우선 대상으로 두고, 향후 SeaweedFS로 확장할 수 있는 구조를 전제로 합니다.
+
+이미지 빌드:
+
+```powershell
+docker build -t dcinside-scraper-worker .
+```
+
+필수 환경 변수:
+
+| 환경 변수 | 설명 |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL DSN |
+| `S3_ENDPOINT_URL` | Garage/S3 호환 endpoint |
+| `S3_BUCKET` | 저장 bucket |
+| `S3_ACCESS_KEY_ID` | S3 access key |
+| `S3_SECRET_ACCESS_KEY` | S3 secret key |
+
+선택 환경 변수:
+
+| 환경 변수 | 설명 |
+| --- | --- |
+| `S3_REGION` | S3 region |
+| `S3_FORCE_PATH_STYLE` | path style 강제 여부 |
+| `RESUME` | `true`이면 resume 모드 |
+| `JOB_ID` | resume 또는 작업 ID 지정 |
+| `DCINSIDE_USER_AGENT_FILE` | 컨테이너 내부 User-Agent 파일 경로 |
+| `DCINSIDE_USER_AGENT_ROTATE_EVERY` | User-Agent 교체 주기 |
+| `DCINSIDE_PROXY_HOST` | Proxy host |
+| `DCINSIDE_PROXY_ID` | Proxy ID |
+| `DCINSIDE_PROXY_PW` | Proxy password |
+| `DCINSIDE_REALTIME_*` | 실시간 수집 설정 |
+
+예시 `.env.container`:
+
+```dotenv
+DATABASE_URL=postgresql://scraper:password@postgres:5432/scraper
+S3_ENDPOINT_URL=http://garage:3900
+S3_BUCKET=dcinside-scraper
+S3_ACCESS_KEY_ID=access-key
+S3_SECRET_ACCESS_KEY=secret-key
+S3_REGION=garage
+S3_FORCE_PATH_STYLE=true
+```
+
+컨테이너 실행:
+
+```powershell
+docker run --rm `
+  --env-file .\.env.container `
+  dcinside-scraper-worker `
+  run `
+  --source direct-post `
+  --url "https://gall.dcinside.com/board/view/?id=dcbest&no=442937"
+```
+
+컨테이너 resume:
+
+```powershell
+docker run --rm `
+  --env-file .\.env.container `
+  -e RESUME=true `
+  -e JOB_ID=job-20260809-001 `
+  dcinside-scraper-worker
+```
+
+저장소 컨테이너와 스크래퍼 컨테이너는 반드시 하나의 Docker Compose 파일에 강하게 묶을 필요가 없습니다. 향후 여러 커뮤니티 스크래퍼를 함께 운영할 계획이라면 Garage/PostgreSQL은 공유 인프라로 별도 운영하고, 각 스크래퍼 워커는 환경 변수로 접속 정보를 주입하는 구성이 더 적합합니다.
+
+## MCP 사용
+
+MCP extra 설치:
+
+```powershell
+python -m pip install -e ".[mcp]"
+```
+
+MCP 서버 실행:
+
+```powershell
+python -m dcinside_scraper.adapters.mcp
+```
+
+MCP 도구 핸들러는 아래 기능을 제공합니다.
+
+| 도구 | 설명 |
+| --- | --- |
+| `search_gallery` | 갤러리 검색 페이지 파싱 |
+| `search_integrated` | 통합 검색 페이지 파싱 |
+| `fetch_post` | 게시글 상세 수집 |
+| `fetch_comments` | 댓글 수집 |
+| `run_job` | 작업 실행 |
+| `resume_job` | 작업 재개 |
+
+응답은 성공 시 `{"ok": true, "data": ...}` 형태이고, 실패 시 오류 정보를 포함합니다.
+
+## 라이브러리로 사용
+
+설치 후 Python 코드에서 핵심 API를 import 할 수 있습니다.
+
+검색 API 예시:
+
+```python
+import anyio
+
+from dcinside_scraper.http import HttpClient, HttpRuntimeConfig
+from dcinside_scraper.core.api import search_gallery
+from dcinside_scraper.models.enums import GalleryType
+from dcinside_scraper.models.job import GallerySearchRequest
+
+
+async def main() -> None:
+    async with HttpClient(HttpRuntimeConfig()) as http_client:
+        page = await search_gallery(
+            GallerySearchRequest(
+                gallery_type=GalleryType.MINOR,
+                gallery_id="singlebungle1472",
+                s_type="search_subject_memo",
+                keyword="싱글벙글",
+                page=1,
+            ),
+            http_client,
+        )
+        print(page.candidates)
+
+
+anyio.run(main)
+```
+
+게시글 상세 수집 API 예시:
+
+```python
+import anyio
+
+from dcinside_scraper.http import HttpClient, HttpRuntimeConfig
+from dcinside_scraper.core.api import fetch_post
+from dcinside_scraper.models.job import PostRequest
+
+
+async def main() -> None:
+    async with HttpClient(HttpRuntimeConfig()) as http_client:
+        post = await fetch_post(
+            PostRequest(
+                url="https://gall.dcinside.com/board/view/?id=dcbest&no=442937",
+            ),
+            http_client,
+        )
+        print(post.model_dump())
+
+
+anyio.run(main)
+```
+
+라이브러리 사용 시에도 HTTP 클라이언트는 호출자가 주입합니다. 이렇게 해야 테스트, 프록시, User-Agent, 쿠키 정책, 저장소 정책을 실행 환경별로 분리할 수 있습니다.
+
+## 데이터 가공과 정규화 방향
+
+현재 저장은 디시인사이드 개별 JSON 스키마인 `dcinside.post.v1` JSONL입니다. 향후 통합 커뮤니티 전략분석 플랫폼에서는 아래 흐름을 권장합니다.
+
+1. 커뮤니티별 개별 JSON 스키마로 원본을 보존합니다.
+2. Polars로 JSONL을 읽습니다.
+3. 개별 스키마를 공통 스키마로 정규화합니다.
+4. 게시글과 댓글을 별도 테이블로 분리합니다.
+5. 이미지, 동영상, 유튜브, 링크, 시리즈 같은 콘텐츠 블록은 별도 content/media 테이블로 펼칩니다.
+
+댓글은 수집 JSON 안에서는 게시글 하위에 들어가지만, 분석 단계에서는 `post_id` 또는 정규화된 공통 키를 기준으로 게시글 테이블과 댓글 테이블을 분리하는 것을 전제로 합니다.
+
+## 테스트
+
+테스트 extra 설치:
+
+```powershell
+python -m pip install -e ".[test]"
+```
+
+전체 테스트:
+
+```powershell
+python -m pytest -q
+```
+
+선택적 smoke 테스트 marker:
+
+| marker | 설명 |
+| --- | --- |
+| `live` | 실제 네트워크 요청 테스트 |
+| `docker` | Docker 이미지/컨테이너 smoke 테스트 |
+| `garage` | Garage 또는 S3 호환 저장소 smoke 테스트 |
+| `postgres` | PostgreSQL 체크포인트 smoke 테스트 |
+| `mcp` | MCP 서버/핸들러 smoke 테스트 |
+
+예시:
+
+```powershell
+python -m pytest -q -m "not live and not docker and not garage and not postgres and not mcp"
+```
+
+## 운영 주의사항
+
+- 디시인사이드의 이용약관과 관련 법령을 준수하세요.
+- 과도한 요청은 서비스에 부담을 줄 수 있고 차단될 수 있습니다.
+- CAPTCHA 자동 우회 기능은 제공하지 않습니다.
+- 쿠키는 기본 요구사항이 아닙니다. 필요한 AJAX 요청에 한해 같은 HTTP 클라이언트 생명주기 안에서 서버가 준 쿠키를 자연스럽게 사용할 수 있습니다.
+- 프록시 비밀번호, S3 secret, DB 비밀번호가 들어간 `.env` 파일은 커밋하지 마세요.
+- User-Agent 교체와 Proxy는 차단 회피를 보장하지 않습니다. 안정적인 수집을 위해 요청 간격과 워커 수를 보수적으로 설정하세요.
+
+## 관련 문서
+
+- 기능 명세서: `docs/Function_Specification.md`
+- 배포/운영 가이드: `docs/Deployment_Operations.md`
+- 커뮤니티 스크래퍼 구조/기능 계승 가이드: `docs/Cross_Community_Scraper_Inheritance_Guide.md`
+- 공유 저장소 규약: `docs/Shared_Storage_Contract.md`
+- AI-DLC 산출물: `aidlc-docs/`
+- UOW 공개 계약 문서: `aidlc-docs/construction/*/code/public-contracts.md`
