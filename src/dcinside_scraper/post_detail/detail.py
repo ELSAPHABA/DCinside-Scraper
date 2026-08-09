@@ -693,8 +693,11 @@ def _parse_author(node: Tag | None) -> AuthorInfo:
 def _title_text(node: Tag | None) -> str:
     if node is None:
         return ""
+    subject = node.select_one(".title_subject")
+    if subject is not None:
+        return subject.get_text(" ", strip=True)
     raw = node.get_text(" ", strip=True)
-    for child in node.select("b.font_blue009, .title_headtext, .title_subject, .headtext"):
+    for child in node.select("b.font_blue009, .title_headtext, .headtext, .title_device, .blind"):
         child_text = child.get_text(" ", strip=True)
         raw = raw.replace(child_text, "", 1).strip()
     return raw
