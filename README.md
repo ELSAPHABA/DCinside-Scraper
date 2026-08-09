@@ -567,7 +567,29 @@ CAPTCHA는 자동 우회하지 않습니다. 감지되면 작업을 중단하고
 
 게시글 하나의 파싱 실패는 가능한 경우 `failures.jsonl`에 기록하고 다음 게시글로 진행합니다. 작업 전체 중단이 필요한 오류는 `report.json`과 체크포인트에 반영됩니다.
 
-파싱 실패한 메타데이터가 속한 게시글만 별도로 재시도하는 유닛은 UOW-009로 설계 진행 중입니다.
+파싱 실패한 게시글만 별도로 재시도하려면 `retry-failures`를 사용합니다. 원본 `failures.jsonl`은 수정하지 않고, 재시도 결과는 새 run의 `posts.jsonl`, `failures.jsonl`, `report.json`으로 저장됩니다.
+
+```powershell
+dcinside-scraper retry-failures `
+  --failure-file .\outputs\job-a\run-1\failures.jsonl `
+  --existing-posts .\outputs\job-b\run-2\posts.jsonl
+```
+
+이미 성공한 게시글을 여러 로컬 output 아래에서 제외하려면 local 전용 편의 옵션인 `--existing-posts-root`를 사용할 수 있습니다.
+
+```powershell
+dcinside-scraper retry-failures `
+  --failure-file .\outputs\job-a\run-1\failures.jsonl `
+  --existing-posts-root .\outputs
+```
+
+S3/Garage 입력은 명시 object ref만 지원합니다. Prefix 자동 탐색은 수행하지 않습니다.
+
+```powershell
+dcinside-scraper retry-failures `
+  --failure-ref s3://bucket/outputs/job-a/run-1/failures.jsonl `
+  --existing-posts s3://bucket/outputs/job-b/run-2/posts.jsonl
+```
 
 ## 컨테이너 실행
 
@@ -635,6 +657,17 @@ docker run --rm `
   -e RESUME=true `
   -e JOB_ID=job-20260809-001 `
   dcinside-scraper-worker
+```
+
+컨테이너에서 local failure 파일을 재시도할 때는 host output을 read-only로 mount한 뒤 컨테이너 내부 경로를 입력합니다.
+
+```powershell
+docker run --rm `
+  --env-file .\.env.container `
+  -v D:\scraper-outputs:/inputs:ro `
+  dcinside-scraper-worker `
+  retry-failures `
+  --failure-file /inputs/job-a/run-1/failures.jsonl
 ```
 
 저장소 컨테이너와 스크래퍼 컨테이너는 반드시 하나의 Docker Compose 파일에 강하게 묶을 필요가 없습니다. 향후 여러 커뮤니티 스크래퍼를 함께 운영할 계획이라면 Garage/PostgreSQL은 공유 인프라로 별도 운영하고, 각 스크래퍼 워커는 환경 변수로 접속 정보를 주입하는 구성이 더 적합합니다.
