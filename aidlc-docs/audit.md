@@ -2074,3 +2074,25 @@
 **Approval Prompt**: "UOW-010 Infrastructure Design 산출물 검토가 필요합니다. 승인하면 UOW-010 Code Generation으로 진행합니다."
 
 **Context**: CONSTRUCTION - Infrastructure Design Review - UOW-010
+
+---
+
+## CONSTRUCTION - Infrastructure Design Approval And Code Generation - UOW-010
+
+**Timestamp**: 2026-08-10T02:09:22Z
+
+**User Input**: "좋아요. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-010 Infrastructure Design approval, generated the AWS CDK Python app, shared infra stack, worker stack, environment configs, CDK assertion tests, and code-stage documentation, then moved AI-DLC state to Code Generation review."
+
+**Approval Status**: "UOW-010 Infrastructure Design approved."
+
+**Artifacts**: `infra/cdk/app.py`, `infra/cdk/cdk.json`, `infra/cdk/requirements.txt`, `infra/cdk/stacks/config.py`, `infra/cdk/stacks/naming.py`, `infra/cdk/stacks/shared_infra_stack.py`, `infra/cdk/stacks/worker_stack.py`, `infra/cdk/config/dev.yaml`, `infra/cdk/config/staging.yaml`, `infra/cdk/config/prod.yaml`, `infra/cdk/tests/test_config.py`, `infra/cdk/tests/test_naming.py`, `infra/cdk/tests/test_shared_infra_stack.py`, `infra/cdk/tests/test_worker_stack.py`, `.gitignore`, `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/code/public-contracts.md`, `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/code/code-generation-summary.md`
+
+**Verification**: "`.\.tmp\uow010-cdk-venv\Scripts\python.exe -m pytest infra\cdk\tests -q` passed with 11 tests. `cd infra/cdk; cdk synth -c env=dev` passed. Live AWS deploy/destroy smoke was not run."
+
+**Implementation Note**: "Default CDK synth is account-agnostic to avoid AWS account lookup in the default gate. Real deployment can pass `-c use_config_account=true` after config update and account bootstrap. `cdk.out/` and `cdk.context.json` are ignored generated artifacts."
+
+**Approval Prompt**: "UOW-010 Code Generation 산출물 검토가 필요합니다. 승인하면 UOW-010 Build and Test로 진행합니다."
+
+**Context**: CONSTRUCTION - Code Generation Review - UOW-010

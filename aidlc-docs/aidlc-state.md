@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-07-22T08:16:24Z
-- **Current Stage**: CONSTRUCTION - Infrastructure Design Review - UOW-010
+- **Current Stage**: CONSTRUCTION - Code Generation Review - UOW-010
 
 ## Workspace State
 - **Existing Code**: No
@@ -109,16 +109,17 @@
 - [x] Functional Design - APPROVED - UOW-010
 - [x] NFR Requirements - APPROVED - UOW-010
 - [x] NFR Design - APPROVED - UOW-010
-- [ ] Infrastructure Design - REVIEW - UOW-010
+- [x] Infrastructure Design - APPROVED - UOW-010
+- [ ] Code Generation - REVIEW - UOW-010
 
 ### OPERATIONS PHASE
 - [x] Operations - PLACEHOLDER
 
 ## Current Status
 - **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: Infrastructure Design Review - UOW-010 AWS CDK Infrastructure IaC
-- **Next Step**: User reviews and approves UOW-010 Infrastructure Design artifacts
-- **Status**: UOW-010 Infrastructure Design questionnaire answers were confirmed, validated, and converted into Infrastructure Design artifacts. Approval is required before moving to UOW-010 Code Generation.
+- **Current Stage**: Code Generation Review - UOW-010 AWS CDK Infrastructure IaC
+- **Next Step**: User reviews and approves UOW-010 Code Generation artifacts
+- **Status**: UOW-010 Infrastructure Design approved. UOW-010 AWS CDK IaC code, tests, and code-stage documentation were generated. Approval is required before moving to UOW-010 Build and Test.
 
 ## Execution Plan Summary
 - **Total Stages**: 12
@@ -829,13 +830,22 @@
 - **Current Unit**: UOW-010 AWS CDK Infrastructure IaC
 - **Plan**: Created
 - **Plan Created At**: 2026-08-10T01:24:24Z
-- **Status**: Review Required
+- **Status**: Approved
 - **Plan Artifact**: `aidlc-docs/construction/plans/uow-010-aws-cdk-infrastructure-iac-infrastructure-design-plan.md`
 - **Answers Confirmed At**: 2026-08-10T01:30:22Z
 - **Generated At**: 2026-08-10T01:30:22Z
 - **Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
 - **Questionnaire Note**: Q1-Q10 all selected A. Confirmed direction is minimal Python CDK dependencies, one environment YAML shape, new no-NAT VPC, one shared S3 bucket per environment, one shared RDS PostgreSQL instance per environment, ECS cluster in shared infra stack, worker-specific Fargate task definitions, YAML non-secret env plus Secrets Manager ECS injection, CDK-defined scoped IAM/security groups, CloudWatch LogGroups plus EventBridge task failure signal, and pytest CDK assertions plus `cdk synth`.
+- **Approved At**: 2026-08-10T01:43:54Z
 - **Scope Note**: The questionnaire defines concrete infrastructure mapping for CDK dependencies, environment YAML, VPC/subnets, S3 bucket, RDS PostgreSQL, ECS cluster/task placement, runtime env/secret injection, IAM/security groups, EventBridge/CloudWatch observability, and CDK verification artifacts.
+
+## Code Generation Status - UOW-010
+- **Current Unit**: UOW-010 AWS CDK Infrastructure IaC
+- **Status**: Review Required
+- **Generated At**: 2026-08-10T02:09:22Z
+- **Artifacts**: `infra/cdk/app.py`, `infra/cdk/cdk.json`, `infra/cdk/requirements.txt`, `infra/cdk/stacks/`, `infra/cdk/config/`, `infra/cdk/tests/`, `.gitignore`, `public-contracts.md`, `code-generation-summary.md`
+- **Verification**: `.\.tmp\uow010-cdk-venv\Scripts\python.exe -m pytest infra\cdk\tests -q` passed with 11 tests. `cd infra/cdk; cdk synth -c env=dev` passed. CDK reported informational unconfigured feature flags only. Live AWS deploy/destroy smoke was not run.
+- **Implementation Note**: CDK default synth is account-agnostic to avoid AWS account lookup during the default gate. Real deployment can pass `-c use_config_account=true` after updating `infra/cdk/config/{env}.yaml` and bootstrapping the target account. `cdk.out/` and `cdk.context.json` are ignored generated artifacts.
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md
