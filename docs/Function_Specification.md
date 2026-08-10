@@ -490,7 +490,10 @@
       - 구현은 Garage 전용 API가 아니라 S3 호환 접속 설정을 사용
       - S3 호환 접속 환경변수: `S3_ENDPOINT_URL`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_REGION`, `S3_FORCE_PATH_STYLE`
       - SeaweedFS는 대량 미디어/소파일 저장, FUSE, Iceberg 등 고급 저장소 요구가 생길 때 대체 저장소로 검토
-    - 향후 통합 플랫폼/클라우드 환경: 체크포인트는 RDS, Job JSONL 파일과 미디어는 S3 호환 저장소로 확장
+    - AWS CDK 배포 환경: `infra/cdk`에서 ECS Fargate 워커, AWS S3 출력 bucket, RDS PostgreSQL 체크포인트 저장소, Secrets Manager secret 주입, CloudWatch Logs/EventBridge 알림 구성을 제공
+      - CDK는 워커 이미지 빌드를 수행하지 않고, 사전에 push된 image URI/tag를 참조
+      - CDK 배포에서도 namespace, object key, checkpoint key는 공유 저장소 규약을 따름
+    - 향후 통합 플랫폼 환경: SQS 기반 Job Queue와 중앙 scheduler를 추가해 여러 커뮤니티 워커 컨테이너를 공통 방식으로 실행
   - 향후 SQS 기반 통합 플랫폼 처리 흐름
     - Queue에서 작업 획득
     - 작업 lease 설정
@@ -899,6 +902,7 @@
   - httpx 라이브러리를 활용한 비동기 HTTP 요청
   - asyncio.Queue를 활용한 링크 수집 워커 + 게시글 수집 워커 분리
   - 로컬 체크포인트는 `Checkpoint.json`, 컨테이너 체크포인트는 PostgreSQL, 컨테이너 JSONL 출력은 Garage 기반 S3 호환 오브젝트 스토리지 사용
+  - AWS CDK를 활용한 ECS Fargate, AWS S3, RDS PostgreSQL 기반 선택 배포 경로 제공
   - SeaweedFS는 대량 미디어/소파일 저장, FUSE, Iceberg 요구가 생길 때 확장 후보로 유지
 
 ## 4. 디렉토리 구조
@@ -947,6 +951,9 @@ DCinside-Scraper/
 - 터미널에서 봇 토큰 입력
 
 ### ?.4. 통합 작업 관리 시스템
+- 단일 스크래퍼의 AWS 배포는 `infra/cdk`의 CDK 구성으로 관리
+- CDK는 VPC, S3 output bucket, RDS PostgreSQL, ECS cluster, Fargate worker task, CloudWatch Logs/EventBridge 기반 실패 감지를 구성
+- CDK는 중앙 Job Queue, 통합 운영 UI, Docker image build, EKS 배포를 포함하지 않음
 - 마스터 컨테이너 - 워커 컨테이너 구조 기반의 통합 작업 관리 시스템 구축
 - 작업 컨테이너 스케줄링 및 모니터링 기능
 - 작업 상태 시각화 및 알림 기능

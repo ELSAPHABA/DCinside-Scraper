@@ -19,12 +19,15 @@
 | --- | --- | --- | --- | --- |
 | 로컬 CLI | 개발, 수동 수집, 기능 검증 | 로컬 `outputs/` | 로컬 `Checkpoint.json` | 단일 PC에서 직접 실행 |
 | 컨테이너 워커 | 운영 수집, 반복 실행, 서버 배포 | S3 호환 저장소 | PostgreSQL | 장시간 운영, 여러 워커 관리 |
+| AWS CDK 배포 | AWS 기반 운영 배포 | AWS S3 | RDS PostgreSQL | Fargate 워커와 AWS 관리형 저장소 사용 |
 | MCP 서버 | 외부 에이전트 또는 도구에서 호출 | 호출자가 구성 | 호출자가 구성 | MCP 클라이언트와 연동 |
 | 라이브러리 import | 다른 Python 앱에 내장 | 호출자가 구성 | 호출자가 구성 | 통합 커뮤니티 플랫폼에 편입 |
 
 운영 배포의 기본 권장 구성은 컨테이너 워커 + Garage + PostgreSQL입니다. 저장소 컨테이너와 스크래퍼 컨테이너를 하나의 Compose 파일에 강하게 묶기보다는, Garage/PostgreSQL을 공유 인프라로 운영하고 각 커뮤니티 스크래퍼 워커가 환경 변수로 접속하는 구성이 향후 확장에 유리합니다.
 
 여러 커뮤니티 스크래퍼가 같은 S3 호환 저장소와 PostgreSQL을 공유할 때는 `docs/Shared_Storage_Contract.md`의 namespace, object key, checkpoint key 규약을 우선합니다.
+
+AWS 운영 배포가 필요하면 `infra/cdk`의 AWS CDK 구성을 사용합니다. 이 경로는 컨테이너 워커를 ECS Fargate task로 실행하고, 출력 저장소는 AWS S3, 체크포인트 저장소는 RDS PostgreSQL을 사용합니다.
 
 ## 사전 요구사항
 
@@ -47,6 +50,15 @@
 - S3 호환 저장소. 기본 권장 대상은 Garage입니다.
 - PostgreSQL
 - 컨테이너 이미지 빌드 또는 배포 파이프라인
+
+### AWS CDK 배포
+
+- AWS 계정과 배포 권한
+- AWS CDK CLI
+- Python 3.11 이상
+- ECR 또는 외부 registry에 push된 워커 이미지
+- RDS 접속 정보로 사용할 Secrets Manager secret
+- 대상 계정 CDK bootstrap
 
 ### MCP 서버
 
@@ -455,6 +467,65 @@ create table if not exists dcinside_checkpoints (
 - 오래된 checkpoint 정리 정책
 
 체크포인트에는 작업 설정 snapshot, 검색 위치, 완료된 게시글 키, 남은 큐가 들어갑니다. DB를 복구하지 못하면 컨테이너 resume이 불가능합니다.
+
+## AWS CDK 기반 배포
+
+CDK 코드는 `infra/cdk`에 있습니다. 이 구성은 로컬/Compose 운영을 대체하는 AWS 배포 경로이며, 공유 저장소 규약은 그대로 유지합니다.
+
+구성 범위:
+
+- `SharedInfraStack`: VPC, S3 output bucket, RDS PostgreSQL, ECS cluster
+- `WorkerStack`: Fargate task definition, task role, execution role, worker security group, CloudWatch log group, EventBridge 실패 감지 rule, CloudWatch alarm, 선택적 schedule
+
+기본 설계:
+
+- CDK는 워커 이미지를 빌드하지 않습니다. 먼저 이미지를 build/push한 뒤 config에 image URI와 tag를 적습니다.
+- 기본 synth는 account-agnostic입니다. 실제 배포 시 config의 account/region을 쓰려면 `-c use_config_account=true`를 명시합니다.
+- worker subnet은 NAT Gateway 비용을 피하기 위해 public outbound 구성을 기본으로 둡니다.
+- DB subnet은 private/isolated 구성을 사용합니다.
+- S3 bucket은 public access block과 S3-managed encryption을 기본으로 사용합니다.
+- DB password, proxy password 같은 secret 값은 YAML에 저장하지 않고 Secrets Manager 이름 또는 ARN만 참조합니다.
+- CDK는 중앙 Job 큐, 통합 플랫폼, Docker image build, EKS 배포를 포함하지 않습니다.
+
+설치와 검증:
+
+```powershell
+cd infra\cdk
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+cdk synth -c env=dev
+```
+
+환경별 설정 파일:
+
+```text
+infra/cdk/config/dev.yaml
+infra/cdk/config/staging.yaml
+infra/cdk/config/prod.yaml
+```
+
+배포 전 최소 수정 항목:
+
+- `account`, `region`
+- worker image URI와 tag
+- `DATABASE_URL`을 주입할 Secrets Manager secret 이름 또는 ARN
+- 필요한 worker 환경 변수
+- schedule 사용 여부
+
+실제 배포 예시:
+
+```powershell
+cd infra\cdk
+cdk deploy -c env=dev -c use_config_account=true
+```
+
+테스트:
+
+```powershell
+cd infra\cdk
+.\.venv\Scripts\python.exe -m pytest tests -q
+cdk synth -c env=dev
+```
 
 ## User-Agent 운영
 
@@ -1011,6 +1082,15 @@ posts = pl.read_ndjson("outputs/job/run/posts.jsonl")
 - [ ] PostgreSQL `dcinside_checkpoints` row 생성 확인
 - [ ] `RESUME=true` 실행 확인
 
+AWS CDK:
+
+- [ ] 워커 이미지 build/push 완료
+- [ ] `infra/cdk/config/<env>.yaml`의 account, region, image, secret 참조 확인
+- [ ] 대상 AWS 계정 CDK bootstrap 완료
+- [ ] `cdk synth -c env=<env>` 성공
+- [ ] 실제 배포 시 `cdk deploy -c env=<env> -c use_config_account=true` 사용
+- [ ] S3 bucket, RDS PostgreSQL, ECS cluster, Fargate task definition 생성 확인
+
 운영:
 
 - [ ] Job ID naming 규칙 확정
@@ -1035,10 +1115,10 @@ posts = pl.read_ndjson("outputs/job/run/posts.jsonl")
 
 향후 과제:
 
-- UOW-010: AWS CDK 기반 IaC
 - 커뮤니티별 스크래퍼 공통 운영 Job 큐
 - 실패 재처리 Job의 중앙 DLQ/scheduler 연동
 - 공통 스키마 정규화 파이프라인
+- AWS CDK live deploy smoke와 운영 runbook 고도화
 - PostgreSQL 기반 Job 이력 테이블
 - S3 JSONL 파티셔닝 또는 append 최적화
 - Kubernetes Job/CronJob manifest

@@ -16,6 +16,7 @@
 - 스크래퍼별 API query, parser, source option은 저장소 규약에 들어가지 않습니다.
 - 원본 JSONL은 커뮤니티별 schema를 유지합니다.
 - 공통 분석 테이블은 별도 정규화 단계에서 생성합니다.
+- AWS CDK 배포도 같은 namespace, object key, checkpoint key 규약을 사용합니다.
 
 가장 중요한 규칙은 이것입니다.
 
@@ -63,6 +64,18 @@ outputs/<environment>/<site_id>/<job_id>/<run_id>/...
 ```
 
 목표 규약이 더 명확하지만, 현재 구현과 호환하려면 우선 `job_id` namespace 규칙을 강제하는 방식으로 시작합니다. 이후 저장소 어댑터가 `environment/site_id` prefix를 직접 지원하면 목표 규약으로 이동합니다.
+
+## AWS CDK 배포와의 관계
+
+`infra/cdk`의 AWS 배포 구성은 이 저장소 규약의 한 구현입니다.
+
+- 객체 저장소는 AWS S3 bucket을 사용합니다.
+- 체크포인트 저장소는 RDS PostgreSQL을 사용합니다.
+- worker는 ECS Fargate task로 실행합니다.
+- secret 값은 CDK YAML에 직접 쓰지 않고 Secrets Manager 이름 또는 ARN으로 참조합니다.
+- CDK는 커뮤니티별 API query, parser, 정규화 schema를 정의하지 않습니다.
+
+따라서 로컬/컨테이너/Garage 기반 운영과 AWS CDK 운영은 같은 논리 구조를 공유해야 합니다. 저장소 backend가 달라도 `environment`, `site_id`, `job_id`, `run_id` 분리 규칙은 바뀌지 않습니다.
 
 ## 식별자 규약
 
@@ -799,6 +812,8 @@ ListBucket with prefix scope
 - 기본 worker에는 부여하지 않습니다.
 - lifecycle 관리 또는 운영 관리자에게만 부여합니다.
 
+AWS CDK 배포에서는 worker task role에 필요한 S3 권한만 부여합니다. cross-community 공유 bucket을 사용할 때는 가능하면 environment/site prefix 기준으로 권한을 제한합니다.
+
 ### PostgreSQL 권한
 
 권장 role:
@@ -825,6 +840,8 @@ scraper_reader
 - 운영 UI와 분석 조회
 
 Worker에는 가능하면 `scraper_writer`만 부여합니다.
+
+AWS CDK 배포에서는 RDS 접속 정보는 Secrets Manager로 주입하고, worker에는 checkpoint와 운영 metadata에 필요한 DB 권한만 부여합니다.
 
 ## Secret 규약
 

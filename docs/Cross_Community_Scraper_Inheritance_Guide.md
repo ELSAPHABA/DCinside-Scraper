@@ -932,6 +932,45 @@ S3 호환 저장소 규칙:
 - prefix listing 자동 탐색은 공통 표준에 넣지 않습니다.
 - 로컬 directory scan은 로컬 CLI 편의 기능으로만 둡니다.
 
+### UOW-010. AWS CDK Infrastructure
+
+역할:
+
+- AWS 기반 one-shot worker 배포
+- S3 output bucket
+- RDS PostgreSQL checkpoint store
+- ECS Fargate task definition
+- worker task/execution role
+- CloudWatch Logs
+- EventBridge 실패 감지와 선택적 schedule
+
+공유해야 할 것:
+
+- `infra/cdk` 프로젝트 구조
+- environment별 YAML config 방식
+- SharedInfraStack와 WorkerStack 분리
+- worker image URI/tag 참조 방식
+- Secrets Manager 이름 또는 ARN 참조 방식
+- `docs/Shared_Storage_Contract.md`의 namespace, object key, checkpoint key 규약
+- `cdk synth`와 template test
+
+커뮤니티별로 달라지는 것:
+
+- worker image
+- `site_id`
+- 커뮤니티별 환경 변수 prefix
+- 기본 Job/source option
+- schedule 필요 여부
+
+표준 제외 대상:
+
+- 커뮤니티 API query
+- HTML/API parser
+- Docker image build/push
+- 중앙 Job Queue
+- 통합 운영 UI
+- EKS 배포
+
 ## 기능 계승 매트릭스
 
 | 기능 | 표준 상태 | 후속 스크래퍼 기준 | site-specific 필요 여부 |
@@ -963,6 +1002,7 @@ S3 호환 저장소 규칙:
 | CLI | 필수 | 공통 명령 유지 | source option만 site-specific |
 | 마법사 | 필수 | 공통 흐름 유지 | 질문 문구 site-specific |
 | 컨테이너 | 필수 | one-shot worker 유지 | env prefix site-specific |
+| AWS CDK/IaC | 필수 | Fargate worker와 공유 저장소 계약 유지 | image/env/schedule site-specific |
 | MCP | 필수 | 공통 도구 유지 | tool naming 일부 site-specific |
 | Polars 정규화 | 필수 | 공통 스키마로 변환 | mapper site-specific |
 
@@ -1572,6 +1612,7 @@ Live smoke 후 확인할 항목:
 - [ ] 컨테이너 direct-post smoke
 - [ ] S3 호환 저장소 output smoke
 - [ ] PostgreSQL checkpoint smoke
+- [ ] CDK `synth`와 template test
 - [ ] Polars JSONL read smoke
 
 ## 요약
