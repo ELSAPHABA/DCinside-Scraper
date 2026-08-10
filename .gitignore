@@ -215,6 +215,10 @@ tempCodeRunnerFile.py
 /Checkpoint.json
 /user-agents.txt
 
+# AWS CDK synth outputs
+cdk.out/
+cdk.context.json
+
 # Marimo
 marimo/_static/
 marimo/_lsp/
