@@ -2,7 +2,7 @@
 
 디시인사이드 갤러리 게시글, 검색 결과, 댓글, 본문 콘텐츠를 수집하는 Python 스크래퍼입니다.
 
-로컬 CLI 프로그램으로 단독 실행할 수 있고, 컨테이너 워커로 실행해 S3 호환 저장소와 PostgreSQL 체크포인트 저장소를 사용할 수 있습니다. 핵심 기능은 라이브러리로 import 할 수 있으며, MCP 도구 서버로 연결할 수 있도록 어댑터도 포함합니다.
+로컬 CLI 프로그램으로 단독 실행할 수 있고, 컨테이너 워커로 실행해 S3 호환 저장소와 PostgreSQL 체크포인트 저장소를 사용할 수 있습니다. AWS CDK 기반 ECS Fargate 배포 경로도 포함합니다. 핵심 기능은 라이브러리로 import 할 수 있으며, MCP 도구 서버로 연결할 수 있도록 어댑터도 포함합니다.
 
 현재 구현은 BeautifulSoup 기반 HTML 파싱과 `httpx.AsyncClient` 기반 비동기 요청을 사용합니다. Playwright 같은 브라우저 자동화는 런타임 의존성이 아닙니다.
 
@@ -25,6 +25,7 @@
 - 중단 및 재개: 체크포인트를 저장하고 `resume` 명령으로 중단 지점부터 재개합니다.
 - CAPTCHA/차단 감지: CAPTCHA 또는 차단 신호가 보이면 자동 우회를 시도하지 않고 작업을 중단하며 체크포인트를 남깁니다.
 - 로컬/컨테이너 저장: 로컬 JSONL 파일 또는 컨테이너 환경의 S3 호환 저장소와 PostgreSQL을 사용할 수 있습니다.
+- AWS CDK 배포: `infra/cdk`에서 ECS Fargate 워커, AWS S3 출력 bucket, RDS PostgreSQL 체크포인트 저장소를 정의합니다.
 - Polars 가공 준비: JSONL 출력과 향후 공통 스키마 정규화 흐름을 전제로 합니다.
 
 ## 프로젝트 구성
@@ -36,7 +37,17 @@
 ├── Dockerfile                      # 컨테이너 워커 이미지
 ├── README.md
 ├── docs/
-│   └── Function_Specification.md   # 기능 명세서
+│   ├── Function_Specification.md
+│   ├── Deployment_Operations.md
+│   ├── Shared_Storage_Contract.md
+│   └── Cross_Community_Scraper_Inheritance_Guide.md
+├── infra/cdk/                      # AWS CDK 기반 Fargate/S3/RDS 인프라
+│   ├── app.py
+│   ├── cdk.json
+│   ├── requirements.txt
+│   ├── config/                     # dev/staging/prod 환경 설정
+│   ├── stacks/                     # SharedInfraStack, WorkerStack
+│   └── tests/                      # CDK template 테스트
 ├── aidlc-docs/                     # AI-DLC 산출 문서
 ├── src/dcinside_scraper/
 │   ├── adapters/                   # CLI, 컨테이너, MCP 어댑터
@@ -96,6 +107,14 @@ python -m pip install -e ".[analysis]"
 
 # 전부 설치
 python -m pip install -e ".[test,s3,postgres,mcp,analysis]"
+```
+
+AWS CDK 인프라 작업은 별도 디렉터리에서 의존성을 설치합니다.
+
+```powershell
+cd infra\cdk
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 설치 후 아래 세 가지 방식으로 CLI를 실행할 수 있습니다.
@@ -672,6 +691,55 @@ docker run --rm `
 
 저장소 컨테이너와 스크래퍼 컨테이너는 반드시 하나의 Docker Compose 파일에 강하게 묶을 필요가 없습니다. 향후 여러 커뮤니티 스크래퍼를 함께 운영할 계획이라면 Garage/PostgreSQL은 공유 인프라로 별도 운영하고, 각 스크래퍼 워커는 환경 변수로 접속 정보를 주입하는 구성이 더 적합합니다.
 
+## AWS CDK 배포
+
+AWS 배포 코드는 `infra/cdk`에 있습니다. CDK는 워커 이미지를 빌드하지 않고, 이미 ECR 또는 외부 registry에 push된 image URI/tag를 참조합니다.
+
+구성 범위:
+
+- `SharedInfraStack`: VPC, AWS S3 output bucket, RDS PostgreSQL, ECS cluster
+- `WorkerStack`: ECS Fargate task definition, task/execution role, worker security group, CloudWatch log group, EventBridge 실패 감지 rule, CloudWatch alarm, 선택적 schedule
+
+환경별 설정 파일:
+
+```text
+infra/cdk/config/dev.yaml
+infra/cdk/config/staging.yaml
+infra/cdk/config/prod.yaml
+```
+
+배포 전 최소 수정 항목:
+
+- `account`, `region`
+- worker `image_uri`, `image_tag`
+- `DATABASE_URL`을 주입할 Secrets Manager secret 이름 또는 ARN
+- worker 환경 변수와 schedule 사용 여부
+
+검증:
+
+```powershell
+cd infra\cdk
+.\.venv\Scripts\python.exe -m pytest tests -q
+cdk synth -c env=dev
+```
+
+실제 배포:
+
+```powershell
+cd infra\cdk
+cdk deploy -c env=dev -c use_config_account=true
+```
+
+기본 `cdk synth -c env=dev`는 account-agnostic template 생성을 목표로 합니다. 실제 AWS 계정에 배포할 때만 `-c use_config_account=true`를 붙입니다.
+
+CDK가 포함하지 않는 범위:
+
+- Docker image build/push
+- 중앙 Job Queue 또는 SQS 소비 구조
+- 통합 운영 UI
+- EKS 배포
+- 커뮤니티별 API query/parser
+
 ## MCP 사용
 
 MCP extra 설치:
@@ -784,6 +852,14 @@ python -m pip install -e ".[test]"
 python -m pytest -q
 ```
 
+CDK template 테스트:
+
+```powershell
+cd infra\cdk
+.\.venv\Scripts\python.exe -m pytest tests -q
+cdk synth -c env=dev
+```
+
 선택적 smoke 테스트 marker:
 
 | marker | 설명 |
@@ -815,5 +891,6 @@ python -m pytest -q -m "not live and not docker and not garage and not postgres 
 - 배포/운영 가이드: `docs/Deployment_Operations.md`
 - 커뮤니티 스크래퍼 구조/기능 계승 가이드: `docs/Cross_Community_Scraper_Inheritance_Guide.md`
 - 공유 저장소 규약: `docs/Shared_Storage_Contract.md`
+- AWS CDK 인프라: `infra/cdk/`
 - AI-DLC 산출물: `aidlc-docs/`
 - UOW 공개 계약 문서: `aidlc-docs/construction/*/code/public-contracts.md`
