@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-07-22T08:16:24Z
-- **Current Stage**: CONSTRUCTION - Build and Test Review - UOW-009
+- **Current Stage**: CONSTRUCTION - Infrastructure Design Review - UOW-010
 
 ## Workspace State
 - **Existing Code**: No
@@ -105,17 +105,20 @@
 - [x] NFR Design - APPROVED - UOW-009
 - [x] Infrastructure Design - APPROVED - UOW-009
 - [x] Code Generation - APPROVED - UOW-009
-- [ ] Build and Test - REVIEW - UOW-009
-- [ ] Functional Design - PLANNED - UOW-010
+- [x] Build and Test - APPROVED - UOW-009
+- [x] Functional Design - APPROVED - UOW-010
+- [x] NFR Requirements - APPROVED - UOW-010
+- [x] NFR Design - APPROVED - UOW-010
+- [ ] Infrastructure Design - REVIEW - UOW-010
 
 ### OPERATIONS PHASE
 - [x] Operations - PLACEHOLDER
 
 ## Current Status
 - **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: Build and Test Review - UOW-009 Parser Failure Retry Reprocessor
-- **Next Step**: User reviews UOW-009 Build and Test artifacts and approves progression to UOW-010 Functional Design
-- **Status**: UOW-009 Build/Test completed. Clean Python 3.12 verification, focused tests, security-relevant tests, full suite, compile check, wheel build, import side-effect check, Docker availability check, and `git diff --check` passed; optional S3/Garage/live/Docker image smoke checks were not run.
+- **Current Stage**: Infrastructure Design Review - UOW-010 AWS CDK Infrastructure IaC
+- **Next Step**: User reviews and approves UOW-010 Infrastructure Design artifacts
+- **Status**: UOW-010 Infrastructure Design questionnaire answers were confirmed, validated, and converted into Infrastructure Design artifacts. Approval is required before moving to UOW-010 Code Generation.
 
 ## Execution Plan Summary
 - **Total Stages**: 12
@@ -704,9 +707,9 @@
 - **Approved At**: 2026-08-09T04:19:55Z
 
 ## Operations Status
-- **Status**: Placeholder reached
+- **Status**: Deferred Until Construction Complete
 - **Reached At**: 2026-08-09T04:19:55Z
-- **Workflow Note**: Current AI-DLC Operations phase is a placeholder. All planned construction units are complete; deployment planning, monitoring, incident response, maintenance, and production readiness workflows are future AI-DLC scope.
+- **Workflow Note**: Current AI-DLC Operations phase remains a placeholder. UOW-010 AWS CDK Infrastructure IaC reopened construction scope for deployment infrastructure; operations readiness stays deferred until UOW-010 is complete.
 
 ## Functional Design Status - UOW-009
 - **Current Unit**: UOW-009 Parser Failure Retry Reprocessor
@@ -771,7 +774,7 @@
 
 ## Build and Test Status - UOW-009
 - **Current Unit**: UOW-009 Parser Failure Retry Reprocessor
-- **Status**: Review Required
+- **Status**: Approved
 - **Started At**: 2026-08-09T17:52:28Z
 - **Generated At**: 2026-08-09T17:52:28Z
 - **Completed At**: 2026-08-09T17:52:28Z
@@ -780,12 +783,59 @@
 - **Build Artifact**: `dist/dcinside_scraper-0.1.0-py3-none-any.whl`
 - **Build Artifact Size**: 96,000 bytes
 - **Implementation Note**: default shell `python` is Python 3.10 and does not satisfy project `requires-python >=3.11` for wheel builds, so Build/Test used `py -3.12`. S3/Garage input smoke, live DCinside retry smoke, and Docker image build/start smoke were not run because they are optional gates.
+- **Approved At**: 2026-08-10T00:13:02Z
 
-## Planned Status - UOW-010
+## Functional Design Status - UOW-010
 - **Current Unit**: UOW-010 AWS CDK Infrastructure IaC
-- **Status**: Planned After UOW-009
-- **Plan Artifact**: Not created yet
-- **Scope Note**: AWS CDK IaC will be designed and implemented after UOW-009 is complete; resource choices, environment separation, and deploy/synth workflow remain open until UOW-010 Functional Design.
+- **Plan**: Created
+- **Plan Created At**: 2026-08-10T00:13:02Z
+- **Plan Updated At**: 2026-08-10T00:21:15Z
+- **Status**: Approved
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-010-aws-cdk-infrastructure-iac-functional-design-plan.md`
+- **Answers Confirmed At**: 2026-08-10T00:37:46Z
+- **Generated At**: 2026-08-10T00:37:46Z
+- **Artifacts**: `business-logic-model.md`, `business-rules.md`, `domain-entities.md`
+- **Questionnaire Note**: Q1-Q10 all selected A. Confirmed direction is ECS Fargate one-shot task execution, AWS S3 and RDS PostgreSQL in a shared infra stack, reusable worker stack pattern, ECR image reference by URI/tag, manual task run plus optional EventBridge schedule, Secrets Manager injection, public-subnet outbound worker with private RDS, minimal CloudWatch observability, environment-aware naming/removal policy, and Python CDK v2 under `infra/cdk`.
+- **Scope Note**: AWS CDK IaC will define a reusable shared infra stack and worker stack pattern around the existing container, S3-compatible storage, PostgreSQL checkpoint, retry, secret, log, and environment contracts. It will not implement the future centralized multi-community management platform in this unit.
+- **Approved At**: 2026-08-10T00:43:08Z
+
+## NFR Requirements Status - UOW-010
+- **Current Unit**: UOW-010 AWS CDK Infrastructure IaC
+- **Plan**: Created
+- **Plan Created At**: 2026-08-10T00:43:08Z
+- **Status**: Review Required
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-010-aws-cdk-infrastructure-iac-nfr-requirements-plan.md`
+- **Answers Confirmed At**: 2026-08-10T01:06:20Z
+- **Generated At**: 2026-08-10T01:06:20Z
+- **Artifacts**: `nfr-requirements.md`, `tech-stack-decisions.md`
+- **Questionnaire Note**: Q1-Q10 all selected A. Confirmed direction is cost-minimized ECS Fargate one-shot infrastructure, dev/staging low-cost RDS defaults with prod hardening options, S3 default preservation, least-privilege IAM, Secrets Manager injection without required auto-rotation, private RDS with public-subnet outbound-only worker, CloudWatch Logs plus task failure alarm, `cdk synth` plus template tests, reviewable non-secret environment config, and future platform-compatible worker inputs without building the platform now.
+- **Approved At**: 2026-08-10T01:11:20Z
+- **Scope Note**: The questionnaire defines non-functional requirements for a small, secure, reusable AWS CDK baseline: ECS Fargate one-shot worker, shared S3/RDS infrastructure, least-privilege IAM, Secrets Manager injection, public-subnet outbound worker with private RDS, minimal CloudWatch alarm, synth/template tests, and future platform-compatible inputs.
+
+## NFR Design Status - UOW-010
+- **Current Unit**: UOW-010 AWS CDK Infrastructure IaC
+- **Plan**: Created
+- **Plan Created At**: 2026-08-10T01:11:20Z
+- **Status**: Review Required
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-010-aws-cdk-infrastructure-iac-nfr-design-plan.md`
+- **Answers Confirmed At**: 2026-08-10T01:19:02Z
+- **Generated At**: 2026-08-10T01:19:02Z
+- **Artifacts**: `nfr-design-patterns.md`, `logical-components.md`
+- **Questionnaire Note**: Q1-Q10 all selected A. Confirmed direction is a small Python CDK v2 app under `infra/cdk`, separated shared/worker stacks, dataclass-based environment config validation, deterministic naming/tagging, explicit stateful destroy opt-in, hardened S3/RDS defaults, Secrets Manager ECS injection, scoped IAM, no-NAT public-outbound worker/private-RDS network pattern, CloudWatch Logs plus task failure alarm, and CDK assertions plus `cdk synth`.
+- **Approved At**: 2026-08-10T01:24:24Z
+- **Scope Note**: The questionnaire defines implementation patterns for the Python CDK app layout, shared/worker stack boundary, environment config validation, naming/tagging, stateful resource safety, S3/RDS hardening, Secrets Manager injection, IAM, no-NAT network design, CloudWatch observability, and synth/template verification.
+
+## Infrastructure Design Status - UOW-010
+- **Current Unit**: UOW-010 AWS CDK Infrastructure IaC
+- **Plan**: Created
+- **Plan Created At**: 2026-08-10T01:24:24Z
+- **Status**: Review Required
+- **Plan Artifact**: `aidlc-docs/construction/plans/uow-010-aws-cdk-infrastructure-iac-infrastructure-design-plan.md`
+- **Answers Confirmed At**: 2026-08-10T01:30:22Z
+- **Generated At**: 2026-08-10T01:30:22Z
+- **Artifacts**: `infrastructure-design.md`, `deployment-architecture.md`
+- **Questionnaire Note**: Q1-Q10 all selected A. Confirmed direction is minimal Python CDK dependencies, one environment YAML shape, new no-NAT VPC, one shared S3 bucket per environment, one shared RDS PostgreSQL instance per environment, ECS cluster in shared infra stack, worker-specific Fargate task definitions, YAML non-secret env plus Secrets Manager ECS injection, CDK-defined scoped IAM/security groups, CloudWatch LogGroups plus EventBridge task failure signal, and pytest CDK assertions plus `cdk synth`.
+- **Scope Note**: The questionnaire defines concrete infrastructure mapping for CDK dependencies, environment YAML, VPC/subnets, S3 bucket, RDS PostgreSQL, ECS cluster/task placement, runtime env/secret injection, IAM/security groups, EventBridge/CloudWatch observability, and CDK verification artifacts.
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md

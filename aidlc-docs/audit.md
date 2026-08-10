@@ -1908,3 +1908,169 @@
 **Approval Prompt**: "UOW-009 Build and Test 산출물 검토가 필요합니다. 승인하면 UOW-010 AWS CDK Infrastructure IaC Functional Design으로 진행합니다."
 
 **Context**: CONSTRUCTION - Build and Test Review - UOW-009
+
+---
+
+## CONSTRUCTION - Build/Test Approval And Functional Design Planning - UOW-010
+
+**Timestamp**: 2026-08-10T00:13:02Z
+
+**User Input**: "좋아요. 승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-009 Build/Test approval, moved AI-DLC state to UOW-010 Functional Design Planning, and created the UOW-010 AWS CDK Infrastructure IaC Functional Design questionnaire."
+
+**Approval Status**: "UOW-009 Build and Test approved."
+
+**Artifacts**: `aidlc-docs/construction/plans/uow-010-aws-cdk-infrastructure-iac-functional-design-plan.md`
+
+**Questionnaire Note**: "The questionnaire covers worker execution target, storage resource strategy, shared infrastructure boundary, image source, job invocation model, secret/config handling, network model, observability, environment separation, and CDK project layout."
+
+**Approval Prompt**: "UOW-010 Functional Design 질문지 답변이 필요합니다. 답변이 확정되면 Functional Design 산출물 3개를 생성합니다."
+
+**Context**: CONSTRUCTION - Functional Design Planning - UOW-010
+
+---
+
+## CONSTRUCTION - Functional Design Questionnaire Revision - UOW-010
+
+**Timestamp**: 2026-08-10T00:21:15Z
+
+**User Input**: "좋아요. 그 방향으로 합시다. 현재 질문지가 그 방향으로 잡힌건가요? 아니라면 수정해 주세요."
+
+**AI Response**: "Recommended neither a one-off scraper-specific CDK nor a full future platform CDK now. Updated the UOW-010 questionnaire so the current CDK target is a shared scraper infrastructure standard: shared infra stack plus reusable worker stack pattern, with centralized multi-community management deferred."
+
+**Artifacts**: `aidlc-docs/construction/plans/uow-010-aws-cdk-infrastructure-iac-functional-design-plan.md`, `aidlc-docs/aidlc-state.md`
+
+**Context**: CONSTRUCTION - Functional Design Planning - UOW-010
+
+---
+
+## CONSTRUCTION - Functional Design Review - UOW-010
+
+**Timestamp**: 2026-08-10T00:37:46Z
+
+**User Input**: "질문지의 답변을 확정하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Validated confirmed UOW-010 Functional Design answers, generated business logic model, business rules, and domain entities artifacts, and moved AI-DLC state to Functional Design review."
+
+**Artifacts**: `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/functional-design/business-logic-model.md`, `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/functional-design/business-rules.md`, `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/functional-design/domain-entities.md`
+
+**Questionnaire Note**: "Q1-Q10 all selected A. Confirmed direction is ECS Fargate one-shot task execution, AWS S3 and RDS PostgreSQL in a shared infra stack, reusable worker stack pattern, ECR image reference by URI/tag, manual task run plus optional EventBridge schedule, Secrets Manager injection, public-subnet outbound worker with private RDS, minimal CloudWatch observability, environment-aware naming/removal policy, and Python CDK v2 under `infra/cdk`."
+
+**Approval Prompt**: "UOW-010 Functional Design 산출물 검토가 필요합니다. 승인하면 UOW-010 NFR Requirements로 진행합니다."
+
+**Context**: CONSTRUCTION - Functional Design Review - UOW-010
+
+---
+
+## CONSTRUCTION - Functional Design Approval And NFR Requirements Planning - UOW-010
+
+**Timestamp**: 2026-08-10T00:43:08Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-010 Functional Design approval, moved AI-DLC state to NFR Requirements Planning, and created the UOW-010 NFR Requirements questionnaire."
+
+**Approval Status**: "UOW-010 Functional Design approved."
+
+**Artifacts**: `aidlc-docs/construction/plans/uow-010-aws-cdk-infrastructure-iac-nfr-requirements-plan.md`
+
+**Questionnaire Note**: "The questionnaire covers cost baseline, RDS availability and backup, S3 retention, IAM permission depth, secret rotation and injection, network security, observability and alerting, synth/test gates, environment configuration format, and future platform compatibility."
+
+**Approval Prompt**: "UOW-010 NFR Requirements 질문지 답변이 필요합니다. 답변이 확정되면 NFR Requirements 산출물 2개를 생성합니다."
+
+**Context**: CONSTRUCTION - NFR Requirements Planning - UOW-010
+
+---
+
+## CONSTRUCTION - NFR Requirements Review - UOW-010
+
+**Timestamp**: 2026-08-10T01:06:20Z
+
+**User Input**: "좋아요. 질문지를 확정했습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Validated confirmed UOW-010 NFR Requirements answers, generated NFR requirements and tech stack decisions artifacts, and moved AI-DLC state to NFR Requirements review."
+
+**Artifacts**: `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/nfr-requirements/nfr-requirements.md`, `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/nfr-requirements/tech-stack-decisions.md`
+
+**Questionnaire Note**: "Q1-Q10 all selected A. Confirmed direction is cost-minimized ECS Fargate one-shot infrastructure, dev/staging low-cost RDS defaults with prod hardening options, S3 default preservation, least-privilege IAM, Secrets Manager injection without required auto-rotation, private RDS with public-subnet outbound-only worker, CloudWatch Logs plus task failure alarm, `cdk synth` plus template tests, reviewable non-secret environment config, and future platform-compatible worker inputs without building the platform now."
+
+**Approval Prompt**: "UOW-010 NFR Requirements 산출물 검토가 필요합니다. 승인하면 UOW-010 NFR Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - NFR Requirements Review - UOW-010
+
+---
+
+## CONSTRUCTION - NFR Requirements Approval And NFR Design Planning - UOW-010
+
+**Timestamp**: 2026-08-10T01:11:20Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-010 NFR Requirements approval, moved AI-DLC state to NFR Design Planning, and created the UOW-010 NFR Design questionnaire."
+
+**Approval Status**: "UOW-010 NFR Requirements approved."
+
+**Artifacts**: `aidlc-docs/construction/plans/uow-010-aws-cdk-infrastructure-iac-nfr-design-plan.md`
+
+**Questionnaire Note**: "The questionnaire covers Python CDK app layout, shared/worker stack boundary, environment config validation, naming/tagging, stateful resource safety, S3/RDS hardening, Secrets Manager injection, IAM, no-NAT network design, CloudWatch observability, and synth/template verification."
+
+**Approval Prompt**: "UOW-010 NFR Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-010-aws-cdk-infrastructure-iac-nfr-design-plan.md`의 Q1-Q10을 채워 주세요."
+
+**Context**: CONSTRUCTION - NFR Design Planning - UOW-010
+
+---
+
+## CONSTRUCTION - NFR Design Review - UOW-010
+
+**Timestamp**: 2026-08-10T01:19:02Z
+
+**User Input**: "질문지의 답변을 완료하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Validated confirmed UOW-010 NFR Design answers, generated NFR design patterns and logical components artifacts, and moved AI-DLC state to NFR Design review."
+
+**Artifacts**: `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/nfr-design/nfr-design-patterns.md`, `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/nfr-design/logical-components.md`
+
+**Questionnaire Note**: "Q1-Q10 all selected A. Confirmed direction is a small Python CDK v2 app under `infra/cdk`, separated shared/worker stacks, dataclass-based environment config validation, deterministic naming/tagging, explicit stateful destroy opt-in, hardened S3/RDS defaults, Secrets Manager ECS injection, scoped IAM, no-NAT public-outbound worker/private-RDS network pattern, CloudWatch Logs plus task failure alarm, and CDK assertions plus `cdk synth`."
+
+**Approval Prompt**: "UOW-010 NFR Design 산출물 검토가 필요합니다. 승인하면 UOW-010 Infrastructure Design으로 진행합니다."
+
+**Context**: CONSTRUCTION - NFR Design Review - UOW-010
+
+---
+
+## CONSTRUCTION - NFR Design Approval And Infrastructure Design Planning - UOW-010
+
+**Timestamp**: 2026-08-10T01:24:24Z
+
+**User Input**: "승인합니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-010 NFR Design approval, moved AI-DLC state to Infrastructure Design Planning, and created the UOW-010 Infrastructure Design questionnaire."
+
+**Approval Status**: "UOW-010 NFR Design approved."
+
+**Artifacts**: `aidlc-docs/construction/plans/uow-010-aws-cdk-infrastructure-iac-infrastructure-design-plan.md`
+
+**Questionnaire Note**: "The questionnaire covers CDK dependencies, environment YAML shape, VPC/subnets, S3 bucket design, RDS PostgreSQL design, ECS cluster/task placement, worker environment and secret mapping, IAM/security group detail, EventBridge/CloudWatch failure signal, and CDK verification artifacts."
+
+**Approval Prompt**: "UOW-010 Infrastructure Design 질문지 답변이 필요합니다. `aidlc-docs/construction/plans/uow-010-aws-cdk-infrastructure-iac-infrastructure-design-plan.md`의 Q1-Q10을 채워 주세요."
+
+**Context**: CONSTRUCTION - Infrastructure Design Planning - UOW-010
+
+---
+
+## CONSTRUCTION - Infrastructure Design Review - UOW-010
+
+**Timestamp**: 2026-08-10T01:30:22Z
+
+**User Input**: "질문지의 답변을 완료하였습니다. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Validated confirmed UOW-010 Infrastructure Design answers, generated infrastructure design and deployment architecture artifacts, recorded that no separate shared infrastructure artifact is needed, and moved AI-DLC state to Infrastructure Design review."
+
+**Artifacts**: `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/infrastructure-design/infrastructure-design.md`, `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/infrastructure-design/deployment-architecture.md`
+
+**Questionnaire Note**: "Q1-Q10 all selected A. Confirmed direction is minimal Python CDK dependencies, one environment YAML shape, new no-NAT VPC, one shared S3 bucket per environment, one shared RDS PostgreSQL instance per environment, ECS cluster in shared infra stack, worker-specific Fargate task definitions, YAML non-secret env plus Secrets Manager ECS injection, CDK-defined scoped IAM/security groups, CloudWatch LogGroups plus EventBridge task failure signal, and pytest CDK assertions plus `cdk synth`."
+
+**Approval Prompt**: "UOW-010 Infrastructure Design 산출물 검토가 필요합니다. 승인하면 UOW-010 Code Generation으로 진행합니다."
+
+**Context**: CONSTRUCTION - Infrastructure Design Review - UOW-010
