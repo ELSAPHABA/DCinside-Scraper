@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-07-22T08:16:24Z
-- **Current Stage**: CONSTRUCTION - Code Generation Review - UOW-010
+- **Current Stage**: CONSTRUCTION - Build and Test Review - UOW-010
 
 ## Workspace State
 - **Existing Code**: No
@@ -110,16 +110,17 @@
 - [x] NFR Requirements - APPROVED - UOW-010
 - [x] NFR Design - APPROVED - UOW-010
 - [x] Infrastructure Design - APPROVED - UOW-010
-- [ ] Code Generation - REVIEW - UOW-010
+- [x] Code Generation - APPROVED - UOW-010
+- [ ] Build and Test - REVIEW - UOW-010
 
 ### OPERATIONS PHASE
 - [x] Operations - PLACEHOLDER
 
 ## Current Status
 - **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: Code Generation Review - UOW-010 AWS CDK Infrastructure IaC
-- **Next Step**: User reviews and approves UOW-010 Code Generation artifacts
-- **Status**: UOW-010 Infrastructure Design approved. UOW-010 AWS CDK IaC code, tests, and code-stage documentation were generated. Approval is required before moving to UOW-010 Build and Test.
+- **Current Stage**: Build and Test Review - UOW-010 AWS CDK Infrastructure IaC
+- **Next Step**: User reviews and approves UOW-010 Build and Test artifacts
+- **Status**: UOW-010 Code Generation approved. UOW-010 Build/Test verification completed successfully in a clean CDK build venv. Approval is required before closing UOW-010 Build and Test.
 
 ## Execution Plan Summary
 - **Total Stages**: 12
@@ -841,11 +842,27 @@
 
 ## Code Generation Status - UOW-010
 - **Current Unit**: UOW-010 AWS CDK Infrastructure IaC
-- **Status**: Review Required
+- **Status**: Approved
 - **Generated At**: 2026-08-10T02:09:22Z
 - **Artifacts**: `infra/cdk/app.py`, `infra/cdk/cdk.json`, `infra/cdk/requirements.txt`, `infra/cdk/stacks/`, `infra/cdk/config/`, `infra/cdk/tests/`, `.gitignore`, `public-contracts.md`, `code-generation-summary.md`
 - **Verification**: `.\.tmp\uow010-cdk-venv\Scripts\python.exe -m pytest infra\cdk\tests -q` passed with 11 tests. `cd infra/cdk; cdk synth -c env=dev` passed. CDK reported informational unconfigured feature flags only. Live AWS deploy/destroy smoke was not run.
 - **Implementation Note**: CDK default synth is account-agnostic to avoid AWS account lookup during the default gate. Real deployment can pass `-c use_config_account=true` after updating `infra/cdk/config/{env}.yaml` and bootstrapping the target account. `cdk.out/` and `cdk.context.json` are ignored generated artifacts.
+- **Approved At**: 2026-08-10T02:15:57Z
+
+## Build and Test Status - UOW-010
+- **Current Unit**: UOW-010 AWS CDK Infrastructure IaC
+- **Status**: Review Required
+- **Started At**: 2026-08-10T02:15:57Z
+- **Generated At**: 2026-08-10T02:20:12Z
+- **Completed At**: 2026-08-10T02:20:12Z
+- **Artifacts**: `build-instructions.md`, `unit-test-instructions.md`, `integration-test-instructions.md`, `performance-test-instructions.md`, `security-test-instructions.md`, `build-and-test-summary.md`
+- **Dependency Check**: clean CDK build venv `pip check` passed with no broken requirements
+- **Unit Test Status**: `.\.tmp\uow010-build-venv\Scripts\python.exe -m pytest infra\cdk\tests -q` passed with 11 tests
+- **Compile Status**: `.\.tmp\uow010-build-venv\Scripts\python.exe -m compileall -q infra\cdk` passed
+- **Synth Status**: `cd infra/cdk; cdk synth -c env=dev` passed
+- **Build Artifact**: `infra/cdk/cdk.out`
+- **Build Artifact Policy**: ignored generated artifact
+- **Implementation Note**: Build/Test validates the CDK project only. Live AWS deploy/destroy, ECS RunTask smoke, scraper wheel build, and Docker image build/push were not run because they are outside the default UOW-010 gate.
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md

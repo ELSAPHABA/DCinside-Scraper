@@ -2096,3 +2096,25 @@
 **Approval Prompt**: "UOW-010 Code Generation 산출물 검토가 필요합니다. 승인하면 UOW-010 Build and Test로 진행합니다."
 
 **Context**: CONSTRUCTION - Code Generation Review - UOW-010
+
+---
+
+## CONSTRUCTION - Code Generation Approval And Build/Test Review - UOW-010
+
+**Timestamp**: 2026-08-10T02:20:12Z
+
+**User Input**: "좋아요. 다음 단계를 진행해 주세요."
+
+**AI Response**: "Recorded UOW-010 Code Generation approval, ran Build/Test verification in a clean CDK build venv, generated Build/Test instruction and summary artifacts, and moved AI-DLC state to Build/Test review."
+
+**Approval Status**: "UOW-010 Code Generation approved."
+
+**Artifacts**: `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/build-and-test/build-instructions.md`, `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/build-and-test/unit-test-instructions.md`, `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/build-and-test/integration-test-instructions.md`, `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/build-and-test/performance-test-instructions.md`, `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/build-and-test/security-test-instructions.md`, `aidlc-docs/construction/uow-010-aws-cdk-infrastructure-iac/build-and-test/build-and-test-summary.md`
+
+**Verification**: "Clean CDK build venv install passed. `pip check` passed with no broken requirements. `.\.tmp\uow010-build-venv\Scripts\python.exe -m pytest infra\cdk\tests -q` passed with 11 tests. `.\.tmp\uow010-build-venv\Scripts\python.exe -m compileall -q infra\cdk` passed. `cd infra/cdk; cdk synth -c env=dev` passed. CDK reported informational unconfigured feature flags only."
+
+**Implementation Note**: "Live AWS deploy/destroy, ECS RunTask smoke, scraper wheel build, and Docker image build/push were not run because they are outside the default UOW-010 gate. `infra/cdk/cdk.out` is the generated CDK assembly and is ignored by Git."
+
+**Approval Prompt**: "UOW-010 Build and Test 산출물 검토가 필요합니다. 승인하면 UOW-010 Build and Test를 완료하고 다음 AI-DLC 상태를 확인합니다."
+
+**Context**: CONSTRUCTION - Build and Test Review - UOW-010
