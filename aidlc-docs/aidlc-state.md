@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-07-22T08:16:24Z
-- **Current Stage**: CONSTRUCTION - Build and Test Review - UOW-010
+- **Current Stage**: CONSTRUCTION - Build and Test COMPLETE
 
 ## Workspace State
 - **Existing Code**: No
@@ -38,7 +38,7 @@
   - Approved Proxy questionnaire answers still mention `Proxy-Profile.txt`; reconcile those answers before resuming AI-DLC.
   - Approved checkpoint questionnaire answer Q10 is superseded by the latest status/checkpoint revision: save every 10 completed posts and immediately on stop/error/CAPTCHA.
   - Container JSONL/media storage default changed from MinIO to Garage-based S3-compatible object storage; SeaweedFS remains a future alternative for large media/small-file, FUSE, or Iceberg requirements.
-  - AWS CDK infrastructure-as-code is planned as UOW-010 after UOW-009 Parser Failure Retry Reprocessor is completed.
+  - AWS CDK infrastructure-as-code was completed as UOW-010 after UOW-009 Parser Failure Retry Reprocessor.
 
 ## Stage Progress
 
@@ -111,16 +111,16 @@
 - [x] NFR Design - APPROVED - UOW-010
 - [x] Infrastructure Design - APPROVED - UOW-010
 - [x] Code Generation - APPROVED - UOW-010
-- [ ] Build and Test - REVIEW - UOW-010
+- [x] Build and Test - APPROVED - UOW-010
 
 ### OPERATIONS PHASE
 - [x] Operations - PLACEHOLDER
 
 ## Current Status
 - **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: Build and Test Review - UOW-010 AWS CDK Infrastructure IaC
-- **Next Step**: User reviews and approves UOW-010 Build and Test artifacts
-- **Status**: UOW-010 Code Generation approved. UOW-010 Build/Test verification completed successfully in a clean CDK build venv. Approval is required before closing UOW-010 Build and Test.
+- **Current Stage**: Build and Test Complete - UOW-010 AWS CDK Infrastructure IaC
+- **Next Step**: AI-DLC construction flow is complete. Operations remains a placeholder and future work should start as a new UOW or a new AI-DLC cycle.
+- **Status**: UOW-010 Build/Test verification completed successfully in a clean CDK build venv and was approved by the user.
 
 ## Execution Plan Summary
 - **Total Stages**: 12
@@ -709,9 +709,9 @@
 - **Approved At**: 2026-08-09T04:19:55Z
 
 ## Operations Status
-- **Status**: Deferred Until Construction Complete
-- **Reached At**: 2026-08-09T04:19:55Z
-- **Workflow Note**: Current AI-DLC Operations phase remains a placeholder. UOW-010 AWS CDK Infrastructure IaC reopened construction scope for deployment infrastructure; operations readiness stays deferred until UOW-010 is complete.
+- **Status**: Placeholder - Construction Complete
+- **Reached At**: 2026-08-11T02:42:37Z
+- **Workflow Note**: Current AI-DLC Operations phase remains a placeholder. UOW-010 AWS CDK Infrastructure IaC is complete; future operational automation should start as a new UOW or a new AI-DLC cycle.
 
 ## Functional Design Status - UOW-009
 - **Current Unit**: UOW-009 Parser Failure Retry Reprocessor
@@ -805,7 +805,7 @@
 - **Current Unit**: UOW-010 AWS CDK Infrastructure IaC
 - **Plan**: Created
 - **Plan Created At**: 2026-08-10T00:43:08Z
-- **Status**: Review Required
+- **Status**: Approved
 - **Plan Artifact**: `aidlc-docs/construction/plans/uow-010-aws-cdk-infrastructure-iac-nfr-requirements-plan.md`
 - **Answers Confirmed At**: 2026-08-10T01:06:20Z
 - **Generated At**: 2026-08-10T01:06:20Z
@@ -818,7 +818,7 @@
 - **Current Unit**: UOW-010 AWS CDK Infrastructure IaC
 - **Plan**: Created
 - **Plan Created At**: 2026-08-10T01:11:20Z
-- **Status**: Review Required
+- **Status**: Approved
 - **Plan Artifact**: `aidlc-docs/construction/plans/uow-010-aws-cdk-infrastructure-iac-nfr-design-plan.md`
 - **Answers Confirmed At**: 2026-08-10T01:19:02Z
 - **Generated At**: 2026-08-10T01:19:02Z
@@ -851,7 +851,7 @@
 
 ## Build and Test Status - UOW-010
 - **Current Unit**: UOW-010 AWS CDK Infrastructure IaC
-- **Status**: Review Required
+- **Status**: Approved
 - **Started At**: 2026-08-10T02:15:57Z
 - **Generated At**: 2026-08-10T02:20:12Z
 - **Completed At**: 2026-08-10T02:20:12Z
@@ -863,6 +863,7 @@
 - **Build Artifact**: `infra/cdk/cdk.out`
 - **Build Artifact Policy**: ignored generated artifact
 - **Implementation Note**: Build/Test validates the CDK project only. Live AWS deploy/destroy, ECS RunTask smoke, scraper wheel build, and Docker image build/push were not run because they are outside the default UOW-010 gate.
+- **Approved At**: 2026-08-11T02:42:37Z
 
 ## Pending Specification Updates
 - [x] DCinside `(펌)` repost post structure reflected in docs\Function_Specification.md
