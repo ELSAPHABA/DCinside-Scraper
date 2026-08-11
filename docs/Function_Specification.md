@@ -1,4 +1,4 @@
-# DCinside-Scraper - 상세 기능 명세서
+# DCinside Scraper Function Specification
 
 디시인사이드 갤러리 게시글 및 댓글 스크래퍼 상세 가이드
 
