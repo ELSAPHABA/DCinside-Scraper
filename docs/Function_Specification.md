@@ -572,22 +572,26 @@
     - 마지막 페이지는 `a.page_end[href]`의 `page` 값 또는 페이징 링크 중 가장 큰 `page` 값으로 판단
     - 현재 구간 수집 후 `a.search_next[href]`가 있으면 해당 URL로 이동해 다시 `page=1`부터 반복
     - `a.search_next[href]`가 없거나 게시글 행이 없으면 종료
-  - 게시글 행 파싱
+  - 후보 게시글 행 파싱
+    - 갤러리 내 검색 단계의 목적은 최종 게시글 JSON을 완성하는 것이 아니라, 게시글 상세 URL과 필터링/중복 제거에 필요한 후보 메타데이터를 수집하는 것이다.
+    - 최종 저장용 `말머리`, `제목`, `글쓴이`, `작성일`, `조회수`, `추천수`, 본문, 댓글은 `2.2.3. 게시글 상세 페이지 수집` 단계에서 게시글 링크를 열어 다시 파싱한다.
+    - 목록 단계에서 수집한 제목/작성자/작성일/조회수/추천수는 `PostCandidate.metadata` 또는 진단/리포트용 힌트로만 사용한다.
     - 목록 행: `.gall_listwrap.list tbody tr.ub-content.us-post`
     - 광고/공지 행은 `.gall_num` 값이 `-` 이거나 `us-post` 클래스가 없으므로 제외
-    - 글 번호: `.gall_num`
-    - 말머리: `.gall_subject`
+    - 후보 글 번호: `.gall_num`
+    - 후보 말머리: `.gall_subject`
       - `.gall_subject .subject_inner`가 있으면 전체 말머리 이름으로 우선 사용
       - `.subject_inner`가 없으면 `.gall_subject`의 직접 텍스트 노드를 사용
-      - 말머리 ID는 현재 요청 URL 또는 상세 링크의 `search_head` 쿼리 값으로 저장
-    - 제목/상세 링크: `.gall_tit a`
-    - `(펌)` 여부: `.gall_tit > b.font_blue009` 의 텍스트가 `(펌)`이면 `is_repost=true`
+      - 후보 말머리 ID는 현재 요청 URL 또는 상세 링크의 `search_head` 쿼리 값으로 저장
+      - 상세 페이지에서 말머리 ID를 확정하기 어려운 경우 보조값으로 사용할 수 있으나, 최종 저장용 말머리 이름은 상세 페이지 값을 우선한다.
+    - 후보 제목/상세 링크: `.gall_tit a`
+    - 후보 `(펌)` 여부: `.gall_tit > b.font_blue009` 의 텍스트가 `(펌)`이면 후보 `is_repost=true`
       - `.gall_tit span.mark` 는 검색어 하이라이트이므로 단독으로 `(펌)` 판정에 사용하지 않음
-      - `is_repost=true` 인 경우 JSON 저장용 제목에서는 `(펌)` 문자열을 제거
-    - 글쓴이: `.gall_writer`
-    - 작성일: `.gall_date`의 `title` 값 우선, 없으면 텍스트 값
-    - 조회수: `.gall_count`
-    - 추천수: `.gall_recommend`
+      - 최종 JSON의 `is_repost`, `title`, `repost` 객체는 상세 페이지 수집 단계에서 다시 확정한다.
+    - 후보 글쓴이: `.gall_writer`
+    - 후보 작성일: `.gall_date`의 `title` 값 우선, 없으면 텍스트 값
+    - 후보 조회수: `.gall_count`
+    - 후보 추천수: `.gall_recommend`
 
 ##### 2.2.1.1. 게시글 작성일 이동
   - 빠른 이동 UI는 내부적으로 `/ajax/search_ajax/search_date/` 를 호출해 해당 날짜의 `search_pos`를 받은 뒤 목록 URL로 이동한다.
@@ -844,11 +848,11 @@
     - 갤러리 내 검색은 `page`와 `search_pos` 순서대로 탐색
     - 통합 검색은 최신순 `/post/p/<페이지>/q/<키워드>`, 정확도순 `/post/p/<페이지>/sort/accuracy/q/<키워드>` 순서대로 탐색
     - 심층검색은 통합 검색으로 갤러리 후보를 먼저 수집한 뒤 후보 갤러리별 갤러리 내 검색을 순차 탐색
-    - 설정 범위(글 번호, 작성일, 최대 페이지 등)에 맞는 게시글 링크만 Queue에 추가
+    - 설정 범위(글 번호, 작성일, 최대 페이지 등)에 맞는 게시글 링크와 후보 메타데이터만 Queue에 추가
     - 중복 게시글은 `(gallery_id, post_number)` 기준으로 제거
   - 2단계: 게시글 수집 워커
     - 여러 워커가 Queue에서 게시글 링크를 가져와 병렬 비동기 수집
-    - 게시글 메타데이터, `content.blocks` 본문 콘텐츠, 댓글, 덧글을 수집
+    - 게시글 상세 페이지를 열어 최종 저장용 게시글 메타데이터, `content.blocks` 본문 콘텐츠, 댓글, 덧글을 수집
     - 수집 결과는 게시글 단위로 JSON 저장소에 기록
     - 게시글 저장 완료 후 체크포인트 진행 상태를 갱신
     - 게시글 10개 처리 완료마다 체크포인트 저장
