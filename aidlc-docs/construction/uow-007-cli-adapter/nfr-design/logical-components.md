@@ -89,6 +89,7 @@ Responsibilities:
 - build `ScrapeOptions`
 - build `WorkerConfig`
 - build `StorageConfig`
+- assemble `LocalMediaStore` with the same `OutputRunLayout` used by `LocalOutputStore`
 - validate through Pydantic model construction
 
 Must reuse existing UOW-001 models.

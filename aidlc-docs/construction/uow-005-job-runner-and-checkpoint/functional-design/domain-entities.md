@@ -7,7 +7,7 @@ UOW-005 reuses existing contracts from earlier units.
 | Entity | Source | Role |
 |---|---|---|
 | `JobConfig` | `models/job.py` | validated Job input |
-| `WorkerConfig` | `models/job.py` | post worker count and queue max size |
+| `WorkerConfig` | `models/job.py` | post worker count, media download concurrency, and queue max size |
 | `PostCandidate` | `models/job.py` | queue item representing one post link/candidate |
 | `PostKey` | `models/job.py` | completed-key identity for dedupe/resume |
 | `SearchPosition` | `models/job.py` | traversal cursor saved in checkpoint |
@@ -19,6 +19,7 @@ UOW-005 reuses existing contracts from earlier units.
 | `JobReport` | `models/report.py` | final run summary |
 | `HttpPort` | `core/ports.py` | UOW-002 HTTP runtime boundary |
 | `OutputStorePort` | `core/ports.py` | result/failure/report output boundary |
+| `MediaStorePort` | `core/ports.py` | metadata-only media update and downloaded media storage boundary |
 | `CheckpointStorePort` | `core/ports.py` | checkpoint persistence boundary |
 | `ClockPort` | `core/ports.py` | testable time source |
 | `LoggerPort` | `core/ports.py` | safe logging boundary |

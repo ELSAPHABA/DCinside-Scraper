@@ -49,7 +49,7 @@ from dcinside_scraper.post_detail import (
     PostMetadataParser,
 )
 from dcinside_scraper.retry import ParserFailureRetryService
-from dcinside_scraper.runner import CheckpointCoordinator, JobRunner, RunnerEventBuilder, StopController
+from dcinside_scraper.runner import CheckpointCoordinator, JobRunner, MediaDownloadCoordinator, RunnerEventBuilder, StopController
 from dcinside_scraper.search import (
     CandidateDeduper,
     GallerySearchCollector,
@@ -84,6 +84,7 @@ __all__ = [
     "LocalCheckpointStore",
     "LocalMediaStore",
     "LocalOutputStore",
+    "MediaDownloadCoordinator",
     "NetworkFailureError",
     "OutputRunLayout",
     "ParseFailureError",

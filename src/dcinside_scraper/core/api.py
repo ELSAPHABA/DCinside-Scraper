@@ -7,7 +7,7 @@ library import-safe and establish stable type contracts for adapters.
 from __future__ import annotations
 
 from dcinside_scraper.core.errors import ValidationFailure
-from dcinside_scraper.core.ports import CheckpointStorePort, ClockPort, HttpPort, LoggerPort, OutputStorePort
+from dcinside_scraper.core.ports import CheckpointStorePort, ClockPort, HttpPort, LoggerPort, MediaStorePort, OutputStorePort
 from dcinside_scraper.models.comment import Comment
 from dcinside_scraper.models.job import (
     CommentRequest,
@@ -57,7 +57,9 @@ async def run_job(
     collector=None,
     post_detail=None,
     output_store: OutputStorePort | None = None,
+    media_store: MediaStorePort | None = None,
     checkpoint_store: CheckpointStorePort | None = None,
+    http: HttpPort | None = None,
     logger: LoggerPort | None = None,
     clock: ClockPort | None = None,
 ) -> JobReport:
@@ -72,6 +74,8 @@ async def run_job(
         collector=collector,
         post_detail=post_detail,
         output_store=output_store,
+        media_store=media_store,
+        http=http,
         checkpoint_store=checkpoint_store,
         logger=logger,
         clock=clock,
@@ -85,7 +89,9 @@ async def resume_job(
     collector=None,
     post_detail=None,
     output_store: OutputStorePort | None = None,
+    media_store: MediaStorePort | None = None,
     checkpoint_store: CheckpointStorePort | None = None,
+    http: HttpPort | None = None,
     logger: LoggerPort | None = None,
     clock: ClockPort | None = None,
 ) -> JobReport:
@@ -100,6 +106,8 @@ async def resume_job(
         collector=collector,
         post_detail=post_detail,
         output_store=output_store,
+        media_store=media_store,
+        http=http,
         checkpoint_store=checkpoint_store,
         logger=logger,
         clock=clock,

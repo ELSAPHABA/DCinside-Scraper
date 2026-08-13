@@ -6,7 +6,7 @@
 
 현재 구현은 BeautifulSoup 기반 HTML 파싱과 `httpx.AsyncClient` 기반 비동기 요청을 사용합니다. Playwright 같은 브라우저 자동화는 런타임 의존성이 아닙니다.
 
-주의: 현재 수집 결과는 게시글/댓글/콘텐츠 메타데이터 중심입니다. 이미지/DC 동영상/DCCON 다운로드를 위한 옵션과 저장소 포트는 정의되어 있지만, 기본 사용 흐름에서는 URL, 설명, 썸네일, 다운로드 후보 같은 메타데이터 보존을 우선합니다.
+주의: 기본 수집은 게시글/댓글/콘텐츠 메타데이터 중심입니다. `--image-mode download`를 사용하면 수집 Job 안에서 게시글 이미지/DC 동영상 `MediaItem` 파일까지 저장하고, DCCON은 현재 URL과 alt/title/conalt 메타데이터 저장을 우선합니다.
 
 ## 주요 기능
 
@@ -21,7 +21,7 @@
 - `(펌)` 게시글 처리: 제목의 `(펌)` 표시는 제거하고, 원 게시글 갤러리/글번호/작성자/닉네임 유형/조회수/추천수를 `repost`에 저장합니다.
 - User-Agent 교체: `user-agents.txt` 파일을 읽고 기본 요청 10회마다 User-Agent를 교체합니다.
 - Proxy 사용: CLI 옵션 또는 `.env` 파일의 프록시 설정을 사용합니다.
-- 속도 조절: 요청 간격, 게시글 워커 수, 큐 크기, 댓글 최대 페이지 수를 조절합니다.
+- 속도 조절: 요청 간격, 게시글 워커 수, 미디어 다운로드 동시성, 큐 크기, 댓글 최대 페이지 수를 조절합니다.
 - 중단 및 재개: 체크포인트를 저장하고 `resume` 명령으로 중단 지점부터 재개합니다.
 - CAPTCHA/차단 감지: CAPTCHA 또는 차단 신호가 보이면 자동 우회를 시도하지 않고 작업을 중단하며 체크포인트를 남깁니다.
 - 로컬/컨테이너 저장: 로컬 JSONL 파일 또는 컨테이너 환경의 S3 호환 저장소와 PostgreSQL을 사용할 수 있습니다.
@@ -381,11 +381,12 @@ dcinside-scraper run `
 | `--job-id` | 자동 생성 | 작업 ID. 출력 경로와 체크포인트 키에 사용됩니다. |
 | `--output-path` | `outputs` | 로컬 출력 기본 경로. `StorageConfig.base_output_path`에 해당합니다. |
 | `--image-mode` | `metadata_only` | 이미지 처리 정책. `metadata_only` 또는 `download` |
-| `--dccon-mode` | `metadata` | DCCON 처리 정책. `skip`, `metadata`, `download` |
+| `--dccon-mode` | `metadata` | DCCON 처리 정책. 현재는 `skip`, `metadata` 중심이며 파일 `download`는 후속 확장 대상입니다. |
 | `--include-comments` | 기본 포함 | 댓글 수집 활성화 |
 | `--no-comments` | - | 댓글 수집 비활성화 |
 | `--request-interval-seconds` | `1.0` | 요청 간 최소 대기 시간 |
 | `--post-worker-count` | `1` | 게시글 상세 수집 워커 수 |
+| `--media-worker-count` | `1` | `--image-mode download`일 때 이미지/DC 동영상 다운로드 동시성 상한 |
 | `--queue-max-size` | 제한 없음 | 링크 수집기와 게시글 워커 사이의 큐 최대 크기 |
 | `--max-comment-pages` | `100` | 게시글당 댓글 AJAX 최대 페이지 수 |
 | `--user-agent-file` | `user-agents.txt` 자동 탐색 | User-Agent 목록 파일 |
@@ -480,6 +481,7 @@ dcinside-scraper run `
 운영 권장값:
 
 - 처음 실행할 때는 `--post-worker-count 1`과 기본 요청 간격 `1.0`초로 시작하세요.
+- 미디어 파일 저장을 켤 때는 `--image-mode download --media-worker-count 1`로 시작한 뒤 차단/부하 상황을 보고 늘리세요.
 - CAPTCHA나 차단이 자주 발생하면 워커 수를 줄이고 `--request-interval-seconds`를 늘리세요.
 - 큐는 게시글 링크 단위로 들어갑니다. Job 하나가 큐에 들어가는 것이 아니라, Job 안에서 발견한 게시글 후보 링크들이 큐에 쌓이고 워커가 하나씩 처리합니다.
 

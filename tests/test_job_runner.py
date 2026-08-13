@@ -8,8 +8,10 @@ import pytest
 from dcinside_scraper.core.errors import BlockedResponseError, ParseFailureError, StorageFailureError
 from dcinside_scraper.models.checkpoint import Checkpoint
 from dcinside_scraper.models.comment import AuthorInfo
-from dcinside_scraper.models.enums import CheckpointStatus, JobReportStatus, JobType, StopReason
-from dcinside_scraper.models.job import JobConfig, PostCandidate, ResumeRequest, WorkerConfig
+from dcinside_scraper.models.content import ImageBlock
+from dcinside_scraper.models.enums import CheckpointStatus, JobReportStatus, JobType, MediaMode, MediaType, StopReason
+from dcinside_scraper.models.job import JobConfig, PostCandidate, ResumeRequest, ScrapeOptions, WorkerConfig
+from dcinside_scraper.models.media import MediaItem
 from dcinside_scraper.models.post import PostResult
 from dcinside_scraper.models.report import FailureRecord, JobReport, StoredObjectRef
 from dcinside_scraper.runner import JobRunner
@@ -89,6 +91,46 @@ class FakeOutputStore:
 
     async def finalize(self, report: JobReport) -> None:
         self.reports.append(report)
+
+
+class FakeMediaStore:
+    def __init__(self) -> None:
+        self.saved = []
+        self.metadata_only = []
+
+    async def save_media(self, item: MediaItem, content: bytes) -> MediaItem:
+        self.saved.append((item, content))
+        return item.model_copy(update={"file_path": f"media/{len(self.saved)}.bin"})
+
+    async def save_metadata_only(self, item: MediaItem) -> MediaItem:
+        self.metadata_only.append(item)
+        return item
+
+
+class SlowHttp:
+    def __init__(self) -> None:
+        self.active = 0
+        self.max_active = 0
+
+    async def download(self, url: str, *, headers=None) -> bytes:
+        self.active += 1
+        self.max_active = max(self.max_active, self.active)
+        await anyio.sleep(0.01)
+        self.active -= 1
+        return f"bytes:{url}".encode()
+
+
+class MediaPostDetail:
+    async def fetch_post(self, request):
+        return PostResult(
+            gallery_id=request.gallery_id or "dcbest",
+            post_id=request.post_id or "1",
+            post_number=request.post_number,
+            title="title",
+            author=AuthorInfo(name="writer"),
+            content=[ImageBlock(order=0, url=f"https://example.test/{request.post_id}.jpg")],
+            images=[MediaItem(media_type=MediaType.IMAGE, url=f"https://example.test/{request.post_id}.jpg")],
+        )
 
 
 class FakeCheckpointStore:
@@ -222,3 +264,53 @@ def test_manual_stop_before_run_saves_stopped_checkpoint() -> None:
     assert report.success_count == 0
     assert collector.calls == 0
     assert checkpoint.saved[-1].reason == StopReason.MANUAL_STOP
+
+
+def test_media_downloads_are_limited_by_media_worker_count() -> None:
+    output = FakeOutputStore()
+    media = FakeMediaStore()
+    http = SlowHttp()
+    runner = JobRunner(
+        collector=FakeCollector([candidate(1), candidate(2)]),
+        post_detail=MediaPostDetail(),
+        output_store=output,
+        media_store=media,
+        http=http,
+        checkpoint_store=FakeCheckpointStore(),
+        clock=FakeClock(),
+    )
+    config = minimal_job(worker_count=2).model_copy(
+        update={
+            "scrape_options": ScrapeOptions(image_mode=MediaMode.DOWNLOAD),
+            "worker_config": WorkerConfig(post_worker_count=2, media_worker_count=1),
+        }
+    )
+
+    report = anyio.run(runner.run, config)
+
+    assert report.status == JobReportStatus.COMPLETED
+    assert report.success_count == 2
+    assert len(media.saved) == 2
+    assert all(post.images[0].file_path for post in output.posts)
+    assert all(post.content[0].file_path for post in output.posts)
+    assert http.max_active == 1
+
+
+def test_media_metadata_only_does_not_require_http() -> None:
+    output = FakeOutputStore()
+    media = FakeMediaStore()
+    runner = JobRunner(
+        collector=FakeCollector([candidate(1)]),
+        post_detail=MediaPostDetail(),
+        output_store=output,
+        media_store=media,
+        checkpoint_store=FakeCheckpointStore(),
+        clock=FakeClock(),
+    )
+
+    report = anyio.run(runner.run, minimal_job())
+
+    assert report.status == JobReportStatus.COMPLETED
+    assert report.success_count == 1
+    assert len(media.metadata_only) == 1
+    assert output.posts[0].images[0].metadata["gallery_id"] == "dcbest"

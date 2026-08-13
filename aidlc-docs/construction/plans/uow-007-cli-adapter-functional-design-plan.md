@@ -152,7 +152,7 @@ X) 기타
 
 이미지, 디시콘, 댓글, 요청 간격, worker 수 같은 실행 옵션은 어떤 CLI 옵션으로 둘까요?
 
-A) (권장) `--image-mode`, `--dccon-mode`, `--include-comments/--no-comments`, `--request-interval-seconds`, `--post-worker-count`, `--queue-max-size`, `--max-comment-pages`를 두고 기존 `ScrapeOptions`/`WorkerConfig`에 매핑한다.
+A) (권장) `--image-mode`, `--dccon-mode`, `--include-comments/--no-comments`, `--request-interval-seconds`, `--post-worker-count`, `--media-worker-count`, `--queue-max-size`, `--max-comment-pages`를 두고 기존 `ScrapeOptions`/`WorkerConfig`에 매핑한다.
 
 추천 사유: 이미 모델 필드가 있으므로 CLI 옵션명만 얇게 붙이면 됩니다.
 

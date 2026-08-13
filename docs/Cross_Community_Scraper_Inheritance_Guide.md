@@ -765,6 +765,7 @@ wizard
 --no-comments
 --request-interval-seconds
 --post-worker-count
+--media-worker-count
 --queue-max-size
 --max-comment-pages
 --user-agent-file

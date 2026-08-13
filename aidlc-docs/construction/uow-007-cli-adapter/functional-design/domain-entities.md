@@ -16,16 +16,17 @@ UOW-007 reuses the UOW-001 through UOW-006 contracts below.
 | `RealtimeKeywordSource` | `models/job.py` | realtime keyword source built from environment variables |
 | `RealtimeAllSource` | `models/job.py` | realtime all source built from environment variables |
 | `ScrapeOptions` | `models/job.py` | comments, media, dccon, delay, retries, comment page limit, and range options |
-| `WorkerConfig` | `models/job.py` | post worker count and queue max size |
+| `WorkerConfig` | `models/job.py` | post worker count, media download concurrency, and queue max size |
 | `StorageConfig` | `models/job.py` | output base path and storage backend selection |
 | `HttpRuntimeConfig` | `http/runtime.py` | request delay, timeout, retry, User-Agent, Proxy, and execution directory |
 | `UserAgentConfig` | `http/runtime.py` | User-Agent file and rotation settings |
 | `ProxyConfig` | `http/runtime.py` | resolved explicit Proxy candidate |
-| `HttpClient` | `http/runtime.py` | HTTP runtime client used by collectors and detail service |
+| `HttpClient` | `http/runtime.py` | HTTP runtime client used by collectors, detail service, and media downloads |
 | `LinkCollectorService` | `search/collection.py` | source-specific link collection facade |
 | `PostDetailService` | `post_detail/detail.py` | post/comment/detail fetch and parse facade |
 | `OutputRunLayout` | `outputs/local.py` | local output path layout value object |
 | `LocalOutputStore` | `outputs/local.py` | local post/failure/report output store |
+| `LocalMediaStore` | `outputs/local.py` | local media file/metadata store |
 | `LocalCheckpointStore` | `outputs/local.py` | local `Checkpoint.json` store |
 | `JobReport` | `models/report.py` | final report printed by CLI |
 | `ErrorMapper` | `core/errors.py` | maps exceptions to safe adapter-facing errors |

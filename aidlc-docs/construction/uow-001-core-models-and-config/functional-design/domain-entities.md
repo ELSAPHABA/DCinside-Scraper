@@ -64,6 +64,7 @@ Controls worker execution.
 Fields:
 
 - `post_worker_count: int`
+- `media_worker_count: int`
 - `queue_max_size: int | None`
 - `metadata: dict[str, Any]`
 
@@ -405,4 +406,3 @@ Sync operations:
 - `info`
 - `warning`
 - `error`
-

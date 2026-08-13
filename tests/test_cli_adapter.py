@@ -57,6 +57,7 @@ def test_build_job_config_maps_gallery_search() -> None:
             "keyword": "싱글벙글",
             "output_path": "out",
             "post_worker_count": 3,
+            "media_worker_count": 2,
         },
         env={},
     )
@@ -65,6 +66,7 @@ def test_build_job_config_maps_gallery_search() -> None:
     assert config.source.gallery_id == "singlebungle1472"
     assert config.storage_config.base_output_path == "out"
     assert config.worker_config.post_worker_count == 3
+    assert config.worker_config.media_worker_count == 2
 
 
 def test_build_resume_request_allows_missing_job_id() -> None:

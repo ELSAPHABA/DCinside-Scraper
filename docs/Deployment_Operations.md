@@ -620,6 +620,7 @@ docker run --rm `
 | --- | --- | --- |
 | `--request-interval-seconds` | `1.0` | 요청 간 최소 대기 시간 |
 | `--post-worker-count` | `1` | 게시글 상세 수집 워커 수 |
+| `--media-worker-count` | `1` | 미디어 다운로드 동시성 상한 |
 | `--queue-max-size` | 없음 | 게시글 후보 큐 최대 크기 |
 | `--max-comment-pages` | `100` | 게시글당 댓글 AJAX 최대 페이지 수 |
 
@@ -632,7 +633,7 @@ docker run --rm `
 중간 규모 수집:
 
 ```powershell
---request-interval-seconds 1.5 --post-worker-count 2 --queue-max-size 100
+--request-interval-seconds 1.5 --post-worker-count 2 --media-worker-count 1 --queue-max-size 100
 ```
 
 장애가 잦을 때:
@@ -646,8 +647,9 @@ docker run --rm `
 1. 기본값으로 작은 Job을 실행합니다.
 2. CAPTCHA, 403, 비정상 HTML, 타임아웃이 없는지 확인합니다.
 3. 워커 수를 1씩만 늘립니다.
-4. 실패가 증가하면 워커 수를 되돌리고 요청 간격을 늘립니다.
-5. 장시간 Job은 중간 중단과 resume이 가능한지 먼저 검증합니다.
+4. `--image-mode download`를 사용할 때만 `--media-worker-count`를 1씩 늘립니다.
+5. 실패가 증가하면 워커 수를 되돌리고 요청 간격을 늘립니다.
+6. 장시간 Job은 중간 중단과 resume이 가능한지 먼저 검증합니다.
 
 ## 실시간 수집 운영
 

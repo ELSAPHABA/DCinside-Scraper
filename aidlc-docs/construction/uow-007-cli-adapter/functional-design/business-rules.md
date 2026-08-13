@@ -107,6 +107,7 @@
 - `--include-comments` and `--no-comments` map to `ScrapeOptions.include_comments`.
 - `--request-interval-seconds` maps to both HTTP runtime request delay and scrape option request interval where applicable.
 - `--post-worker-count` maps to `WorkerConfig.post_worker_count`.
+- `--media-worker-count` maps to `WorkerConfig.media_worker_count`.
 - `--queue-max-size` maps to `WorkerConfig.queue_max_size`.
 - `--max-comment-pages` maps to `ScrapeOptions.max_comment_pages`.
 - Existing model validation decides invalid values such as worker count less than 1.

@@ -103,6 +103,8 @@ X) 기타 (please describe after [Answer]: tag below)
 
 [Answer]: Job 실행 전 터미널에서 옵션값으로 선택하게 하고, 선택에 따라 디시콘 이미지/영상 URL과 alt/title/conalt 메타데이터만 저장만 저장하거나 디시콘 파일까지 다운로드하도록 구현
 
+[Superseded/Delta 2026-08-13]: 현재 구현은 디시콘 URL/메타데이터 저장까지만 지원합니다. 디시콘 파일 다운로드는 댓글 하위 `DcconItem` 저장 경로와 media 실패 기록 정책을 별도 확정한 뒤 후속 확장으로 둡니다.
+
 ## Question 8
 수집 결과 저장 방식은 무엇을 기본으로 할까요?
 

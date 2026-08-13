@@ -39,6 +39,7 @@
   - Approved checkpoint questionnaire answer Q10 is superseded by the latest status/checkpoint revision: save every 10 completed posts and immediately on stop/error/CAPTCHA.
   - Container JSONL/media storage default changed from MinIO to Garage-based S3-compatible object storage; SeaweedFS remains a future alternative for large media/small-file, FUSE, or Iceberg requirements.
   - AWS CDK infrastructure-as-code was completed as UOW-010 after UOW-009 Parser Failure Retry Reprocessor.
+  - Post-runner media handling was aligned to the shared scraper standard: `PostResult.images` is processed through a media coordinator before JSONL append, with `WorkerConfig.media_worker_count` limiting downloads.
 
 ## Stage Progress
 

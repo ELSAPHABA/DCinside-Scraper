@@ -89,6 +89,7 @@ UOW-005 does not scale workers across processes or machines.
 JobConfig
     |
     +-- WorkerConfig.post_worker_count -> worker task count
+    +-- WorkerConfig.media_worker_count -> media download semaphore
     +-- WorkerConfig.queue_max_size -> optional queue max size
     |
     v
@@ -96,6 +97,7 @@ JobRunner
     |
     +-- collector dependency -> PostCandidate values
     +-- detail dependency -> PostResult or per-post failure
+    +-- media dependency -> metadata-only update or downloaded media storage
     +-- output dependency -> posts/failures/report storage
     +-- checkpoint dependency -> save/load runner state
 ```

@@ -3,6 +3,7 @@
 from dcinside_scraper.runner.core import (
     CheckpointCoordinator,
     JobRunner,
+    MediaDownloadCoordinator,
     RunnerEventBuilder,
     StopController,
     candidate_post_key,
@@ -15,6 +16,7 @@ from dcinside_scraper.runner.core import (
 __all__ = [
     "CheckpointCoordinator",
     "JobRunner",
+    "MediaDownloadCoordinator",
     "RunnerEventBuilder",
     "StopController",
     "candidate_post_key",

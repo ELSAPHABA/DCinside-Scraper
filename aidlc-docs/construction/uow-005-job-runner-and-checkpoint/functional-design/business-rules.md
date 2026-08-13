@@ -28,8 +28,11 @@
 ## Worker Rules
 
 - Worker count comes from `WorkerConfig.post_worker_count`.
+- Media download concurrency comes from `WorkerConfig.media_worker_count`.
 - Workers may run post detail fetches concurrently.
 - Workers must use UOW-004 post detail contracts.
+- Workers must process `PostResult.images` after parsing and before `OutputStorePort.append_post`.
+- `ScrapeOptions.image_mode=metadata_only` stores media metadata only; `download` downloads bytes through `HttpPort.download` and writes them through `MediaStorePort.save_media`.
 - Workers must write success through `OutputStorePort.append_post`.
 - Workers must write final per-post failures through `OutputStorePort.write_failure`.
 - Workers must not update checkpoint completed state before output write success.
@@ -61,6 +64,7 @@
 - CAPTCHA stop uses `reason="captcha"`.
 - Blocked response uses stopped checkpoint with safe error reason.
 - Individual parse/fetch failures that are not CAPTCHA/block become failure records when retry is exhausted.
+- Recoverable media download failures become `stage="media"` failure records for that candidate.
 - A recoverable per-post failure must not stop the whole Job.
 - Storage failure is fatal to checkpoint advancement for that candidate.
 

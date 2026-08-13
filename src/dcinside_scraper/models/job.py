@@ -80,6 +80,7 @@ class ScrapeOptions(MetadataModel):
 
 class WorkerConfig(MetadataModel):
     post_worker_count: int = Field(default=1, ge=1)
+    media_worker_count: int = Field(default=1, ge=1)
     queue_max_size: int | None = Field(default=None, ge=1)
 
 

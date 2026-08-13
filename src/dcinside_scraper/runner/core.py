@@ -15,13 +15,14 @@ from dcinside_scraper.core.errors import (
     BlockedResponseError,
     CaptchaDetectedError,
     CheckpointFailureError,
+    NetworkFailureError,
     ScraperError,
     StorageFailureError,
     ValidationFailure,
 )
-from dcinside_scraper.core.ports import CheckpointStorePort, ClockPort, LoggerPort, OutputStorePort
+from dcinside_scraper.core.ports import CheckpointStorePort, ClockPort, HttpPort, LoggerPort, MediaStorePort, OutputStorePort
 from dcinside_scraper.models.checkpoint import Checkpoint
-from dcinside_scraper.models.enums import CheckpointStatus, GalleryType, JobReportStatus, StopReason
+from dcinside_scraper.models.enums import CheckpointStatus, GalleryType, JobReportStatus, MediaMode, StopReason
 from dcinside_scraper.models.job import (
     JobConfig,
     PostCandidate,
@@ -77,6 +78,78 @@ class CandidateCollectorPort(Protocol):
 class PostDetailPort(Protocol):
     async def fetch_post(self, request: PostRequest) -> PostResult:
         ...
+
+
+class MediaDownloadCoordinator:
+    def __init__(self, *, media_store: MediaStorePort | None, http: HttpPort | None, media_worker_count: int) -> None:
+        self.media_store = media_store
+        self.http = http
+        self._semaphore = asyncio.Semaphore(media_worker_count)
+
+    async def process(self, post: PostResult, config: JobConfig) -> PostResult:
+        if not post.images:
+            return post
+        if self.media_store is None:
+            if config.scrape_options.image_mode == MediaMode.DOWNLOAD:
+                raise NetworkFailureError("media_store is required for media download", details={"stage": "media"})
+            return post
+        images = _prepared_media_items(post)
+        if config.scrape_options.image_mode == MediaMode.METADATA_ONLY:
+            saved = [await self.media_store.save_metadata_only(item) for item in images]
+            return _with_saved_media(post, saved)
+        if self.http is None:
+            raise NetworkFailureError("http port is required for media download", details={"stage": "media"})
+        saved = []
+        for item in images:
+            async with self._semaphore:
+                content = await self.http.download(item.url)
+                saved.append(await self.media_store.save_media(item, content))
+        return _with_saved_media(post, saved)
+
+
+def _with_post_metadata(item: Any, post: PostResult, *, block: Any | None = None) -> Any:
+    metadata = dict(item.metadata)
+    metadata.setdefault("gallery_id", post.gallery_id)
+    metadata.setdefault("post_id", post.post_id)
+    metadata.setdefault("post_number", post.post_number)
+    updates: dict[str, Any] = {"metadata": metadata}
+    if block is not None and getattr(block, "url", None):
+        updates["url"] = block.url
+    if block is not None and not item.source_url and getattr(block, "source_url", None):
+        updates["source_url"] = block.source_url
+    if block is not None and getattr(block, "description", None):
+        updates["description"] = block.description
+    return item.model_copy(update=updates)
+
+
+def _media_blocks(post: PostResult) -> list[Any]:
+    return [block for block in post.content if getattr(block, "type", None) in {"image", "dc_video"}]
+
+
+def _prepared_media_items(post: PostResult) -> list[Any]:
+    blocks = _media_blocks(post)
+    return [_with_post_metadata(item, post, block=blocks[index] if index < len(blocks) else None) for index, item in enumerate(post.images)]
+
+
+def _with_saved_media(post: PostResult, saved: list[Any]) -> PostResult:
+    media_by_index = iter(saved)
+    blocks = []
+    for block in post.content:
+        if getattr(block, "type", None) in {"image", "dc_video"}:
+            try:
+                item = next(media_by_index)
+            except StopIteration:
+                blocks.append(block)
+                continue
+            updates = {}
+            if item.file_path:
+                updates["file_path"] = item.file_path
+            if item.object_key:
+                updates["object_key"] = item.object_key
+            blocks.append(block.model_copy(update=updates) if updates else block)
+        else:
+            blocks.append(block)
+    return post.model_copy(update={"images": saved, "content": blocks})
 
 
 class SystemClock:
@@ -264,6 +337,8 @@ class JobRunner:
         post_detail: PostDetailPort,
         output_store: OutputStorePort,
         checkpoint_store: CheckpointStorePort,
+        media_store: MediaStorePort | None = None,
+        http: HttpPort | None = None,
         logger: LoggerPort | None = None,
         clock: ClockPort | None = None,
     ) -> None:
@@ -271,6 +346,8 @@ class JobRunner:
         self.post_detail = post_detail
         self.output_store = output_store
         self.checkpoint_store = checkpoint_store
+        self.media_store = media_store
+        self.http = http
         self.logger = logger or NullLogger()
         self.clock = clock or SystemClock()
         self._active_stop: StopController | None = None
@@ -309,13 +386,18 @@ class JobRunner:
             stop=stop,
             started_at=self.clock.now_utc(),
         )
+        media = MediaDownloadCoordinator(
+            media_store=self.media_store,
+            http=self.http,
+            media_worker_count=config.worker_config.media_worker_count,
+        )
         self._active_stop = stop
         self._log("info", "job_start", context)
         try:
             async with anyio.create_task_group() as task_group:
                 task_group.start_soon(self._collector_task, context, initial_checkpoint.remaining_queue if initial_checkpoint else None)
                 for worker_index in range(config.worker_config.post_worker_count):
-                    task_group.start_soon(self._worker_task, context, f"worker-{worker_index + 1}")
+                    task_group.start_soon(self._worker_task, context, f"worker-{worker_index + 1}", media)
         finally:
             self._active_stop = None
 
@@ -375,7 +457,7 @@ class JobRunner:
                 break
             await anyio.sleep(_poll_interval(context.job_config))
 
-    async def _worker_task(self, context: JobRunContext, worker_id: str) -> None:
+    async def _worker_task(self, context: JobRunContext, worker_id: str, media: MediaDownloadCoordinator) -> None:
         while True:
             item = await context.queue.get()
             try:
@@ -387,11 +469,17 @@ class JobRunner:
                 if context.stop.requested or context.checkpoint.is_completed(candidate):
                     context.deduped_count += 1
                     continue
-                await self._process_candidate(context, candidate, worker_id)
+                await self._process_candidate(context, candidate, worker_id, media)
             finally:
                 context.queue.task_done()
 
-    async def _process_candidate(self, context: JobRunContext, candidate: PostCandidate, worker_id: str) -> None:
+    async def _process_candidate(
+        self,
+        context: JobRunContext,
+        candidate: PostCandidate,
+        worker_id: str,
+        media: MediaDownloadCoordinator,
+    ) -> None:
         request = _post_request(candidate, context.job_config)
         try:
             post = await self.post_detail.fetch_post(request)
@@ -409,6 +497,24 @@ class JobRunner:
         except Exception:
             context.stop.request(StopReason.ERROR)
             self._log("error", "worker_error", context, worker_id=worker_id, stage="post")
+            return
+
+        try:
+            post = await media.process(post, context.job_config)
+        except (CaptchaDetectedError, BlockedResponseError) as exc:
+            context.stop.request(stop_reason_for_error(exc))
+            self._log("warning", "worker_stop", context, worker_id=worker_id, stop_reason=context.stop.reason.value if context.stop.reason else None)
+            return
+        except (StorageFailureError, CheckpointFailureError) as exc:
+            context.stop.request(stop_reason_for_error(exc))
+            self._log("error", "worker_error", context, worker_id=worker_id, stage=exc.details.get("stage", "media"))
+            return
+        except ScraperError as exc:
+            await self._write_failure(context, candidate, exc.safe_message, "media", exc.retryable)
+            return
+        except Exception:
+            context.stop.request(StopReason.ERROR)
+            self._log("error", "worker_error", context, worker_id=worker_id, stage="media")
             return
 
         try:

@@ -46,7 +46,7 @@ from dcinside_scraper.models.job import (
     StorageConfig,
     WorkerConfig,
 )
-from dcinside_scraper.outputs import LocalCheckpointStore, LocalOutputStore, OutputRunLayout
+from dcinside_scraper.outputs import LocalCheckpointStore, LocalMediaStore, LocalOutputStore, OutputRunLayout
 from dcinside_scraper.post_detail import PostDetailService
 from dcinside_scraper.retry import ParserFailureRetryRequest, ParserFailureRetryService
 from dcinside_scraper.runner import JobRunner
@@ -125,6 +125,7 @@ def _add_runtime_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--no-comments", dest="include_comments", action="store_false")
     parser.add_argument("--request-interval-seconds", type=float)
     parser.add_argument("--post-worker-count", type=int)
+    parser.add_argument("--media-worker-count", type=int)
     parser.add_argument("--queue-max-size", type=int)
     parser.add_argument("--max-comment-pages", type=int)
     parser.add_argument("--user-agent-file")
@@ -299,7 +300,7 @@ def _build_scrape_options(command: Mapping[str, Any]) -> ScrapeOptions:
 
 
 def _build_worker_config(command: Mapping[str, Any]) -> WorkerConfig:
-    data = {key: command[key] for key in ("post_worker_count", "queue_max_size") if key in command}
+    data = {key: command[key] for key in ("post_worker_count", "media_worker_count", "queue_max_size") if key in command}
     return WorkerConfig(**data)
 
 
@@ -331,6 +332,8 @@ def build_local_runtime(command: Mapping[str, Any], *, job_id: str, storage_conf
         collector=LinkCollectorService(client),
         post_detail=PostDetailService(client),
         output_store=LocalOutputStore(layout),
+        media_store=LocalMediaStore(layout),
+        http=client,
         checkpoint_store=LocalCheckpointStore(storage_config.base_output_path),
     )
     return client, runner
@@ -627,6 +630,7 @@ def _print_start(config: JobConfig, output: TextIO) -> None:
     output.write(f"source: {config.source.type}\n")
     output.write(f"output_path: {config.storage_config.base_output_path or str(Path.cwd())}\n")
     output.write(f"workers: {config.worker_config.post_worker_count}\n")
+    output.write(f"media_workers: {config.worker_config.media_worker_count}\n")
     output.write(f"request_interval_seconds: {config.scrape_options.request_interval_seconds}\n")
     output.flush()
 

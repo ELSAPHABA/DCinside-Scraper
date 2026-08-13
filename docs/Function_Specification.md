@@ -45,7 +45,7 @@
   - 본문 콘텐츠
     - `content.text`: 검색/미리보기/Polars 분석용 순수 텍스트
     - `content.blocks`: 원문 순서를 보존한 텍스트, 이미지, DC 동영상, inline 동영상, YouTube 영상/링크, 일반 링크, 시리즈 블록
-    - 이미지/동영상/디시콘 파일 저장 or URL 수집 (옵션)
+    - 이미지/DC 동영상 파일 저장 or URL 수집 (옵션), 디시콘 파일 저장은 후속 확장
   - 댓글 + 덧글 (글쓴이, 작성일, 내용)
     - 댓글 번호
     - 댓글 글쓴이: (반)고정닉 or 유동닉
@@ -98,9 +98,10 @@
     - 특정 기간 댓글 수집
     - 특정 글번호 범위 댓글 수집
   - 본문 미디어 수집 옵션
-    - 이미지/동영상/디시콘 URL 및 메타데이터만 저장
-    - 이미지/동영상/디시콘 파일 저장
-    - 이미지/동영상/디시콘 URL 및 파일 모두 저장
+    - 이미지/DC 업로드 동영상 URL 및 메타데이터만 저장
+    - 이미지/DC 업로드 동영상 파일 저장
+    - 이미지/DC 업로드 동영상 URL 및 파일 모두 저장
+    - 디시콘은 현재 댓글 하위 `dccons`에 URL, alt, title, conalt 메타데이터를 저장하고 파일 다운로드는 후속 확장 대상으로 둔다.
     - YouTube 등 외부 임베드 영상은 다운로드하지 않고 URL, provider, video_id, embed_url만 저장
     - 시리즈는 게시글 모음 메타데이터로 저장하고, 연결된 게시글 본문은 별도 수집 Job 대상일 때만 수집
   - 검색 옵션
@@ -165,7 +166,7 @@
     - 스크래핑 속도 조절
       - 요청 사이의 대기 시간을 사용자가 설정 가능
       - 기본값은 안정성을 우선하여 너무 빠른 연속 요청을 피하도록 설정
-      - 갤러리 목록, 통합 검색, 게시글 상세, `(펌)` AJAX, DC 동영상 iframe, 댓글 API, 이미지/동영상/디시콘 다운로드 요청에 동일하게 적용
+      - 갤러리 목록, 통합 검색, 게시글 상세, `(펌)` AJAX, DC 동영상 iframe, 댓글 API, 이미지/DC 동영상 다운로드 요청에 동일하게 적용
       - CAPTCHA 또는 차단 의심 응답 발생 시 즉시 작업 중단 후 중단점 저장
     - CAPTCHA 대응
       - CAPTCHA 페이지 또는 비정상 접근 차단 응답 포착 시 현재 작업 중단
@@ -225,13 +226,19 @@
     - 포함 대상: `text`, `link.text`, `series.title`, `series.items[].title`
     - 제외 대상: 조회수/추천수/갤러리명 같은 카드 메타데이터
   - 기존 `images` top-level 배열을 유지할 경우, 원본 기준 데이터가 아니라 `content.blocks`의 `image` 블록만 뽑은 호환/요약 필드로 취급
-  - 미디어 파일명은 기본적으로 `media/<gallery_id>/<post_no>/<order>_<type>.<ext>` 형식으로 저장
+  - 미디어 파일은 Job run 출력 하위 `media/<gallery_id>/<post_no>/<media_type>/<filename>` 형식으로 저장
+  - 게시글 상세 파서는 이미지/DC 동영상 URL과 메타데이터를 `PostResult.images`에 담는다.
+  - Job runner는 게시글 저장 직전에 media 처리 단계를 수행한다.
+    - `image_mode=metadata_only`: `MediaStorePort.save_metadata_only()`를 호출하고 URL/메타데이터만 JSONL에 남긴다.
+    - `image_mode=download`: `HttpPort.download()`로 파일 bytes를 받은 뒤 `MediaStorePort.save_media()`로 저장하고 `file_path` 또는 `object_key`를 `PostResult.images`에 반영한 후 JSONL을 저장한다.
+    - media 다운로드 동시성은 `WorkerConfig.media_worker_count`로 제한한다.
+    - media 다운로드 실패는 해당 게시글의 `stage="media"` 실패 기록으로 남기고, 저장소/체크포인트 실패는 중단 사유로 처리한다.
 
 #### 2.1.5. 데이터 저장
   - 수집된 게시글 데이터는 Job당 하나의 JSONL 파일로 저장
   - 게시글 하나는 JSON 객체 한 줄로 append
   - Job 실행 조건과 요약 정보는 별도 metadata JSON 파일로 저장 가능
-  - 이미지/동영상/디시콘 파일은 별도의 `media/` 폴더에 저장
+  - 다운로드된 이미지/DC 동영상 파일은 별도의 `media/` 폴더에 저장
   - 컨테이너 운영 시 JSONL과 미디어는 S3 호환 객체 저장소에 저장하고 체크포인트는 PostgreSQL에 저장
   - 파일명: `job_YYYYMMDD_HHMMSS.jsonl` (예: `job_20230101_120000.jsonl`)
   - Job 메타데이터 예시:
@@ -787,7 +794,8 @@
     - `(펌)` 게시글은 `.write_div` 전체 텍스트를 그대로 쓰면 원글 카드의 갤러리명/조회수/추천수까지 섞이므로, 원글 카드 내부 본문은 `.cloned_card_body p` 또는 AJAX 응답 HTML의 `.cloned_card_body`를 우선 사용
     - `(펌)` 원글 카드 이미지/동영상도 같은 `content.blocks` 구조로 저장하되, 원글 카드 메타데이터는 `repost` 객체에만 저장
   - 미디어 파일 저장 or URL 수집 (옵션)
-    - 이미지, DC 업로드 동영상, inline mp4, 디시콘은 URL/메타데이터만 저장하거나 파일 다운로드 가능
+    - 이미지, DC 업로드 동영상, inline mp4는 URL/메타데이터만 저장하거나 파일 다운로드 가능
+    - 디시콘은 댓글 하위 metadata로 저장하고 파일 다운로드는 후속 확장 대상으로 둔다.
     - YouTube 등 외부 임베드는 URL/메타데이터만 저장하고 파일 다운로드 대상에서 제외
     - 다운로드 파일 경로는 각 블록의 `download.path`에 저장
     - 실사이트 smoke test 반영: `viewimage.php?no=` 값이 항상 짧은 파일 번호가 아닐 수 있으며, 긴 서명 토큰 형태로 내려오면 이를 `media_id` 또는 `file_no`로 저장하지 않음

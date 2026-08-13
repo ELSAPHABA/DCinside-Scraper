@@ -2,7 +2,7 @@
 
 ## Purpose
 
-UOW-005 turns a validated `JobConfig` into a `JobReport` by orchestrating search/link collection, post detail fetching, output storage, and checkpoint persistence.
+UOW-005 turns a validated `JobConfig` into a `JobReport` by orchestrating search/link collection, post detail fetching, optional media metadata/download processing, output storage, and checkpoint persistence.
 
 This unit owns Job lifecycle, the post-candidate queue, worker pool execution, checkpoint update ordering, stop/cancellation behavior, resume flow, and realtime loop termination. It does not own CLI prompts, concrete storage internals, parser selectors, HTTP retry internals, PostgreSQL checkpoint implementation, container entrypoints, or MCP hosting.
 
@@ -13,6 +13,7 @@ This unit owns Job lifecycle, the post-candidate queue, worker pool execution, c
 | JobRunner contract | `JobRunner` receives validated `JobConfig` plus injected UOW-002/003/004/006 services or ports and returns `JobReport` |
 | Queue topology | each Job has one sequential link collector task; queue items are `PostCandidate` values, not whole Jobs |
 | Worker pool | `WorkerConfig.post_worker_count` post workers consume the candidate queue |
+| Media processing | after UOW-004 parsing and before JSONL append, `MediaDownloadCoordinator` applies `ScrapeOptions.image_mode` and `WorkerConfig.media_worker_count` |
 | Direct URL handling | direct URL Jobs convert URLs into `PostCandidate` values and put them into the same queue |
 | Checkpoint commit ordering | completed keys and last completed position update only after result/failure storage succeeds |
 | Checkpoint frequency | save every 10 completed posts and immediately on final stop/completion conditions |
@@ -31,10 +32,11 @@ This unit owns Job lifecycle, the post-candidate queue, worker pool execution, c
 6. Post workers consume candidates from the queue.
 7. Each worker skips candidates already in `completed_keys`.
 8. Each worker fetches/parses a post through UOW-004.
-9. Each worker writes success or failure through UOW-006 output ports.
-10. After storage success, checkpoint state is advanced.
-11. `CheckpointScheduler` saves checkpoints every 10 completed posts.
-12. On normal completion, final checkpoint and `JobReport` are written.
+9. Each worker processes `PostResult.images` through the injected `MediaStorePort` when image metadata/download handling is required.
+10. Each worker writes success or failure through UOW-006 output ports.
+11. After storage success, checkpoint state is advanced.
+12. `CheckpointScheduler` saves checkpoints every 10 completed posts.
+13. On normal completion, final checkpoint and `JobReport` are written.
 
 The queue contains post candidates/links. A Job is the outer run; it is not itself an item in the queue.
 
@@ -60,11 +62,14 @@ Each post worker:
 2. skips it if the post key is already completed
 3. builds `PostRequest`
 4. fetches `PostResult` through UOW-004
-5. writes the post result through `OutputStorePort.append_post`
-6. advances checkpoint only after write success
-7. records failure through `OutputStorePort.write_failure` when a post-level failure is recoverable
+5. processes `PostResult.images` through `MediaDownloadCoordinator`
+6. writes the post result through `OutputStorePort.append_post`
+7. advances checkpoint only after write success
+8. records failure through `OutputStorePort.write_failure` when a post-level or media-level failure is recoverable
 
 Worker count comes from `WorkerConfig.post_worker_count`.
+
+Media download concurrency comes from `WorkerConfig.media_worker_count`.
 
 Queue max size uses `WorkerConfig.queue_max_size` when present; otherwise the queue may be unbounded.
 

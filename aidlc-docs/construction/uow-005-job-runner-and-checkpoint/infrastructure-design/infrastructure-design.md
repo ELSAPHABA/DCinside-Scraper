@@ -84,6 +84,8 @@ JobRunner
 
 Post worker concurrency is bounded by `WorkerConfig.post_worker_count`.
 
+Media download concurrency inside post workers is bounded by `WorkerConfig.media_worker_count`.
+
 The Job itself is not a queue item. Queue items are post candidates.
 
 ## Configuration Boundary
@@ -96,7 +98,8 @@ Inputs:
 - `WorkerConfig`
 - UOW-003 collector service or port
 - UOW-004 post detail service or port
-- UOW-006 output and checkpoint ports
+- UOW-006 output, media, and checkpoint ports
+- UOW-002 HTTP port for media downloads when `image_mode=download`
 - safe logger and clock ports
 
 UOW-005 must not directly read:

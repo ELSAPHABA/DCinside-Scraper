@@ -130,10 +130,13 @@ def build_container_runtime(
         secret_access_key=env_config.s3_secret_access_key,
         force_path_style=env_config.s3_force_path_style,
     )
+    output_store = S3OutputStore(layout, object_store)
     runner = JobRunner(
         collector=LinkCollectorService(client),
         post_detail=PostDetailService(client),
-        output_store=S3OutputStore(layout, object_store),
+        output_store=output_store,
+        media_store=output_store,
+        http=client,
         checkpoint_store=PostgresCheckpointStore(env_config.database_url, connection_factory=postgres_connection_factory),
     )
     return ContainerRuntime(config=config, http_client=client, runner=runner)

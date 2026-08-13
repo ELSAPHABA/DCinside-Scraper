@@ -343,10 +343,12 @@
 
 **인수조건**
 
-- [ ] Job 실행 전에 디시콘 metadata-only 또는 file download 모드를 선택할 수 있다.
+- [ ] Job 실행 전에 디시콘 metadata-only 또는 file download 모드를 선택할 수 있다. 현재 file download는 후속 확장이다.
 - [ ] 가능한 경우 `src`, `alt`, `title`, `conalt`를 저장한다.
 - [ ] 디시콘 다운로드에도 전역 요청 지연과 timeout을 적용한다.
 - [ ] 디시콘 다운로드 실패는 댓글 전체 실패가 아니라 디시콘 실패 항목으로 기록한다.
+
+현재 구현 delta: 디시콘은 URL/메타데이터 저장까지만 지원한다. file download 모드는 댓글 하위 `DcconItem` 저장 경로와 실패 기록 정책을 확정한 뒤 후속 확장으로 처리한다.
 
 **검증 메모**
 

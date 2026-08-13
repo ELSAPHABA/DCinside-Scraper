@@ -27,6 +27,7 @@
 | Collector | one sequential producer task per Job |
 | Queue item | `PostCandidate` |
 | Worker pool | `WorkerConfig.post_worker_count` consumers |
+| Media download limit | `WorkerConfig.media_worker_count` semaphore |
 | Queue max size | `WorkerConfig.queue_max_size` when set |
 | Cancellation | `anyio` task lifecycle; graceful current-candidate finish path |
 | Realtime loop | JobRunner-owned polling loop |

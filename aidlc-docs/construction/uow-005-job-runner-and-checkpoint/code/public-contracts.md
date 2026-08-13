@@ -11,6 +11,7 @@ dcinside_scraper.runner
 Root package exports were also updated for common runner classes:
 
 - `JobRunner`
+- `MediaDownloadCoordinator`
 - `CheckpointCoordinator`
 - `StopController`
 - `RunnerEventBuilder`
@@ -24,6 +25,8 @@ runner = JobRunner(
     collector=collector,
     post_detail=post_detail,
     output_store=output_store,
+    media_store=media_store,
+    http=http_client,
     checkpoint_store=checkpoint_store,
     logger=logger,
     clock=clock,
@@ -37,8 +40,10 @@ Contract:
 - receives a validated `JobConfig`
 - runs one sequential collector task
 - runs `WorkerConfig.post_worker_count` post workers
+- limits media downloads with `WorkerConfig.media_worker_count`
 - uses `asyncio.Queue[PostCandidate]`
 - manages task lifecycle with `anyio`
+- processes `PostResult.images` through `MediaStorePort` before JSONL append
 - writes post results and failures through `OutputStorePort`
 - advances checkpoints only after output/failure storage succeeds
 - saves final checkpoints on terminal paths
@@ -71,6 +76,8 @@ report = await run_job(
     collector=collector,
     post_detail=post_detail,
     output_store=output_store,
+    media_store=media_store,
+    http=http_client,
     checkpoint_store=checkpoint_store,
 )
 ```

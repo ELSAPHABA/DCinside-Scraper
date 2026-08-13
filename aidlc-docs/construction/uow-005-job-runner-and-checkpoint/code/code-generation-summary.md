@@ -20,6 +20,8 @@
 - `asyncio.Queue[PostCandidate]` candidate queue
 - sequential collector task
 - bounded post worker pool using `WorkerConfig.post_worker_count`
+- media processing before post append using `ScrapeOptions.image_mode`
+- media download concurrency using `WorkerConfig.media_worker_count`
 - optional queue backpressure using `WorkerConfig.queue_max_size`
 - private sentinel worker shutdown
 - checkpoint advancement only after storage success
