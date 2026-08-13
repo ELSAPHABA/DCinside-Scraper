@@ -35,6 +35,8 @@
 ├── main.py                         # 로컬 개발용 CLI 진입점
 ├── pyproject.toml                  # 패키지 메타데이터, 의존성, console script
 ├── Dockerfile                      # 컨테이너 워커 이미지
+├── .dockerignore                   # Docker build context 제외 규칙
+├── docker-entrypoint.sh            # 컨테이너 시작 스크립트
 ├── README.md
 ├── docs/
 │   ├── Function_Specification.md

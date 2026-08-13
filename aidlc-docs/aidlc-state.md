@@ -693,7 +693,7 @@
 - **Current Unit**: UOW-008 Container, MCP, And Test Harness
 - **Status**: Approved
 - **Generated At**: 2026-08-09T03:21:16Z
-- **Artifacts**: `Dockerfile`, `src/dcinside_scraper/adapters/container.py`, `src/dcinside_scraper/adapters/mcp.py`, `src/dcinside_scraper/adapters/safe_errors.py`, `src/dcinside_scraper/outputs/postgres_checkpoint.py`, `src/dcinside_scraper/outputs/s3_output.py`, `src/dcinside_scraper/outputs/s3.py`, `pyproject.toml`, `tests/test_container_adapter.py`, `tests/test_s3_output_and_postgres.py`, `tests/test_mcp_adapter.py`, `tests/test_quality_harness.py`, `tests/fixtures/quality/`, `public-contracts.md`, `code-generation-summary.md`
+- **Artifacts**: `Dockerfile`, `.dockerignore`, `docker-entrypoint.sh`, `src/dcinside_scraper/adapters/container.py`, `src/dcinside_scraper/adapters/mcp.py`, `src/dcinside_scraper/adapters/safe_errors.py`, `src/dcinside_scraper/outputs/postgres_checkpoint.py`, `src/dcinside_scraper/outputs/s3_output.py`, `src/dcinside_scraper/outputs/s3.py`, `pyproject.toml`, `tests/test_container_adapter.py`, `tests/test_s3_output_and_postgres.py`, `tests/test_mcp_adapter.py`, `tests/test_quality_harness.py`, `tests/fixtures/quality/`, `public-contracts.md`, `code-generation-summary.md`
 - **Verification**: focused UOW-008 tests passed, 12 passed and 1 skipped; full `python -m pytest -q` passed, 113 passed and 3 skipped; `python -m compileall -q src\dcinside_scraper` passed; import side-effect check in temp cwd printed `False False`
 - **Implementation Note**: Compose file was not generated; compose remains local/smoke-only while PostgreSQL/Garage remain shared platform infrastructure outside the DCinside worker lifecycle
 - **Approved At**: 2026-08-09T03:46:21Z

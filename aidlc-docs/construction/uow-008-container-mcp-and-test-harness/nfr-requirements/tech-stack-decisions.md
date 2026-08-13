@@ -5,8 +5,9 @@
 | Decision | Selection | Rationale |
 |---|---|---|
 | Language | Python 3.11+ | Matches existing package baseline and Docker target. |
-| Container entrypoint | `python -m dcinside_scraper.adapters.container` | Keeps the Docker entrypoint inside the package adapter boundary. |
+| Container entrypoint | `/app/docker-entrypoint.sh` -> `python -m dcinside_scraper.adapters.container` | Splits Docker bootstrap from the package adapter while keeping runtime logic inside the package boundary. |
 | Container image | single Python slim Dockerfile | Enough for first one-shot worker image. |
+| Docker build context | `.dockerignore` excludes local state, outputs, caches, docs, and secret candidates | Keeps image builds smaller and avoids sending unnecessary local files to Docker. |
 | Environment loading | stdlib `os.environ` at entrypoint runtime | Preserves import safety and avoids `.env` mutation. |
 | Error mapping | existing `ErrorMapper` | Shared safe error boundary. |
 
@@ -38,9 +39,10 @@ Default install remains focused on local scraper runtime. Container images insta
 | Area | Decision |
 |---|---|
 | Build file | one Dockerfile |
+| Context filter | `.dockerignore` |
 | Base | Python 3.11+ slim image |
 | Install | `pip install .[s3,postgres]` |
-| Entrypoint | package module entrypoint |
+| Entrypoint | thin `docker-entrypoint.sh` script delegating to package module entrypoint |
 | Run model | one-shot process |
 | Resume | `RESUME=true`, optional `JOB_ID` |
 | Storage env | `DATABASE_URL`, `S3_ENDPOINT_URL`, `S3_BUCKET`, S3 credentials |

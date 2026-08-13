@@ -28,7 +28,7 @@ Out of scope:
 
 | Area | Decision |
 |---|---|
-| Worker image | one `Dockerfile` on Python 3.11+ slim; install `.[s3,postgres]`; entrypoint calls `python -m dcinside_scraper.adapters.container` |
+| Worker image | one `Dockerfile` on Python 3.11+ slim; `.dockerignore` filters build context; install `.[s3,postgres]`; entrypoint calls `/app/docker-entrypoint.sh`, which delegates to `python -m dcinside_scraper.adapters.container` |
 | MCP runtime | separate optional MCP entrypoint/console script with `.[mcp]`; not included in default worker image |
 | MCP transport | stdio by default; HTTP/SSE transport deferred |
 | Compose | optional local/smoke contract only, not production ownership |
@@ -47,9 +47,11 @@ Image contract:
 
 ```text
 Dockerfile
+  context: .dockerignore excludes local state, caches, outputs, docs, secret candidates
   base: python:3.11+ slim
   install: pip install .[s3,postgres]
-  entrypoint: python -m dcinside_scraper.adapters.container
+  entrypoint: /app/docker-entrypoint.sh
+  delegates: python -m dcinside_scraper.adapters.container "$@"
 ```
 
 The container must not:

@@ -34,7 +34,7 @@
 
 worker container 이미지는 어떻게 구성할까요?
 
-A) (권장) 단일 `Dockerfile`을 만들고 Python 3.11+ slim 계열 이미지에 `pip install .[s3,postgres]`로 설치한다. entrypoint는 `python -m dcinside_scraper.adapters.container`를 호출한다.
+A) (권장) 단일 `Dockerfile`과 `.dockerignore`를 만들고 Python 3.11+ slim 계열 이미지에 `pip install .[s3,postgres]`로 설치한다. `.dockerignore`는 local state, cache, output, `.env` secret 후보, 문서 산출물을 build context에서 제외한다. 루트에 `docker-entrypoint.sh`를 생성하고 Dockerfile `ENTRYPOINT`는 이 스크립트를 호출한다. 스크립트는 전달받은 argv를 유지한 채 `python -m dcinside_scraper.adapters.container "$@"`로 위임한다.
 
 추천 사유: UOW-008의 worker는 one-shot container입니다. 여러 이미지 target이나 복잡한 build stage는 아직 필요하지 않습니다.
 

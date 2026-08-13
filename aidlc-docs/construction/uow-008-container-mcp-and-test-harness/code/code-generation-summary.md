@@ -11,7 +11,7 @@
 | S3 output/media store | `src/dcinside_scraper/outputs/s3_output.py` |
 | S3 thread boundary | `src/dcinside_scraper/outputs/s3.py` |
 | package exports | `src/dcinside_scraper/outputs/__init__.py`, `src/dcinside_scraper/__init__.py` |
-| container image | `Dockerfile` |
+| container image | `Dockerfile`, `.dockerignore`, `docker-entrypoint.sh` |
 | optional extras/markers | `pyproject.toml` |
 | tests | `tests/test_container_adapter.py`, `tests/test_s3_output_and_postgres.py`, `tests/test_mcp_adapter.py`, `tests/test_quality_harness.py` |
 | quality fixtures | `tests/fixtures/quality/` |
@@ -28,7 +28,8 @@
 - MCP tool handlers for search, fetch, run, and resume operations
 - lazy MCP server binding through optional `mcp` extra
 - shared safe adapter error payload helper
-- Docker worker image using `.[s3,postgres]`
+- Docker worker image using `.[s3,postgres]` and a thin `docker-entrypoint.sh` bootstrap
+- Docker build context filtering through `.dockerignore`
 - optional pytest markers for Docker/Garage/PostgreSQL/MCP smoke tests
 - quality fixture checks for post JSONL, failure JSONL, report, repost title normalization, and optional Polars read
 

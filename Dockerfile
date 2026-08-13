@@ -3,9 +3,10 @@ FROM python:3.11-slim
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1
 
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md docker-entrypoint.sh ./
 COPY src ./src
 
-RUN pip install --no-cache-dir ".[s3,postgres]"
+RUN chmod +x /app/docker-entrypoint.sh \
+    && pip install --no-cache-dir ".[s3,postgres]"
 
-ENTRYPOINT ["python", "-m", "dcinside_scraper.adapters.container"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

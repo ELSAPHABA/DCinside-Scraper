@@ -94,13 +94,16 @@ python main.py --help
 docker build -t dcinside-scraper-worker .
 ```
 
+`.dockerignore`는 Docker build context에서 `.git`, 가상환경, 테스트 캐시, 출력물, `.env` 계열 secret 후보, 문서 산출물을 제외합니다. Dockerfile은 필요한 파일만 명시적으로 복사하므로, `.dockerignore`는 이미지 내용을 바꾸기보다 build context 크기와 accidental secret 전달 위험을 줄이는 역할입니다.
+
 현재 Dockerfile은 아래 흐름으로 이미지를 만듭니다.
 
 1. `python:3.11-slim` 사용
 2. `/app`을 작업 디렉터리로 설정
-3. `pyproject.toml`, `README.md`, `src/` 복사
-4. `pip install --no-cache-dir ".[s3,postgres]"` 실행
-5. `python -m dcinside_scraper.adapters.container`를 ENTRYPOINT로 설정
+3. `pyproject.toml`, `README.md`, `docker-entrypoint.sh`, `src/` 복사
+4. `docker-entrypoint.sh` 실행 권한 부여 후 `pip install --no-cache-dir ".[s3,postgres]"` 실행
+5. `/app/docker-entrypoint.sh`를 ENTRYPOINT로 설정
+6. `docker-entrypoint.sh`는 전달받은 argv를 유지한 채 `python -m dcinside_scraper.adapters.container "$@"`로 실행을 위임
 
 컨테이너에는 S3와 PostgreSQL extra가 포함됩니다. MCP extra는 컨테이너 기본 이미지에 포함되지 않습니다.
 
@@ -363,7 +366,7 @@ docker run --rm `
   --post-worker-count 2
 ```
 
-컨테이너 entrypoint는 기본적으로 `run` 명령을 받습니다. resume은 `resume` 서브커맨드가 아니라 `RESUME=true` 환경 변수로 실행합니다.
+컨테이너 entrypoint는 `/app/docker-entrypoint.sh`입니다. 이 스크립트는 Docker 전용 시작만 담당하고, 실제 실행은 `dcinside_scraper.adapters.container`에 위임합니다. 기본적으로 `run` 명령을 받으며, resume은 `resume` 서브커맨드가 아니라 `RESUME=true` 환경 변수로 실행합니다.
 
 ```powershell
 docker run --rm `

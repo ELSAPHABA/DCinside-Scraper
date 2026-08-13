@@ -155,10 +155,11 @@
         - `.env`가 없거나 유효한 Proxy 변수가 없으면 Proxy 비활성화
       - 컨테이너 실행 Flow
         - 컨테이너 이미지는 `docker-entrypoint.sh`를 포함
+        - `.dockerignore`는 `.git`, 가상환경, 테스트 캐시, 출력물, `.env` 계열 secret 후보, 문서 산출물을 Docker build context에서 제외
         - `docker run` 시 환경변수로 `DCINSIDE_PROXY_HOST`, `DCINSIDE_PROXY_ID`, `DCINSIDE_PROXY_PW`를 입력 가능
-        - `docker-entrypoint.sh`는 전달받은 Proxy 환경변수를 컨테이너 내부 `.env` 파일로 생성
-        - 컨테이너에 `.env` 파일을 직접 주입하는 방식도 허용
-        - 컨테이너 내부 프로그램은 로컬 실행과 동일하게 `.env`를 읽어 Proxy를 적용
+        - Docker `--env-file`을 통해 `.env` 형식 파일을 환경변수로 주입하는 방식도 허용
+        - `docker-entrypoint.sh`는 Docker 전용 시작 스크립트이며, 전달받은 argv를 유지한 채 `python -m dcinside_scraper.adapters.container "$@"`로 실행을 위임
+        - 컨테이너 내부 프로그램은 Docker가 주입한 환경변수를 직접 읽어 Proxy를 적용
       - `.env`는 문서화된 보안 예외로 평문 저장을 허용하되, `.gitignore` 포함과 터미널 경고를 필수로 함
       - 로그에는 Proxy password, raw `.env` 내용, 인증정보가 남지 않아야 함
     - 스크래핑 속도 조절
@@ -931,6 +932,7 @@ DCinside-Scraper/
 │   └── settings.py
 ├── user-agents.txt
 ├── .env
+├── .dockerignore
 ├── docker-entrypoint.sh
 ├── Checkpoint.json
 ├── pyproject.toml

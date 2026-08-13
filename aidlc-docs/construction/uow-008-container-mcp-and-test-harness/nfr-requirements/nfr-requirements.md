@@ -30,7 +30,7 @@ Out of scope:
 |---|---|---|
 | Q1 | A | Add `psycopg[binary]>=3,<4` only under a `postgres` optional extra; container installs `.[postgres,s3]`. |
 | Q2 | A | Reuse existing `s3` extra and `boto3`; do not add `aioboto3`/`aiobotocore`. |
-| Q3 | A | Use one Dockerfile on Python 3.11+ slim; entrypoint calls `python -m dcinside_scraper.adapters.container`. |
+| Q3 | A | Use one Dockerfile on Python 3.11+ slim; entrypoint calls `/app/docker-entrypoint.sh`, which delegates to `python -m dcinside_scraper.adapters.container`. |
 | Q4 | A | Read and validate env only at entrypoint runtime; missing required env returns validation exit code `2`; secrets never print. |
 | Q5 | A | Create checkpoint table with idempotent `CREATE TABLE IF NOT EXISTS`; do not add Alembic. |
 | Q6 | A | Use process-local temp spool for S3 JSONL append; upload full object after append; best-effort cleanup; resume creates a new run object. |

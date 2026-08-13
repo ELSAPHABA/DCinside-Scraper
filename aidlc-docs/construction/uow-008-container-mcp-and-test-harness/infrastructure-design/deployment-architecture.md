@@ -54,6 +54,7 @@ Runtime flow:
 ```text
 container process
   |
+  +-- /app/docker-entrypoint.sh
   +-- python -m dcinside_scraper.adapters.container
   +-- ContainerEnvConfig.from_env(os.environ)
   +-- build_container_runtime(...)

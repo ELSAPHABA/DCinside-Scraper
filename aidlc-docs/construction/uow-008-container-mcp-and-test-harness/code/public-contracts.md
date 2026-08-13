@@ -9,11 +9,13 @@ python -m dcinside_scraper.adapters.container run --source direct-post --url "ht
 Docker entrypoint:
 
 ```text
-ENTRYPOINT ["python", "-m", "dcinside_scraper.adapters.container"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 ```
 
 Contract:
 
+- `/app/docker-entrypoint.sh` is a thin Docker bootstrap script
+- the script preserves argv and executes `python -m dcinside_scraper.adapters.container "$@"`
 - importing `dcinside_scraper.adapters.container` has no runtime side effects
 - `main(argv=None) -> int` returns `0`, `1`, or `2`
 - container mode runs one Job or one resume request per process
@@ -173,9 +175,12 @@ Contract:
 
 ```text
 python:3.11-slim
+docker-entrypoint.sh
 pip install .[s3,postgres]
-ENTRYPOINT ["python", "-m", "dcinside_scraper.adapters.container"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 ```
+
+`.dockerignore` excludes repository metadata, virtual environments, test caches, output/checkpoint files, `.env` secret candidates, docs, AI-DLC workflow artifacts, and build outputs from the Docker build context. The Dockerfile still copies only explicit runtime inputs.
 
 No compose file is generated in UOW-008 code generation. Compose remains optional smoke/dev infrastructure only.
 
