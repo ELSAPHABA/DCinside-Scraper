@@ -4,6 +4,7 @@ from dcinside_scraper.core.api import (
     fetch_comments,
     fetch_post,
     resume_job,
+    retry_parser_failures,
     run_job,
     search_gallery,
     search_integrated,
@@ -42,6 +43,7 @@ from dcinside_scraper.outputs import (
     OutputRunLayout,
     S3ObjectStore,
     S3OutputStore,
+    StorageFactory,
 )
 from dcinside_scraper.post_detail import (
     CommentService,
@@ -100,6 +102,7 @@ __all__ = [
     "S3OutputStore",
     "ScraperError",
     "StorageFailureError",
+    "StorageFactory",
     "StopController",
     "UnavailableContentError",
     "UnsupportedSourceError",
@@ -108,6 +111,7 @@ __all__ = [
     "fetch_comments",
     "fetch_post",
     "resume_job",
+    "retry_parser_failures",
     "run_job",
     "search_gallery",
     "search_integrated",

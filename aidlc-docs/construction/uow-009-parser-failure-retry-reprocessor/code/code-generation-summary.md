@@ -5,9 +5,10 @@
 | Area | Files |
 |---|---|
 | retry service | `src/dcinside_scraper/retry/parser_failures.py`, `src/dcinside_scraper/retry/__init__.py` |
-| package exports | `src/dcinside_scraper/__init__.py` |
+| public API/package exports | `src/dcinside_scraper/core/api.py`, `src/dcinside_scraper/__init__.py` |
 | CLI adapter | `src/dcinside_scraper/adapters/cli.py` |
 | container adapter | `src/dcinside_scraper/adapters/container.py` |
+| MCP adapter | `src/dcinside_scraper/adapters/mcp.py` |
 | direct-post capacity | `src/dcinside_scraper/models/job.py` |
 | report metadata propagation | `src/dcinside_scraper/runner/core.py` |
 | tests | `tests/test_parser_failure_retry.py`, `tests/test_parser_failure_retry_properties.py`, `tests/test_cli_adapter.py` |
@@ -24,8 +25,10 @@
 - local-only `--existing-posts-root` convenience scan
 - direct-post retry Job creation through existing `JobConfig` and `JobRunner`
 - retry report counters under `JobReport.metadata["parser_failure_retry"]`
+- library API `retry_parser_failures()` delegating to `ParserFailureRetryService`
 - CLI `retry-failures` subcommand through the existing console script
 - container `retry-failures` argv support through the existing worker image/entrypoint
+- MCP `retry_parser_failures` tool handler
 - S3/Garage retry input reads through existing optional S3 dependency boundary
 - default tests with temp files, fake runner, and Hypothesis PBT
 

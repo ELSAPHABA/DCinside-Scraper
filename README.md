@@ -768,6 +768,7 @@ MCP 도구 핸들러는 아래 기능을 제공합니다.
 | `fetch_comments` | 댓글 수집 |
 | `run_job` | 작업 실행 |
 | `resume_job` | 작업 재개 |
+| `retry_parser_failures` | parser-stage 실패 재처리 |
 
 응답은 성공 시 `{"ok": true, "data": ...}` 형태이고, 실패 시 오류 정보를 포함합니다.
 
@@ -829,6 +830,8 @@ anyio.run(main)
 ```
 
 라이브러리 사용 시에도 HTTP 클라이언트는 호출자가 주입합니다. 이렇게 해야 테스트, 프록시, User-Agent, 쿠키 정책, 저장소 정책을 실행 환경별로 분리할 수 있습니다.
+
+`run_job`, `resume_job`, `retry_parser_failures`는 장시간 실행과 저장소 쓰기가 포함될 수 있으므로 호출자가 `JobRunner` 또는 실행 의존성을 주입하는 구조입니다. MCP handler도 같은 core API를 호출하며, retry는 기존 `ParserFailureRetryService`와 direct-post JobRunner 경로를 사용합니다.
 
 ## 데이터 가공과 정규화 방향
 

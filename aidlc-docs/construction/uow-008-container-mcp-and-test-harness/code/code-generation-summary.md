@@ -10,6 +10,7 @@
 | PostgreSQL checkpoint store | `src/dcinside_scraper/outputs/postgres_checkpoint.py` |
 | S3 output/media store | `src/dcinside_scraper/outputs/s3_output.py` |
 | S3 thread boundary | `src/dcinside_scraper/outputs/s3.py` |
+| storage factory | `src/dcinside_scraper/outputs/factory.py` |
 | package exports | `src/dcinside_scraper/outputs/__init__.py`, `src/dcinside_scraper/__init__.py` |
 | container image | `Dockerfile`, `.dockerignore`, `docker-entrypoint.sh` |
 | optional extras/markers | `pyproject.toml` |
@@ -25,7 +26,7 @@
 - S3 media byte upload and metadata-only handling
 - PostgreSQL checkpoint save/load/latest with idempotent schema creation
 - safe checkpoint load failure wrapping for invalid stored JSON
-- MCP tool handlers for search, fetch, run, and resume operations
+- MCP tool handlers for search, fetch, run, resume, and parser-failure retry operations
 - lazy MCP server binding through optional `mcp` extra
 - shared safe adapter error payload helper
 - Docker worker image using `.[s3,postgres]` and a thin `docker-entrypoint.sh` bootstrap

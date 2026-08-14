@@ -15,7 +15,10 @@ from dcinside_scraper.core.ports import (
     MediaStorePort,
     OutputStorePort,
 )
+from dcinside_scraper.models.enums import JobReportStatus
 from dcinside_scraper.models.job import GallerySearchRequest, ResumeRequest
+from dcinside_scraper.models.report import JobReport
+from dcinside_scraper.retry import ParserFailureRetryRequest
 
 
 class FakeHttp:
@@ -81,6 +84,15 @@ class FakeLogger:
         return None
 
 
+class FakeRetryService:
+    def __init__(self) -> None:
+        self.request = None
+
+    async def retry(self, request, *, execute_job):
+        self.request = request
+        return await execute_job(None)
+
+
 def test_ports_accept_structural_fakes() -> None:
     assert isinstance(FakeHttp(), HttpPort)
     assert isinstance(FakeOutputStore(), OutputStorePort)
@@ -104,3 +116,21 @@ def test_public_search_api_requires_injected_client() -> None:
 def test_resume_requires_runner_dependencies() -> None:
     with pytest.raises(ValidationFailure):
         asyncio.run(api.resume_job(ResumeRequest(job_id="job-1")))
+
+
+def test_retry_parser_failures_delegates_to_service() -> None:
+    service = FakeRetryService()
+
+    async def execute_job(config):
+        return JobReport(job_id="retry-1", status=JobReportStatus.COMPLETED, success_count=1)
+
+    report = asyncio.run(
+        api.retry_parser_failures(
+            ParserFailureRetryRequest(failure_refs=("failures.jsonl",), job_id="retry-1"),
+            retry_service=service,
+            execute_job=execute_job,
+        )
+    )
+
+    assert report.job_id == "retry-1"
+    assert service.request.failure_refs == ("failures.jsonl",)

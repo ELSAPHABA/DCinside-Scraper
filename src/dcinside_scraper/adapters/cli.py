@@ -46,7 +46,7 @@ from dcinside_scraper.models.job import (
     StorageConfig,
     WorkerConfig,
 )
-from dcinside_scraper.outputs import LocalCheckpointStore, LocalMediaStore, LocalOutputStore, OutputRunLayout
+from dcinside_scraper.outputs import StorageFactory
 from dcinside_scraper.post_detail import PostDetailService
 from dcinside_scraper.retry import ParserFailureRetryRequest, ParserFailureRetryService
 from dcinside_scraper.runner import JobRunner
@@ -327,14 +327,14 @@ def build_local_runtime(command: Mapping[str, Any], *, job_id: str, storage_conf
             execution_dir=execution_dir,
         )
     )
-    layout = OutputRunLayout.from_storage_config(storage_config, job_id=job_id, run_id=_new_run_id())
+    bundle = StorageFactory.create(storage_config, job_id=job_id, run_id=_new_run_id())
     runner = JobRunner(
         collector=LinkCollectorService(client),
         post_detail=PostDetailService(client),
-        output_store=LocalOutputStore(layout),
-        media_store=LocalMediaStore(layout),
+        output_store=bundle.output_store,
+        media_store=bundle.media_store,
         http=client,
-        checkpoint_store=LocalCheckpointStore(storage_config.base_output_path),
+        checkpoint_store=bundle.checkpoint_store,
     )
     return client, runner
 

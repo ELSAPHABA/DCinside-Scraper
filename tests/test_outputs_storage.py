@@ -10,8 +10,8 @@ import pytest
 from dcinside_scraper.core.errors import StorageFailureError
 from dcinside_scraper.models.checkpoint import Checkpoint
 from dcinside_scraper.models.comment import AuthorInfo
-from dcinside_scraper.models.enums import JobReportStatus, JobType, MediaType
-from dcinside_scraper.models.job import JobConfig
+from dcinside_scraper.models.enums import JobReportStatus, JobType, MediaType, OutputMode
+from dcinside_scraper.models.job import JobConfig, S3StorageConfig, StorageConfig
 from dcinside_scraper.models.media import MediaItem
 from dcinside_scraper.models.post import PostResult
 from dcinside_scraper.models.report import FailureRecord, JobReport
@@ -21,6 +21,7 @@ from dcinside_scraper.outputs import (
     LocalOutputStore,
     OutputRunLayout,
     S3ObjectStore,
+    StorageFactory,
     ensure_under_base,
 )
 
@@ -150,3 +151,40 @@ def test_s3_put_bytes_uses_injected_client(tmp_path: Path) -> None:
         "Body": b"{}",
         "ContentType": "application/json",
     }
+
+
+def test_storage_factory_builds_local_bundle(tmp_path: Path) -> None:
+    bundle = StorageFactory.create(StorageConfig(base_output_path=str(tmp_path)), job_id="job:1", run_id="run/1")
+
+    ref = asyncio.run(bundle.output_store.append_post(minimal_post()))
+
+    assert bundle.failure_store is bundle.output_store
+    assert bundle.layout.posts_path.exists()
+    assert ref.object_key == "outputs/job_1/run_1/posts.jsonl"
+
+
+def test_storage_factory_builds_s3_bundle_with_injected_client(tmp_path: Path) -> None:
+    class FakeS3Client:
+        def __init__(self) -> None:
+            self.objects: dict[str, bytes] = {}
+
+        def put_object(self, **kwargs) -> None:
+            self.objects[kwargs["Key"]] = kwargs["Body"]
+
+    client = FakeS3Client()
+    bundle = StorageFactory.create(
+        StorageConfig(
+            output_mode=OutputMode.S3,
+            base_output_path=str(tmp_path),
+            s3=S3StorageConfig(endpoint_url="http://garage.local", bucket="bucket", prefix="prod"),
+        ),
+        job_id="job-1",
+        run_id="run-1",
+        s3_client=client,
+    )
+
+    ref = asyncio.run(bundle.output_store.append_post(minimal_post()))
+
+    assert bundle.failure_store is bundle.output_store
+    assert ref.object_key == "prod/outputs/job-1/run-1/posts.jsonl"
+    assert json.loads(client.objects[ref.object_key].splitlines()[0])["title"] == "title"

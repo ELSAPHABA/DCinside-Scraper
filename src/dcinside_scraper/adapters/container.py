@@ -29,8 +29,7 @@ from dcinside_scraper.models.job import (
     S3StorageConfig,
     StorageConfig,
 )
-from dcinside_scraper.outputs import OutputRunLayout, S3ObjectStore, S3OutputStore
-from dcinside_scraper.outputs.postgres_checkpoint import PostgresCheckpointStore
+from dcinside_scraper.outputs import StorageFactory
 from dcinside_scraper.post_detail import PostDetailService
 from dcinside_scraper.retry import CompositeFailureInputReader, ParserFailureRetryService, S3FailureInputReader
 from dcinside_scraper.runner import JobRunner
@@ -119,25 +118,23 @@ def build_container_runtime(
     )
     config = config.model_copy(update={"storage_config": storage_config})
     client = http_client or _build_http_client(config, env_config)
-    layout = OutputRunLayout.from_storage_config(storage_config, job_id=config.job_id, run_id=run_id or _new_run_id())
-    object_store = S3ObjectStore(
-        bucket=env_config.s3_bucket,
-        layout=layout,
-        client=s3_client,
-        endpoint_url=env_config.s3_endpoint_url,
-        region_name=env_config.s3_region,
-        access_key_id=env_config.s3_access_key_id,
-        secret_access_key=env_config.s3_secret_access_key,
-        force_path_style=env_config.s3_force_path_style,
+    bundle = StorageFactory.create(
+        storage_config,
+        job_id=config.job_id,
+        run_id=run_id or _new_run_id(),
+        s3_client=s3_client,
+        postgres_connection_factory=postgres_connection_factory,
+        s3_access_key_id=env_config.s3_access_key_id,
+        s3_secret_access_key=env_config.s3_secret_access_key,
+        s3_force_path_style=env_config.s3_force_path_style,
     )
-    output_store = S3OutputStore(layout, object_store)
     runner = JobRunner(
         collector=LinkCollectorService(client),
         post_detail=PostDetailService(client),
-        output_store=output_store,
-        media_store=output_store,
+        output_store=bundle.output_store,
+        media_store=bundle.media_store,
         http=client,
-        checkpoint_store=PostgresCheckpointStore(env_config.database_url, connection_factory=postgres_connection_factory),
+        checkpoint_store=bundle.checkpoint_store,
     )
     return ContainerRuntime(config=config, http_client=client, runner=runner)
 

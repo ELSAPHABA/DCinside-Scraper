@@ -12,6 +12,7 @@ from dcinside_scraper.core.api import (
     fetch_comments as api_fetch_comments,
     fetch_post as api_fetch_post,
     resume_job as api_resume_job,
+    retry_parser_failures as api_retry_parser_failures,
     run_job as api_run_job,
     search_gallery as api_search_gallery,
     search_integrated as api_search_integrated,
@@ -25,7 +26,12 @@ from dcinside_scraper.models.job import (
     JobConfig,
     PostRequest,
     ResumeRequest,
+    ScrapeOptions,
+    StorageConfig,
+    WorkerConfig,
 )
+from dcinside_scraper.models.report import JobReport
+from dcinside_scraper.retry import ParserFailureRetryRequest
 
 HttpClientFactory = Callable[[], Any]
 
@@ -74,6 +80,22 @@ class McpToolHandlers:
             lambda: api_resume_job(ResumeRequest.model_validate(payload), runner=runner),
         )
 
+    async def retry_parser_failures(
+        self,
+        payload: Mapping[str, Any],
+        *,
+        retry_service: Any | None = None,
+        execute_job: Callable[[JobConfig], Awaitable[JobReport]] | None = None,
+    ) -> dict[str, Any]:
+        return await _safe_call(
+            "retry_parser_failures",
+            lambda: api_retry_parser_failures(
+                _retry_request(payload),
+                retry_service=retry_service,
+                execute_job=execute_job,
+            ),
+        )
+
     async def _with_http(
         self,
         stage: str,
@@ -104,6 +126,38 @@ def _jsonable(value: Any) -> Any:
     if isinstance(value, dict):
         return {str(key): _jsonable(item) for key, item in value.items()}
     return value
+
+
+def _retry_request(payload: Mapping[str, Any]) -> ParserFailureRetryRequest:
+    return ParserFailureRetryRequest(
+        failure_refs=_tuple_refs(payload, "failure_refs", "failure_files", "failure_ref", "failure_file"),
+        existing_post_refs=_tuple_refs(payload, "existing_post_refs", "existing_posts"),
+        existing_post_roots=_tuple_refs(payload, "existing_post_roots", "existing_posts_root"),
+        job_id=_blank_none(payload.get("job_id") or payload.get("retry_job_id")),
+        scrape_options=ScrapeOptions.model_validate(payload.get("scrape_options") or {}),
+        worker_config=WorkerConfig.model_validate(payload.get("worker_config") or {}),
+        storage_config=StorageConfig.model_validate(payload.get("storage_config") or {}),
+    )
+
+
+def _tuple_refs(payload: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
+    refs: list[str] = []
+    for key in keys:
+        value = payload.get(key)
+        if value is None:
+            continue
+        if isinstance(value, (list, tuple, set)):
+            refs.extend(str(item) for item in value)
+        else:
+            refs.append(str(value))
+    return tuple(refs)
+
+
+def _blank_none(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
 
 
 def create_mcp_server(handlers: McpToolHandlers | None = None) -> Any:
@@ -138,6 +192,10 @@ def create_mcp_server(handlers: McpToolHandlers | None = None) -> Any:
     @server.tool()
     async def resume_job(payload: dict[str, Any]) -> dict[str, Any]:
         return await handlers.resume_job(payload)
+
+    @server.tool()
+    async def retry_parser_failures(payload: dict[str, Any]) -> dict[str, Any]:
+        return await handlers.retry_parser_failures(payload)
 
     return server
 

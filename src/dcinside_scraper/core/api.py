@@ -6,6 +6,9 @@ library import-safe and establish stable type contracts for adapters.
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
+from typing import Any
+
 from dcinside_scraper.core.errors import ValidationFailure
 from dcinside_scraper.core.ports import CheckpointStorePort, ClockPort, HttpPort, LoggerPort, MediaStorePort, OutputStorePort
 from dcinside_scraper.models.comment import Comment
@@ -22,6 +25,7 @@ from dcinside_scraper.models.job import (
 from dcinside_scraper.models.post import PostResult
 from dcinside_scraper.models.report import JobReport
 from dcinside_scraper.post_detail import CommentService, PostDetailService
+from dcinside_scraper.retry import ParserFailureRetryRequest, ParserFailureRetryService
 from dcinside_scraper.runner import JobRunner
 from dcinside_scraper.search import GallerySearchCollector, IntegratedSearchCollector
 
@@ -112,3 +116,15 @@ async def resume_job(
         logger=logger,
         clock=clock,
     ).resume(request)
+
+
+async def retry_parser_failures(
+    request: ParserFailureRetryRequest,
+    *,
+    retry_service: Any | None = None,
+    execute_job: Callable[[JobConfig], Awaitable[JobReport]] | None = None,
+) -> JobReport:
+    if execute_job is None:
+        raise ValidationFailure("execute_job is required", details={"reason": "execute_job_required"})
+    service = retry_service or ParserFailureRetryService()
+    return await service.retry(request, execute_job=execute_job)
