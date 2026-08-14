@@ -828,8 +828,8 @@
     - 댓글은 게시글 HTML에 고정으로 포함되지 않고, `/board/comment/` AJAX 응답으로 로드된다.
     - 댓글 요청: `POST https://gall.dcinside.com/board/comment/`
       - 게시글 HTML에서 `#e_s_n_o`, `#board_type`, `#_GALLTYPE_`, `#secret_article_key` 값을 먼저 수집
-      - 주요 form data: `id=<갤러리 ID>`, `no=<글 번호>`, `cmt_id=<갤러리 ID>`, `cmt_no=<글 번호>`, `e_s_n_o=<e_s_n_o>`, `comment_page=<페이지 번호>`, `sort=D`, `prevCnt=`, `board_type=<board_type>`, `_GALLTYPE_=<_GALLTYPE_>`, `secret_article_key=<secret_article_key>`, `clean=`, `nptest=`
-      - 요청 헤더: `X-Requested-With: XMLHttpRequest`, `Content-Type: application/x-www-form-urlencoded; charset=UTF-8`
+      - 주요 form data: `id=<갤러리 ID>`, `no=<글 번호>`, `cmt_id=<갤러리 ID>`, `cmt_no=<글 번호>`, `focus_cno=`, `focus_pno=`, `e_s_n_o=<e_s_n_o>`, `comment_page=<페이지 번호>`, `sort=D`, `prevCnt=`, `board_type=<board_type>`, `_GALLTYPE_=<_GALLTYPE_>`, `secret_article_key=<secret_article_key>`, `clean=`, `nptest=`
+      - 요청 헤더: `X-Requested-With: XMLHttpRequest`, `Content-Type: application/x-www-form-urlencoded; charset=UTF-8`, `Referer=<게시글 상세 URL>`
     - 댓글 페이지: 응답 JSON의 `pagination` 또는 현재 페이지 댓글 수를 기준으로 `comment_page=1,2,3...` 순서대로 요청
     - 댓글 응답: JSON의 `comments` 배열 사용
       - 일반 댓글: `depth == 0`
@@ -846,6 +846,7 @@
         - 디시콘/HTML이 포함된 경우 `memo`를 BeautifulSoup으로 한 번 더 파싱
         - 디시콘 이미지: `img.written_dccon[src]` 의 `src`, `alt`, `title`, `conalt` 값
         - 디시콘 영상: `video.written_dccon[data-src]` 또는 `video.written_dccon > source[src]` 값
+      - AJAX 응답에 `nicktype=COMMENT_BOY` 또는 `pw_ad=Y` 광고/댓글돌이 항목이 섞일 수 있으므로 댓글/덧글 수집 대상에서 제외
     - 렌더링된 HTML을 보조로 파싱할 경우
       - 댓글 목록: `li[id^="comment_li_"]`
       - 댓글 글쓴이: `#comment_li_<댓글 번호> > div > div.addbox > div.cmt_nickbox > span.gall_writer`

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -34,6 +35,7 @@ class FakeClient:
         self.detail = detail
         self.get_urls: list[str] = []
         self.post_calls: list[tuple[str, dict]] = []
+        self.post_referers: list[str | None] = []
 
     async def get(self, url, *, headers=None, params=None):
         self.get_urls.append(url)
@@ -43,8 +45,9 @@ class FakeClient:
             return FakeResponse((FIXTURES / "repost_ajax.html").read_text(encoding="utf-8"))
         return FakeResponse(self.detail)
 
-    async def post(self, url, *, data=None, headers=None):
+    async def post(self, url, *, data=None, headers=None, referer=None):
         self.post_calls.append((url, data or {}))
+        self.post_referers.append(referer)
         return FakeResponse((FIXTURES / "comments_page.json").read_text(encoding="utf-8"))
 
     async def download(self, url, *, headers=None):
@@ -88,7 +91,7 @@ def test_content_parser_ignores_oversized_image_media_id() -> None:
 def test_post_detail_service_fetches_video_comments_and_uses_public_api() -> None:
     html = (FIXTURES / "normal_post.html").read_text(encoding="utf-8")
     client = FakeClient(html)
-    request = PostRequest(url="https://gall.dcinside.com/mgallery/board/view/?id=singlebungle1472&no=100")
+    request = PostRequest(url="https://gall.dcinside.com/mgallery/board/view/?id=singlebungle1472&no=100&s_keyword=싱글벙글")
 
     post = run(api.fetch_post(request, client))
 
@@ -99,6 +102,11 @@ def test_post_detail_service_fetches_video_comments_and_uses_public_api() -> Non
     assert post.comments[1].parent_comment_id == "1"
     assert post.comments[1].dccons[0].src == "/dccon.png"
     assert client.post_calls[0][1]["comment_page"] == 1
+    assert client.post_calls[0][1]["e_s_n_o"] == "token-1"
+    assert client.post_calls[0][1]["_GALLTYPE_"] == "M"
+    assert client.post_calls[0][1]["focus_cno"] == ""
+    assert client.post_calls[0][1]["nptest"] == ""
+    assert "%EC%8B%B1%EA%B8%80%EB%B2%99%EA%B8%80" in (client.post_referers[0] or "")
 
 
 def test_repost_ajax_populates_repost_info_and_strips_title_marker() -> None:
@@ -130,6 +138,19 @@ def test_comment_ajax_and_rendered_fallback_parsers_preserve_replies() -> None:
     assert page.comments[1].author.nickname_type == NicknameType.FIXED
     assert rendered[1].parent_comment_id == "10"
     assert rendered[1].author.user_id == "reply-id"
+
+
+def test_comment_ajax_parser_ignores_comment_ad_items() -> None:
+    payload = {
+        "comments": [
+            {"no": "1", "name": "ㅇㅇ", "memo": "real", "reg_date": "2026.08.06 12:00:01"},
+            {"no": 0, "nicktype": "COMMENT_BOY", "name": "댓글돌이", "memo": "ad"},
+        ]
+    }
+
+    page = CommentAjaxParser().parse(json.dumps(payload))
+
+    assert [comment.comment_id for comment in page.comments] == ["1"]
 
 
 def test_failure_and_event_builders_exclude_raw_values() -> None:

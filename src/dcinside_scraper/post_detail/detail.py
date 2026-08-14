@@ -6,7 +6,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from typing import Any
-from urllib.parse import parse_qs, urljoin, urlsplit, urlunsplit
+from urllib.parse import parse_qs, quote, urljoin, urlsplit, urlunsplit
 
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString, Tag
@@ -498,18 +498,13 @@ class CommentService:
         page = 1
         collection = CommentCollection()
         while True:
+            data = _comment_post_data(request, page)
             response = await _client_post(
                 self.client,
                 COMMENT_URL,
-                data={
-                    "id": request.gallery_id,
-                    "no": request.post_id,
-                    "cmt_id": request.gallery_id,
-                    "cmt_no": request.post_id,
-                    "comment_page": page,
-                    "sort": "D",
-                },
+                data=data,
                 headers={"X-Requested-With": "XMLHttpRequest"},
+                referer=_comment_referer(request),
             )
             parsed = self.parser.parse(_response_text(response), current_page=page)
             collection.comments.extend(parsed.comments)
@@ -626,6 +621,7 @@ class PostDetailService:
                     post_id=parsed.post_id,
                     post_number=parsed.post_number,
                     gallery_type=parsed.gallery_type,
+                    metadata={"comment_params": parsed.metadata.get("comment_params") or {}, "referer_url": request.url},
                 )
             )
         except (CaptchaDetectedError, BlockedResponseError):
@@ -654,11 +650,18 @@ def _unresolved_repost() -> RepostInfo:
     )
 
 
-async def _client_post(client: Any, url: str, *, data: dict[str, Any], headers: dict[str, str] | None = None) -> Any:
+async def _client_post(
+    client: Any,
+    url: str,
+    *,
+    data: dict[str, Any],
+    headers: dict[str, str] | None = None,
+    referer: str | None = None,
+) -> Any:
     try:
-        return await client.post(url, data=data, headers=headers)
+        return await client.post(url, data=data, headers=headers, referer=referer)
     except TypeError:
-        return await client.post(url, data=data)
+        return await client.post(url, data=data, headers=headers)
 
 
 def _response_text(response: Any) -> str:
@@ -721,17 +724,66 @@ def _comment_params(soup: BeautifulSoup) -> dict[str, str]:
     return params
 
 
+def _comment_post_data(request: CommentRequest, page: int) -> dict[str, Any]:
+    params = request.metadata.get("comment_params")
+    params = params if isinstance(params, dict) else {}
+    data: dict[str, Any] = {
+        "id": request.gallery_id,
+        "no": request.post_id,
+        "cmt_id": request.gallery_id,
+        "cmt_no": request.post_id,
+        "focus_cno": "",
+        "focus_pno": "",
+        "comment_page": page,
+        "sort": "D",
+        "prevCnt": "",
+        "board_type": "",
+        "secret_article_key": "",
+        "clean": "",
+        "nptest": "",
+    }
+    for key in ("e_s_n_o", "board_type", "_GALLTYPE_", "secret_article_key"):
+        value = params.get(key)
+        if value is not None:
+            data[key] = str(value)
+    if "_GALLTYPE_" not in data and request.gallery_type is not None:
+        data["_GALLTYPE_"] = {GalleryType.MAJOR: "G", GalleryType.MINOR: "M", GalleryType.MINI: "MI"}[request.gallery_type]
+    return data
+
+
+def _comment_referer(request: CommentRequest) -> str | None:
+    value = request.metadata.get("referer_url")
+    return _ascii_url(str(value)) if value else None
+
+
+def _ascii_url(url: str) -> str:
+    parts = urlsplit(url)
+    return urlunsplit(
+        (
+            parts.scheme,
+            parts.netloc,
+            quote(parts.path, safe="/%"),
+            quote(parts.query, safe="=&%:/?"),
+            quote(parts.fragment, safe="=&%:/?"),
+        )
+    )
+
+
 def _comment_items(payload: Any) -> list[dict[str, Any]]:
     if isinstance(payload, dict):
         for key in ("comments", "comment_list", "data"):
             value = payload.get(key)
             if isinstance(value, list):
-                return [item for item in value if isinstance(item, dict)]
+                return [item for item in value if isinstance(item, dict) and not _is_comment_ad(item)]
             if isinstance(value, dict):
                 nested = _comment_items(value)
                 if nested:
                     return nested
     return []
+
+
+def _is_comment_ad(item: dict[str, Any]) -> bool:
+    return str(item.get("nicktype") or "").upper() == "COMMENT_BOY" or str(item.get("pw_ad") or "").upper() == "Y"
 
 
 def _media_url(node: Tag | None, *, base_url: str) -> str | None:
