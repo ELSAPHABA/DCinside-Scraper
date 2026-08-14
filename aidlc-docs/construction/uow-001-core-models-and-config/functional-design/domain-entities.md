@@ -374,8 +374,14 @@ Async operations:
 Async operations:
 
 - `append_post`
-- `write_failure`
 - `finalize`
+
+### FailureStorePort
+
+Async operations:
+
+- `write_failure`
+- `read_failures`
 
 ### MediaStorePort
 

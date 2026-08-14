@@ -8,7 +8,7 @@ from typing import Any
 from dcinside_scraper.core.errors import StorageFailureError
 from dcinside_scraper.models.enums import CheckpointMode, OutputMode
 from dcinside_scraper.models.job import StorageConfig
-from dcinside_scraper.outputs.local import LocalCheckpointStore, LocalMediaStore, LocalOutputStore, OutputRunLayout
+from dcinside_scraper.outputs.local import LocalCheckpointStore, LocalFailureStore, LocalMediaStore, LocalOutputStore, OutputRunLayout
 from dcinside_scraper.outputs.postgres_checkpoint import PostgresCheckpointStore
 from dcinside_scraper.outputs.s3 import S3ObjectStore
 from dcinside_scraper.outputs.s3_output import S3OutputStore
@@ -40,8 +40,13 @@ class StorageFactory:
         layout = OutputRunLayout.from_storage_config(config, job_id=job_id, run_id=run_id)
         checkpoint_store = cls._checkpoint_store(config, postgres_connection_factory=postgres_connection_factory)
         if config.output_mode == OutputMode.LOCAL:
-            output_store = LocalOutputStore(layout)
-            return StorageBundle(output_store, output_store, LocalMediaStore(layout), checkpoint_store, layout)
+            return StorageBundle(
+                LocalOutputStore(layout),
+                LocalFailureStore(layout),
+                LocalMediaStore(layout),
+                checkpoint_store,
+                layout,
+            )
         if config.output_mode == OutputMode.S3:
             if config.s3 is None:
                 raise StorageFailureError("s3 config is required when output_mode is s3", details={"stage": "storage_config"})

@@ -301,6 +301,7 @@ dcinside-scraper retry-failures `
 | 환경 변수 | 기본값 | 설명 |
 | --- | --- | --- |
 | `S3_REGION` | 없음 | S3 region |
+| `S3_PREFIX` | 없음 | S3 object key 앞에 붙일 prefix |
 | `S3_FORCE_PATH_STYLE` | `false` | path-style endpoint 강제 여부 |
 | `RESUME` | `false` | `true`이면 run 인자 대신 checkpoint resume |
 | `JOB_ID` | 없음 | 실행 또는 resume 대상 Job ID |
@@ -329,6 +330,7 @@ S3_BUCKET=dcinside-scraper
 S3_ACCESS_KEY_ID=access-key
 S3_SECRET_ACCESS_KEY=secret-key
 S3_REGION=garage
+S3_PREFIX=prod/dcinside
 S3_FORCE_PATH_STYLE=true
 DCINSIDE_USER_AGENT_ROTATE_EVERY=10
 ```
@@ -619,6 +621,7 @@ docker run --rm `
 | 옵션 | 기본값 | 설명 |
 | --- | --- | --- |
 | `--request-interval-seconds` | `1.0` | 요청 간 최소 대기 시간 |
+| `--max-post-retries` | `3` | HTTP 요청 재시도 횟수. 실제 요청 시도 횟수는 `재시도 횟수 + 1` |
 | `--post-worker-count` | `1` | 게시글 상세 수집 워커 수 |
 | `--media-worker-count` | `1` | 미디어 다운로드 동시성 상한 |
 | `--queue-max-size` | 없음 | 게시글 후보 큐 최대 크기 |

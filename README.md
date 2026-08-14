@@ -385,6 +385,7 @@ dcinside-scraper run `
 | `--include-comments` | 기본 포함 | 댓글 수집 활성화 |
 | `--no-comments` | - | 댓글 수집 비활성화 |
 | `--request-interval-seconds` | `1.0` | 요청 간 최소 대기 시간 |
+| `--max-post-retries` | `3` | 게시글/미디어 HTTP 요청 재시도 횟수. 실제 요청 시도 횟수는 `재시도 횟수 + 1`입니다. |
 | `--post-worker-count` | `1` | 게시글 상세 수집 워커 수 |
 | `--media-worker-count` | `1` | `--image-mode download`일 때 이미지/DC 동영상 다운로드 동시성 상한 |
 | `--queue-max-size` | 제한 없음 | 링크 수집기와 게시글 워커 사이의 큐 최대 크기 |
@@ -639,6 +640,7 @@ docker build -t dcinside-scraper-worker .
 | 환경 변수 | 설명 |
 | --- | --- |
 | `S3_REGION` | S3 region |
+| `S3_PREFIX` | S3 object key 앞에 붙일 prefix |
 | `S3_FORCE_PATH_STYLE` | path style 강제 여부 |
 | `RESUME` | `true`이면 resume 모드 |
 | `JOB_ID` | resume 또는 작업 ID 지정 |
@@ -658,6 +660,7 @@ S3_BUCKET=dcinside-scraper
 S3_ACCESS_KEY_ID=access-key
 S3_SECRET_ACCESS_KEY=secret-key
 S3_REGION=garage
+S3_PREFIX=prod/dcinside
 S3_FORCE_PATH_STYLE=true
 ```
 

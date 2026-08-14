@@ -20,7 +20,15 @@ from dcinside_scraper.core.errors import (
     StorageFailureError,
     ValidationFailure,
 )
-from dcinside_scraper.core.ports import CheckpointStorePort, ClockPort, HttpPort, LoggerPort, MediaStorePort, OutputStorePort
+from dcinside_scraper.core.ports import (
+    CheckpointStorePort,
+    ClockPort,
+    FailureStorePort,
+    HttpPort,
+    LoggerPort,
+    MediaStorePort,
+    OutputStorePort,
+)
 from dcinside_scraper.models.checkpoint import Checkpoint
 from dcinside_scraper.models.enums import CheckpointStatus, GalleryType, JobReportStatus, MediaMode, StopReason
 from dcinside_scraper.models.job import (
@@ -336,6 +344,7 @@ class JobRunner:
         collector: CandidateCollectorPort,
         post_detail: PostDetailPort,
         output_store: OutputStorePort,
+        failure_store: FailureStorePort,
         checkpoint_store: CheckpointStorePort,
         media_store: MediaStorePort | None = None,
         http: HttpPort | None = None,
@@ -345,6 +354,7 @@ class JobRunner:
         self.collector = collector
         self.post_detail = post_detail
         self.output_store = output_store
+        self.failure_store = failure_store
         self.checkpoint_store = checkpoint_store
         self.media_store = media_store
         self.http = http
@@ -546,7 +556,7 @@ class JobRunner:
             retryable=retryable,
         )
         try:
-            ref = await self.output_store.write_failure(failure)
+            ref = await self.failure_store.write_failure(failure)
             await context.checkpoint.record_failure(candidate)
         except (StorageFailureError, CheckpointFailureError) as exc:
             context.stop.request(stop_reason_for_error(exc))

@@ -68,10 +68,15 @@ await resume_scrape_command_async(command)
 
 Contract:
 
-- creates `HttpClient`, `LinkCollectorService`, `PostDetailService`, `LocalOutputStore`, `LocalCheckpointStore`, and `JobRunner`
+- creates `HttpClient`, `LinkCollectorService`, `PostDetailService`, `LocalOutputStore`, `LocalFailureStore`, `LocalCheckpointStore`, and `JobRunner`
 - calls `core.api.run_job()` or `core.api.resume_job()`
 - supports fake runner injection for tests
 - does not implement search pagination, post parsing, worker queue logic, or output layout rules
+
+Runtime scrape options:
+
+- `--max-post-retries N` maps to `ScrapeOptions.max_post_retries=N`
+- the local `HttpClient` uses `RetryPolicy.max_attempts=N + 1`
 
 ## User-Agent Import
 

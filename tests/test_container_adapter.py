@@ -7,9 +7,11 @@ from dcinside_scraper.adapters.container import (
     EXIT_SUCCESS,
     EXIT_VALIDATION_ERROR,
     ContainerEnvConfig,
+    build_container_runtime,
     run_container_async,
 )
 from dcinside_scraper.models.enums import CheckpointMode, JobReportStatus, OutputMode
+from dcinside_scraper.models.job import JobConfig, ScrapeOptions
 from dcinside_scraper.models.report import JobReport
 
 
@@ -52,6 +54,12 @@ def test_container_env_config_requires_storage_and_redacts_repr() -> None:
     assert "secret" not in repr(config)
 
 
+def test_container_env_config_supports_s3_prefix() -> None:
+    config = ContainerEnvConfig.from_env({**BASE_ENV, "S3_PREFIX": "prod/dcinside"})
+
+    assert config.storage_config().s3.prefix == "prod/dcinside"  # type: ignore[union-attr]
+
+
 def test_container_missing_required_env_returns_validation_error() -> None:
     error_output = io.StringIO()
 
@@ -85,6 +93,20 @@ def test_container_run_uses_s3_and_postgres_storage_modes_without_network() -> N
     assert runner.config.storage_config.output_mode == OutputMode.S3
     assert runner.config.storage_config.checkpoint_mode == CheckpointMode.POSTGRES
     assert '"ok": true' in output.getvalue()
+
+
+def test_container_runtime_connects_retry_policy() -> None:
+    config = JobConfig(
+        job_id="job-1",
+        job_type="direct_post",
+        source={"type": "direct_post", "urls": ["https://gall.dcinside.com/board/view/?id=dcbest&no=1"]},
+        scrape_options=ScrapeOptions(max_post_retries=4),
+    )
+    runtime = build_container_runtime(config, ContainerEnvConfig.from_env(BASE_ENV), run_id="run-1")
+    try:
+        assert runtime.http_client.config.retry_policy.max_attempts == 5
+    finally:
+        anyio.run(runtime.close)
 
 
 def test_container_resume_uses_env_job_id_without_cli_args() -> None:

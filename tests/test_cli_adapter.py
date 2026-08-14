@@ -39,6 +39,7 @@ def test_parser_accepts_confirmed_subcommands() -> None:
 
     assert parser.parse_args(["wizard"]).subcommand == "wizard"
     assert parser.parse_args(["resume"]).subcommand == "resume"
+    assert parser.parse_args(["run", "--max-post-retries", "5"]).max_post_retries == 5
     assert parser.parse_args(["retry-failures", "--failure-file", "failures.jsonl"]).subcommand == "retry-failures"
     assert parser.parse_args(["import-user-agents", "agents.txt"]).subcommand == "import-user-agents"
     assert parser.parse_args(["configure-proxy", "--host", "proxy.local:8080"]).subcommand == "configure-proxy"
@@ -65,8 +66,50 @@ def test_build_job_config_maps_gallery_search() -> None:
     assert config.source.type == "gallery_search"
     assert config.source.gallery_id == "singlebungle1472"
     assert config.storage_config.base_output_path == "out"
+    assert config.scrape_options.max_post_retries == 3
     assert config.worker_config.post_worker_count == 3
     assert config.worker_config.media_worker_count == 2
+
+
+def test_build_job_config_maps_max_post_retries() -> None:
+    config = cli.build_job_config(
+        {
+            "subcommand": "run",
+            "source": "direct-post",
+            "urls": ["https://gall.dcinside.com/board/view/?id=dcbest&no=1"],
+            "max_post_retries": 5,
+        },
+        env={},
+    )
+
+    assert config.scrape_options.max_post_retries == 5
+
+
+def test_build_local_runtime_connects_retry_policy(tmp_path: Path) -> None:
+    config = cli.build_job_config(
+        {
+            "subcommand": "run",
+            "source": "direct-post",
+            "job_id": "job-1",
+            "urls": ["https://gall.dcinside.com/board/view/?id=dcbest&no=1"],
+            "output_path": str(tmp_path),
+            "max_post_retries": 5,
+        },
+        env={},
+    )
+    client, _ = cli.build_local_runtime(
+        {
+            "subcommand": "run",
+            "output_path": str(tmp_path),
+            "max_post_retries": 5,
+        },
+        job_id=config.job_id,
+        storage_config=config.storage_config,
+    )
+    try:
+        assert client.config.retry_policy.max_attempts == 6
+    finally:
+        asyncio.run(client.close())
 
 
 def test_build_resume_request_allows_missing_job_id() -> None:

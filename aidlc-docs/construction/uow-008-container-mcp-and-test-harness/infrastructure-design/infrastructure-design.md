@@ -79,6 +79,7 @@ Required storage env:
 Optional env:
 
 - `S3_REGION`
+- `S3_PREFIX`
 - `S3_FORCE_PATH_STYLE`
 - `RESUME`
 - `JOB_ID`

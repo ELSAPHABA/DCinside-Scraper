@@ -105,7 +105,7 @@ Invalid stored checkpoint JSON must fail safely with a checkpoint/storage error.
 
 ### NFR-UOW008-REL-005. Durable Output Before Checkpoint Progress
 
-`S3OutputStore.append_post()` and `write_failure()` must return success only after the S3-compatible object upload succeeds.
+`S3OutputStore.append_post()` and `FailureStorePort.write_failure()` must return success only after the S3-compatible object upload succeeds.
 
 This preserves the UOW-005 checkpoint rule: checkpoint progress advances only after durable output storage succeeds.
 

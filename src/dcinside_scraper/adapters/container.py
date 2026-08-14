@@ -19,7 +19,7 @@ from dcinside_scraper.adapters import cli
 from dcinside_scraper.adapters.safe_errors import safe_error_payload
 from dcinside_scraper.core.api import resume_job, run_job
 from dcinside_scraper.core.errors import ScraperError, ValidationFailure
-from dcinside_scraper.http import HttpClient, HttpRuntimeConfig, ProxyConfig, UserAgentConfig
+from dcinside_scraper.http import HttpClient, HttpRuntimeConfig, ProxyConfig, RetryPolicy, UserAgentConfig
 from dcinside_scraper.models.enums import CheckpointMode, JobReportStatus, JobType, OutputMode
 from dcinside_scraper.models.job import (
     DirectPostSource,
@@ -48,6 +48,7 @@ class ContainerEnvConfig:
     s3_access_key_id: str = field(repr=False)
     s3_secret_access_key: str = field(repr=False)
     s3_region: str | None = None
+    s3_prefix: str | None = None
     s3_force_path_style: bool = False
     resume: bool = False
     job_id: str | None = None
@@ -66,6 +67,7 @@ class ContainerEnvConfig:
             s3_access_key_id=_required_env(env, "S3_ACCESS_KEY_ID"),
             s3_secret_access_key=_required_env(env, "S3_SECRET_ACCESS_KEY"),
             s3_region=_blank_none(env.get("S3_REGION")),
+            s3_prefix=_blank_none(env.get("S3_PREFIX")),
             s3_force_path_style=_env_bool(env, "S3_FORCE_PATH_STYLE", default=False),
             resume=_env_bool(env, "RESUME", default=False),
             job_id=_blank_none(env.get("JOB_ID")),
@@ -84,7 +86,7 @@ class ContainerEnvConfig:
             s3=S3StorageConfig(
                 endpoint_url=self.s3_endpoint_url,
                 bucket=self.s3_bucket,
-                prefix=prefix,
+                prefix=prefix or self.s3_prefix,
                 region=self.s3_region,
             ),
             postgres=PostgresCheckpointConfig(dsn=self.database_url),
@@ -132,6 +134,7 @@ def build_container_runtime(
         collector=LinkCollectorService(client),
         post_detail=PostDetailService(client),
         output_store=bundle.output_store,
+        failure_store=bundle.failure_store,
         media_store=bundle.media_store,
         http=client,
         checkpoint_store=bundle.checkpoint_store,
@@ -265,6 +268,7 @@ def _build_http_client(config: JobConfig, env_config: ContainerEnvConfig) -> Htt
     return HttpClient(
         HttpRuntimeConfig(
             request_interval_seconds=config.scrape_options.request_interval_seconds,
+            retry_policy=RetryPolicy(max_attempts=config.scrape_options.max_post_retries + 1),
             user_agent=UserAgentConfig(
                 explicit_file_path=env_config.user_agent_file,
                 rotation_interval_requests=env_config.user_agent_rotate_every,

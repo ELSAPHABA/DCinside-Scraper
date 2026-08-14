@@ -31,10 +31,16 @@ class OutputStorePort(Protocol):
     async def append_post(self, post: PostResult) -> StoredObjectRef:
         ...
 
+    async def finalize(self, report: JobReport) -> None:
+        ...
+
+
+@runtime_checkable
+class FailureStorePort(Protocol):
     async def write_failure(self, failure: FailureRecord) -> StoredObjectRef:
         ...
 
-    async def finalize(self, report: JobReport) -> None:
+    async def read_failures(self, failure_input: Any) -> Any:
         ...
 
 
@@ -78,4 +84,3 @@ class LoggerPort(Protocol):
 
     def error(self, message: str, **fields: Any) -> None:
         ...
-

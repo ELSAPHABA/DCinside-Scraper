@@ -43,6 +43,7 @@ Required env:
 Optional env:
 
 - `S3_REGION`
+- `S3_PREFIX`
 - `S3_FORCE_PATH_STYLE`
 - `RESUME`
 - `JOB_ID`
@@ -59,6 +60,7 @@ Contract:
 - invalid boolean/integer env raises `ValidationFailure`
 - DSN, S3 keys, and proxy password are hidden from dataclass repr
 - storage config maps to `OutputMode.S3` and `CheckpointMode.POSTGRES`
+- `S3_PREFIX` maps to `StorageConfig.s3.prefix` unless an explicit storage prefix is already present
 
 ## Container Runtime Builder
 
@@ -74,6 +76,7 @@ Creates:
 - `LinkCollectorService`
 - `PostDetailService`
 - `S3OutputStore`
+- S3-backed `failure_store`
 - `PostgresCheckpointStore`
 - `JobRunner`
 

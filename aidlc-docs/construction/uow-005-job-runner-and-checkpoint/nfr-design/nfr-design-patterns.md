@@ -119,7 +119,7 @@ Per-post failure:
 - parse failure that can be represented as `FailureRecord`
 - optional detail failure after UOW-004 returns a partial result
 
-Per-post failures are written through `OutputStorePort.write_failure` and do not require a separate DLQ in UOW-005.
+Per-post failures are written through `FailureStorePort.write_failure` and do not require a separate DLQ in UOW-005.
 
 Future retry work may read `failures.jsonl` and create a new retry Job.
 

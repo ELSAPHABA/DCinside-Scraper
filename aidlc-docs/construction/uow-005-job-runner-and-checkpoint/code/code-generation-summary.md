@@ -22,6 +22,7 @@
 - bounded post worker pool using `WorkerConfig.post_worker_count`
 - media processing before post append using `ScrapeOptions.image_mode`
 - media download concurrency using `WorkerConfig.media_worker_count`
+- separate injected `FailureStorePort` for per-post failure JSONL writes
 - optional queue backpressure using `WorkerConfig.queue_max_size`
 - private sentinel worker shutdown
 - checkpoint advancement only after storage success

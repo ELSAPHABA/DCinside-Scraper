@@ -10,7 +10,15 @@ from collections.abc import Awaitable, Callable
 from typing import Any
 
 from dcinside_scraper.core.errors import ValidationFailure
-from dcinside_scraper.core.ports import CheckpointStorePort, ClockPort, HttpPort, LoggerPort, MediaStorePort, OutputStorePort
+from dcinside_scraper.core.ports import (
+    CheckpointStorePort,
+    ClockPort,
+    FailureStorePort,
+    HttpPort,
+    LoggerPort,
+    MediaStorePort,
+    OutputStorePort,
+)
 from dcinside_scraper.models.comment import Comment
 from dcinside_scraper.models.job import (
     CommentRequest,
@@ -61,6 +69,7 @@ async def run_job(
     collector=None,
     post_detail=None,
     output_store: OutputStorePort | None = None,
+    failure_store: FailureStorePort | None = None,
     media_store: MediaStorePort | None = None,
     checkpoint_store: CheckpointStorePort | None = None,
     http: HttpPort | None = None,
@@ -69,7 +78,7 @@ async def run_job(
 ) -> JobReport:
     if runner is not None:
         return await runner.run(config)
-    if collector is None or post_detail is None or output_store is None or checkpoint_store is None:
+    if collector is None or post_detail is None or output_store is None or failure_store is None or checkpoint_store is None:
         raise ValidationFailure(
             "runner dependencies are required",
             details={"reason": "runner_dependencies_required"},
@@ -78,6 +87,7 @@ async def run_job(
         collector=collector,
         post_detail=post_detail,
         output_store=output_store,
+        failure_store=failure_store,
         media_store=media_store,
         http=http,
         checkpoint_store=checkpoint_store,
@@ -93,6 +103,7 @@ async def resume_job(
     collector=None,
     post_detail=None,
     output_store: OutputStorePort | None = None,
+    failure_store: FailureStorePort | None = None,
     media_store: MediaStorePort | None = None,
     checkpoint_store: CheckpointStorePort | None = None,
     http: HttpPort | None = None,
@@ -101,7 +112,7 @@ async def resume_job(
 ) -> JobReport:
     if runner is not None:
         return await runner.resume(request)
-    if collector is None or post_detail is None or output_store is None or checkpoint_store is None:
+    if collector is None or post_detail is None or output_store is None or failure_store is None or checkpoint_store is None:
         raise ValidationFailure(
             "runner dependencies are required",
             details={"reason": "runner_dependencies_required"},
@@ -110,6 +121,7 @@ async def resume_job(
         collector=collector,
         post_detail=post_detail,
         output_store=output_store,
+        failure_store=failure_store,
         media_store=media_store,
         http=http,
         checkpoint_store=checkpoint_store,

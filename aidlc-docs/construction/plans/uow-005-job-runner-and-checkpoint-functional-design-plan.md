@@ -63,7 +63,7 @@ X) 기타
 
 체크포인트의 `completed_keys`와 last completed 위치는 언제 갱신할까요?
 
-A) (권장) `OutputStorePort.append_post` 또는 `write_failure`가 성공한 뒤에만 해당 post key와 last completed 위치를 checkpoint에 반영한다. 결과 저장 실패 시 checkpoint를 앞으로 밀지 않는다.
+A) (권장) `OutputStorePort.append_post` 또는 `FailureStorePort.write_failure`가 성공한 뒤에만 해당 post key와 last completed 위치를 checkpoint에 반영한다. 결과 저장 실패 시 checkpoint를 앞으로 밀지 않는다.
 
 추천 사유: 저장되지 않은 게시글을 완료로 표시하면 resume 시 데이터 손실이 생깁니다.
 

@@ -10,6 +10,7 @@ from dcinside_scraper.core.errors import ValidationFailure
 from dcinside_scraper.core.ports import (
     CheckpointStorePort,
     ClockPort,
+    FailureStorePort,
     HttpPort,
     LoggerPort,
     MediaStorePort,
@@ -39,10 +40,15 @@ class FakeOutputStore:
     async def append_post(self, post):
         return None
 
+    async def finalize(self, report):
+        return None
+
+
+class FakeFailureStore:
     async def write_failure(self, failure):
         return None
 
-    async def finalize(self, report):
+    async def read_failures(self, failure_input):
         return None
 
 
@@ -96,6 +102,7 @@ class FakeRetryService:
 def test_ports_accept_structural_fakes() -> None:
     assert isinstance(FakeHttp(), HttpPort)
     assert isinstance(FakeOutputStore(), OutputStorePort)
+    assert isinstance(FakeFailureStore(), FailureStorePort)
     assert isinstance(FakeMediaStore(), MediaStorePort)
     assert isinstance(FakeCheckpointStore(), CheckpointStorePort)
     assert isinstance(FakeClock(), ClockPort)

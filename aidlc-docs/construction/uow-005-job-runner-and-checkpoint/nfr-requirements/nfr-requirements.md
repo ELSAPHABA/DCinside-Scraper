@@ -74,7 +74,7 @@ Realtime mode must not busy-loop when no new candidate exists.
 
 ### NFR-UOW005-REL-001. Checkpoint After Storage
 
-Checkpoint completed state must advance only after `OutputStorePort.append_post` or `OutputStorePort.write_failure` succeeds.
+Checkpoint completed state must advance only after `OutputStorePort.append_post` or `FailureStorePort.write_failure` succeeds.
 
 Storage failure must leave checkpoint state at the previous committed position.
 

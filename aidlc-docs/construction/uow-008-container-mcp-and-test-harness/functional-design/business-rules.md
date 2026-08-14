@@ -30,7 +30,7 @@
 
 - Container mode requires `DATABASE_URL` for PostgreSQL checkpoint storage.
 - Container mode requires `S3_ENDPOINT_URL`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, and `S3_SECRET_ACCESS_KEY` for S3-compatible output storage.
-- `S3_REGION` and `S3_FORCE_PATH_STYLE` are optional.
+- `S3_REGION`, `S3_PREFIX`, and `S3_FORCE_PATH_STYLE` are optional.
 - `DCINSIDE_REALTIME_*` variables keep the same semantics as UOW-007.
 - Proxy and User-Agent settings may come from environment variables or mounted files.
 - Secret values must not be printed in logs, errors, reports, or MCP responses.
@@ -52,7 +52,7 @@
 - Container JSONL output and media output use S3-compatible object storage.
 - Garage-specific APIs must not be required.
 - SeaweedFS must remain possible later through the same S3-compatible boundary.
-- `S3OutputStore.append_post()` and `write_failure()` must return only after durable object upload succeeds.
+- `S3OutputStore.append_post()` and `FailureStorePort.write_failure()` must return only after durable object upload succeeds.
 - Local spool files are implementation detail and must not define public output locations.
 - Checkpoint progress must not advance until the output store reports success.
 - S3 credential values must never appear in `StoredObjectRef`, logs, failures, or error details.

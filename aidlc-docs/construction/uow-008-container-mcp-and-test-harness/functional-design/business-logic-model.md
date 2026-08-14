@@ -34,6 +34,7 @@ This unit owns the one-shot worker container entrypoint, container environment m
    - `LinkCollectorService`
    - `PostDetailService`
    - `S3OutputStore`
+   - S3-backed failure store
    - `PostgresCheckpointStore`
    - `JobRunner`
 6. It calls `core.api.run_job()` or `core.api.resume_job()`.
@@ -55,6 +56,7 @@ Required storage variables:
 Optional variables:
 
 - `S3_REGION`
+- `S3_PREFIX`
 - `S3_FORCE_PATH_STYLE`
 - `RESUME`
 - `JOB_ID`

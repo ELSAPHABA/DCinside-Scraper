@@ -34,7 +34,7 @@
 - Workers must process `PostResult.images` after parsing and before `OutputStorePort.append_post`.
 - `ScrapeOptions.image_mode=metadata_only` stores media metadata only; `download` downloads bytes through `HttpPort.download` and writes them through `MediaStorePort.save_media`.
 - Workers must write success through `OutputStorePort.append_post`.
-- Workers must write final per-post failures through `OutputStorePort.write_failure`.
+- Workers must write final per-post failures through `FailureStorePort.write_failure`.
 - Workers must not update checkpoint completed state before output write success.
 
 ## Checkpoint Rules

@@ -65,7 +65,7 @@ Each post worker:
 5. processes `PostResult.images` through `MediaDownloadCoordinator`
 6. writes the post result through `OutputStorePort.append_post`
 7. advances checkpoint only after write success
-8. records failure through `OutputStorePort.write_failure` when a post-level or media-level failure is recoverable
+8. records failure through `FailureStorePort.write_failure` when a post-level or media-level failure is recoverable
 
 Worker count comes from `WorkerConfig.post_worker_count`.
 

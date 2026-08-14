@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
+from io import BytesIO
+import json
 from pathlib import Path
 
 import anyio
@@ -44,6 +45,9 @@ class FakeS3Client:
     def put_object(self, **kwargs) -> None:
         self.objects[kwargs["Key"]] = kwargs["Body"]
 
+    def get_object(self, **kwargs):
+        return {"Body": BytesIO(self.objects[kwargs["Key"]])}
+
 
 def test_s3_output_store_uploads_jsonl_report_and_media(tmp_path: Path) -> None:
     client = FakeS3Client()
@@ -72,6 +76,7 @@ def test_s3_output_store_uploads_jsonl_report_and_media(tmp_path: Path) -> None:
     assert post_ref.object_key == "prod/outputs/job-1/run-1/posts.jsonl"
     assert failure_ref.object_key == "prod/outputs/job-1/run-1/failures.jsonl"
     assert saved.object_key == "prod/outputs/job-1/run-1/media/dcbest/1/image/a.jpg"
+    assert anyio.run(store.read_failures, failure_ref.uri)[0].post_id == "1"
     assert json.loads(client.objects["prod/outputs/job-1/run-1/posts.jsonl"].splitlines()[0])["title"] == "title"
     assert json.loads(client.objects["prod/outputs/job-1/run-1/failures.jsonl"].splitlines()[0])["metadata"] == {"proxy_host": "proxy.local"}
     assert json.loads(client.objects["prod/outputs/job-1/run-1/report.json"])["status"] == "completed"

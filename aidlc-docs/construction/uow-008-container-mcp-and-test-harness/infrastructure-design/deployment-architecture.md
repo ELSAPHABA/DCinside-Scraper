@@ -91,6 +91,7 @@ Optional runtime links:
 | Env | Purpose |
 |---|---|
 | `S3_REGION` | S3 client region |
+| `S3_PREFIX` | object key prefix |
 | `S3_FORCE_PATH_STYLE` | Garage/path-style compatibility |
 | `RESUME` | run resume mode |
 | `JOB_ID` | select checkpoint/job id |

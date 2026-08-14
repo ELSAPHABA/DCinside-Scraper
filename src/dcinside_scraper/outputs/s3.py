@@ -62,6 +62,20 @@ class S3ObjectStore:
             ) from exc
         return self.object_ref(key)
 
+    async def get_bytes(self, object_key: str) -> bytes:
+        try:
+            response = await anyio.to_thread.run_sync(
+                lambda: self._get_client().get_object(Bucket=self.bucket, Key=object_key)
+            )
+            body = response["Body"]
+            raw = await anyio.to_thread.run_sync(body.read) if hasattr(body, "read") else body
+            return raw if isinstance(raw, bytes) else str(raw).encode("utf-8")
+        except Exception as exc:
+            raise StorageFailureError(
+                "s3 object read failed",
+                details={"stage": "s3", "reason": exc.__class__.__name__},
+            ) from exc
+
     def _get_client(self) -> Any:
         if self._client is not None:
             return self._client

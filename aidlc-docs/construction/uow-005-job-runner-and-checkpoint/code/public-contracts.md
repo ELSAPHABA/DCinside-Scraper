@@ -25,6 +25,7 @@ runner = JobRunner(
     collector=collector,
     post_detail=post_detail,
     output_store=output_store,
+    failure_store=failure_store,
     media_store=media_store,
     http=http_client,
     checkpoint_store=checkpoint_store,
@@ -44,7 +45,8 @@ Contract:
 - uses `asyncio.Queue[PostCandidate]`
 - manages task lifecycle with `anyio`
 - processes `PostResult.images` through `MediaStorePort` before JSONL append
-- writes post results and failures through `OutputStorePort`
+- writes post results through `OutputStorePort`
+- writes per-post failures through `FailureStorePort`
 - advances checkpoints only after output/failure storage succeeds
 - saves final checkpoints on terminal paths
 - returns `JobReport`
@@ -76,6 +78,7 @@ report = await run_job(
     collector=collector,
     post_detail=post_detail,
     output_store=output_store,
+    failure_store=failure_store,
     media_store=media_store,
     http=http_client,
     checkpoint_store=checkpoint_store,

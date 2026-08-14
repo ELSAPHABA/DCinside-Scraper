@@ -17,7 +17,7 @@
 ## Implemented Behavior
 
 - local `posts.jsonl` append
-- local `failures.jsonl` append with safe context redaction
+- local `failures.jsonl` append with safe context redaction through `LocalFailureStore`
 - local `report.json` atomic write
 - local media bytes save
 - metadata-only media pass-through
@@ -25,7 +25,8 @@
 - path segment sanitization
 - local path containment checks
 - S3-compatible object key/ref generation
-- S3 lazy dependency import for object writes
+- S3 lazy dependency import for object reads/writes
+- S3-backed failure JSONL read for retry input
 - `.gitignore` protection for `outputs/` and `Checkpoint.json`
 
 ## Verification
@@ -65,4 +66,4 @@ Both passed.
 
 ## Notes
 
-Local storage ports are fully implemented for this unit. S3/Garage support is implemented as a lazy-loaded object storage boundary with key/ref generation and `put_bytes`; Garage provisioning and full container wiring remain deferred to UOW-008 as planned.
+Local storage ports are fully implemented for this unit. `LocalOutputStore` owns posts/report output and `LocalFailureStore` owns failure JSONL output. S3/Garage support is implemented as a lazy-loaded object storage boundary with key/ref generation plus object read/write helpers; Garage provisioning and full container wiring remain deferred to UOW-008 as planned.

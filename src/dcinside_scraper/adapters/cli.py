@@ -21,7 +21,7 @@ from pydantic import ValidationError
 
 from dcinside_scraper.core.api import resume_job, run_job
 from dcinside_scraper.core.errors import ErrorMapper, ScraperError, StorageFailureError, ValidationFailure
-from dcinside_scraper.http import HttpClient, HttpRuntimeConfig, ProxyConfig, UserAgentConfig
+from dcinside_scraper.http import HttpClient, HttpRuntimeConfig, ProxyConfig, RetryPolicy, UserAgentConfig
 from dcinside_scraper.models.enums import (
     DcconMode,
     GalleryType,
@@ -124,6 +124,7 @@ def _add_runtime_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--include-comments", dest="include_comments", action="store_true", default=None)
     parser.add_argument("--no-comments", dest="include_comments", action="store_false")
     parser.add_argument("--request-interval-seconds", type=float)
+    parser.add_argument("--max-post-retries", type=int)
     parser.add_argument("--post-worker-count", type=int)
     parser.add_argument("--media-worker-count", type=int)
     parser.add_argument("--queue-max-size", type=int)
@@ -286,7 +287,7 @@ def _build_range_filter(command: Mapping[str, Any]) -> RangeFilter | None:
 
 def _build_scrape_options(command: Mapping[str, Any]) -> ScrapeOptions:
     data: dict[str, Any] = {}
-    for key in ("include_comments", "request_interval_seconds", "max_comment_pages"):
+    for key in ("include_comments", "request_interval_seconds", "max_post_retries", "max_comment_pages"):
         if key in command:
             data[key] = command[key]
     if command.get("image_mode"):
@@ -318,6 +319,7 @@ def build_local_runtime(command: Mapping[str, Any], *, job_id: str, storage_conf
     client = HttpClient(
         HttpRuntimeConfig(
             request_interval_seconds=request_interval,
+            retry_policy=RetryPolicy(max_attempts=_build_scrape_options(command).max_post_retries + 1),
             user_agent=UserAgentConfig(
                 explicit_file_path=_blank_none(command.get("user_agent_file")),
                 rotation_interval_requests=int(command.get("user_agent_rotate_every") or 10),
@@ -332,6 +334,7 @@ def build_local_runtime(command: Mapping[str, Any], *, job_id: str, storage_conf
         collector=LinkCollectorService(client),
         post_detail=PostDetailService(client),
         output_store=bundle.output_store,
+        failure_store=bundle.failure_store,
         media_store=bundle.media_store,
         http=client,
         checkpoint_store=bundle.checkpoint_store,

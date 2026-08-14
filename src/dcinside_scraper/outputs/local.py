@@ -296,16 +296,11 @@ class LocalOutputStore:
     def __init__(self, layout: OutputRunLayout, *, fsync_jsonl: bool = False) -> None:
         self.layout = layout
         self._post_writer = JsonlWriter(layout.posts_path, fsync=fsync_jsonl)
-        self._failure_writer = JsonlWriter(layout.failures_path, fsync=fsync_jsonl)
         self._json_writer = AtomicJsonWriter()
 
     async def append_post(self, post: PostResult) -> StoredObjectRef:
         self._post_writer.append(post)
         return self._local_ref(self.layout.posts_path, self.layout.posts_key)
-
-    async def write_failure(self, failure: FailureRecord) -> StoredObjectRef:
-        self._failure_writer.append(SafeFailureRecordBuilder.sanitize(failure))
-        return self._local_ref(self.layout.failures_path, self.layout.failures_key)
 
     async def finalize(self, report: JobReport) -> None:
         self._json_writer.write(self.layout.report_path, report)
@@ -313,6 +308,44 @@ class LocalOutputStore:
     @staticmethod
     def _local_ref(path: Path, key: str) -> StoredObjectRef:
         return StoredObjectRef(uri=str(path), storage_type="local", object_key=key, local_path=str(path))
+
+
+class LocalFailureStore:
+    def __init__(self, layout: OutputRunLayout, *, fsync_jsonl: bool = False) -> None:
+        self.layout = layout
+        self._failure_writer = JsonlWriter(layout.failures_path, fsync=fsync_jsonl)
+
+    async def write_failure(self, failure: FailureRecord) -> StoredObjectRef:
+        self._failure_writer.append(SafeFailureRecordBuilder.sanitize(failure))
+        return StoredObjectRef(
+            uri=str(self.layout.failures_path),
+            storage_type="local",
+            object_key=self.layout.failures_key,
+            local_path=str(self.layout.failures_path),
+        )
+
+    async def read_failures(self, failure_input: Any) -> list[FailureRecord]:
+        path = self._input_path(failure_input)
+        if not path.exists():
+            return []
+        try:
+            return [
+                FailureRecord.model_validate(json.loads(line))
+                for line in path.read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ]
+        except (OSError, json.JSONDecodeError, ValueError, TypeError) as exc:
+            raise StorageFailureError(
+                "failure read failed",
+                details={"stage": "failure_store", "reason": exc.__class__.__name__},
+            ) from exc
+
+    def _input_path(self, failure_input: Any) -> Path:
+        raw = getattr(failure_input, "failure_path", failure_input)
+        path = Path(str(raw))
+        if not path.is_absolute():
+            path = self.layout.base_path / path
+        return ensure_under_base(self.layout.base_path, path)
 
 
 class LocalMediaStore:

@@ -18,7 +18,8 @@
 - `direct-post`, `gallery-search`, `integrated-search`, `deep-search`, and `no-keyword-range` source mapping
 - environment-driven `realtime_keyword` and `realtime_all` source mapping
 - `JobConfig` and `ResumeRequest` construction through shared models
-- local runtime wiring to existing HTTP/search/detail/output/checkpoint/runner components
+- local runtime wiring to existing HTTP/search/detail/output/failure/checkpoint/runner components
+- `--max-post-retries` mapped to `ScrapeOptions.max_post_retries` and `RetryPolicy.max_attempts = retries + 1`
 - User-Agent UTF-8 import to `user-agents.txt`
 - plaintext `.env` proxy profile update with unrelated line preservation
 - Ctrl+C graceful stop boundary

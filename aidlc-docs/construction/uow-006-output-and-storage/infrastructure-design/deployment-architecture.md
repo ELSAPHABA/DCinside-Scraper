@@ -13,6 +13,7 @@ Developer, tests, or later JobRunner
 UOW-006 storage package
     |
     +-- LocalOutputStore
+    +-- LocalFailureStore
     +-- LocalMediaStore
     +-- LocalCheckpointStore
     +-- JsonlWriter
@@ -116,7 +117,7 @@ StorageConfig
     +-- s3 config -> S3ObjectStore
 
 PostResult -> OutputStorePort.append_post -> posts.jsonl or S3 object
-FailureRecord -> OutputStorePort.write_failure -> failures.jsonl or S3 object
+FailureRecord -> FailureStorePort.write_failure -> failures.jsonl or S3 object
 JobReport -> OutputStorePort.finalize -> report.json or S3 object
 MediaItem + bytes -> MediaStorePort.save_media -> local path or S3 object key
 Checkpoint -> CheckpointStorePort.save -> Checkpoint.json

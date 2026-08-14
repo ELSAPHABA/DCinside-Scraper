@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import json
 import shutil
 import tempfile
 from pathlib import Path
+from typing import Any
+from urllib.parse import urlparse
 
 from dcinside_scraper.models.media import MediaItem
 from dcinside_scraper.models.post import PostResult
@@ -47,6 +50,15 @@ class S3OutputStore:
             content_type="application/x-ndjson",
         )
 
+    async def read_failures(self, failure_input: Any) -> list[FailureRecord]:
+        object_key = self._input_key(failure_input)
+        content = await self.object_store.get_bytes(object_key)
+        return [
+            FailureRecord.model_validate(json.loads(line))
+            for line in content.decode("utf-8").splitlines()
+            if line.strip()
+        ]
+
     async def finalize(self, report: JobReport) -> None:
         try:
             await self.object_store.put_bytes(
@@ -69,3 +81,14 @@ class S3OutputStore:
 
     async def save_metadata_only(self, item: MediaItem) -> MediaItem:
         return item
+
+    def _input_key(self, failure_input: Any) -> str:
+        raw = getattr(failure_input, "failure_path", None) or getattr(failure_input, "uri", None) or failure_input
+        if raw is None:
+            return self.layout.prefixed_key(self.layout.failures_key)
+        text = str(raw)
+        if text.startswith("s3://"):
+            return urlparse(text).path.lstrip("/")
+        if text == self.layout.failures_key:
+            return self.layout.prefixed_key(text)
+        return text.lstrip("/")

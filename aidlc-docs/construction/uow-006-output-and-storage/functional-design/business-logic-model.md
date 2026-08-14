@@ -10,7 +10,8 @@ This unit owns Job JSONL output, failure JSONL output, final Job report output, 
 
 | Area | Decision |
 |---|---|
-| Output store contract | `OutputStorePort` appends `PostResult`, writes `FailureRecord`, finalizes `JobReport`, and returns `StoredObjectRef` for written objects |
+| Output store contract | `OutputStorePort` appends `PostResult`, finalizes `JobReport`, and returns `StoredObjectRef` for written objects |
+| Failure store contract | `FailureStorePort` writes and reads failure JSONL records for parser-failure retry flows |
 | JSONL naming | local/S3 object layout uses `outputs/<job_id>/<run_id>/posts.jsonl`; resume creates a new `run_id` |
 | JSON shape | `PostResult.model_dump(mode="json")` is written as one JSON object per line with nested content/media/comments preserved and nullable fields kept |
 | Polars boundary | current JSONL keeps scraper-native nested records; future platform normalization can split posts/comments/media into common Polars tables |
@@ -29,7 +30,7 @@ This unit owns Job JSONL output, failure JSONL output, final Job report output, 
 4. Store serializes the post with Pydantic JSON mode.
 5. Store appends exactly one newline-delimited JSON object to `posts.jsonl`.
 6. Store returns a `StoredObjectRef`.
-7. For each failed item, caller invokes `write_failure`.
+7. For each failed item, caller invokes `FailureStorePort.write_failure`.
 8. At Job end, caller invokes `finalize` with `JobReport`.
 
 Checkpoint commit ordering is not decided inside UOW-006. UOW-005 must call checkpoint save only after the relevant output call succeeds.
@@ -81,7 +82,7 @@ Optional values remain `null`. Empty collections remain empty arrays.
 
 ## Failure Output Flow
 
-`FailureRecord` writes use the same JSONL rules as posts.
+`FailureRecord` writes use the same JSONL rules as posts, but go through `FailureStorePort`.
 
 Allowed safe context:
 
@@ -117,7 +118,7 @@ If a lower layer supplies unsafe fields, UOW-006 must drop or redact them before
 The media store:
 
 1. derives a safe filename from `media_id`, URL path, or media type fallback
-2. writes bytes under `media/<job_id>/<gallery_id>/<post_no>/<media_type>/`
+2. writes bytes under `media/<gallery_id>/<post_no>/<media_type>/` inside the run directory
 3. returns the updated `MediaItem`
 
 Local mode sets `file_path`. S3-compatible mode sets `object_key`. Metadata-only mode calls `save_metadata_only` and does not write bytes.

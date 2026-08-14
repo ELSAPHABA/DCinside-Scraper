@@ -76,7 +76,6 @@ class FakeOutputStore:
     def __init__(self, *, fail_append: bool = False) -> None:
         self.fail_append = fail_append
         self.posts = []
-        self.failures = []
         self.reports = []
 
     async def append_post(self, post: PostResult) -> StoredObjectRef:
@@ -85,12 +84,20 @@ class FakeOutputStore:
         self.posts.append(post)
         return StoredObjectRef(uri="memory://posts", storage_type="memory")
 
+    async def finalize(self, report: JobReport) -> None:
+        self.reports.append(report)
+
+
+class FakeFailureStore:
+    def __init__(self) -> None:
+        self.failures = []
+
     async def write_failure(self, failure: FailureRecord) -> StoredObjectRef:
         self.failures.append(failure)
         return StoredObjectRef(uri="memory://failures", storage_type="memory")
 
-    async def finalize(self, report: JobReport) -> None:
-        self.reports.append(report)
+    async def read_failures(self, failure_input):
+        return list(self.failures)
 
 
 class FakeMediaStore:
@@ -156,24 +163,27 @@ def make_runner(
     collector: FakeCollector | None = None,
     detail: FakePostDetail | None = None,
     output: FakeOutputStore | None = None,
+    failure: FakeFailureStore | None = None,
     checkpoint: FakeCheckpointStore | None = None,
-) -> tuple[JobRunner, FakeCollector, FakePostDetail, FakeOutputStore, FakeCheckpointStore]:
+) -> tuple[JobRunner, FakeCollector, FakePostDetail, FakeOutputStore, FakeFailureStore, FakeCheckpointStore]:
     collector = collector or FakeCollector([candidate(1)])
     detail = detail or FakePostDetail()
     output = output or FakeOutputStore()
+    failure = failure or FakeFailureStore()
     checkpoint = checkpoint or FakeCheckpointStore()
     runner = JobRunner(
         collector=collector,
         post_detail=detail,
         output_store=output,
+        failure_store=failure,
         checkpoint_store=checkpoint,
         clock=FakeClock(),
     )
-    return runner, collector, detail, output, checkpoint
+    return runner, collector, detail, output, failure, checkpoint
 
 
 def test_job_runner_completes_fake_job() -> None:
-    runner, _, _, output, checkpoint = make_runner(collector=FakeCollector([candidate(1), candidate(2)]))
+    runner, _, _, output, _, checkpoint = make_runner(collector=FakeCollector([candidate(1), candidate(2)]))
 
     report = anyio.run(runner.run, minimal_job(worker_count=2))
 
@@ -192,7 +202,7 @@ def test_completed_key_is_skipped_on_resume() -> None:
         job_config_snapshot=job,
         completed_keys=[{"board_id": completed.gallery_id, "post_id": completed.post_id}],
     )
-    runner, _, detail, output, _ = make_runner(
+    runner, _, detail, output, _, _ = make_runner(
         collector=FakeCollector([completed, candidate(2)]),
         checkpoint=FakeCheckpointStore(checkpoint),
     )
@@ -206,7 +216,7 @@ def test_completed_key_is_skipped_on_resume() -> None:
 
 
 def test_checkpoint_saves_every_ten_completed_outcomes() -> None:
-    runner, _, _, _, checkpoint = make_runner(collector=FakeCollector([candidate(number) for number in range(1, 11)]))
+    runner, _, _, _, _, checkpoint = make_runner(collector=FakeCollector([candidate(number) for number in range(1, 11)]))
 
     report = anyio.run(runner.run, minimal_job())
 
@@ -215,7 +225,7 @@ def test_checkpoint_saves_every_ten_completed_outcomes() -> None:
 
 
 def test_storage_failure_stops_without_advancing_completed_key() -> None:
-    runner, _, _, _, checkpoint = make_runner(output=FakeOutputStore(fail_append=True))
+    runner, _, _, _, _, checkpoint = make_runner(output=FakeOutputStore(fail_append=True))
 
     report = anyio.run(runner.run, minimal_job())
 
@@ -227,7 +237,7 @@ def test_storage_failure_stops_without_advancing_completed_key() -> None:
 
 
 def test_recoverable_post_failure_is_written_and_job_continues() -> None:
-    runner, _, _, output, checkpoint = make_runner(
+    runner, _, _, _, failure, checkpoint = make_runner(
         collector=FakeCollector([candidate(1), candidate(2)]),
         detail=FakePostDetail({"1": ParseFailureError("parse failed")}),
     )
@@ -237,12 +247,12 @@ def test_recoverable_post_failure_is_written_and_job_continues() -> None:
     assert report.status == JobReportStatus.COMPLETED
     assert report.success_count == 1
     assert report.failure_count == 1
-    assert output.failures[0].post_id == "1"
+    assert failure.failures[0].post_id == "1"
     assert len(checkpoint.saved[-1].completed_keys) == 2
 
 
 def test_blocked_response_stops_new_work() -> None:
-    runner, _, _, output, checkpoint = make_runner(
+    runner, _, _, output, _, checkpoint = make_runner(
         collector=FakeCollector([candidate(1)]),
         detail=FakePostDetail({"1": BlockedResponseError("blocked")}),
     )
@@ -255,7 +265,7 @@ def test_blocked_response_stops_new_work() -> None:
 
 
 def test_manual_stop_before_run_saves_stopped_checkpoint() -> None:
-    runner, collector, _, _, checkpoint = make_runner()
+    runner, collector, _, _, _, checkpoint = make_runner()
     runner.request_stop()
 
     report = anyio.run(runner.run, minimal_job())
@@ -274,6 +284,7 @@ def test_media_downloads_are_limited_by_media_worker_count() -> None:
         collector=FakeCollector([candidate(1), candidate(2)]),
         post_detail=MediaPostDetail(),
         output_store=output,
+        failure_store=FakeFailureStore(),
         media_store=media,
         http=http,
         checkpoint_store=FakeCheckpointStore(),
@@ -303,6 +314,7 @@ def test_media_metadata_only_does_not_require_http() -> None:
         collector=FakeCollector([candidate(1)]),
         post_detail=MediaPostDetail(),
         output_store=output,
+        failure_store=FakeFailureStore(),
         media_store=media,
         checkpoint_store=FakeCheckpointStore(),
         clock=FakeClock(),

@@ -17,6 +17,7 @@ from dcinside_scraper.models.post import PostResult
 from dcinside_scraper.models.report import FailureRecord, JobReport
 from dcinside_scraper.outputs import (
     LocalCheckpointStore,
+    LocalFailureStore,
     LocalMediaStore,
     LocalOutputStore,
     OutputRunLayout,
@@ -47,6 +48,7 @@ def minimal_post() -> PostResult:
 def test_local_output_store_writes_posts_failures_and_report(tmp_path: Path) -> None:
     layout = OutputRunLayout.create(base_path=tmp_path, job_id="job-1", run_id="run-1")
     store = LocalOutputStore(layout)
+    failure_store = LocalFailureStore(layout)
     failure = FailureRecord(
         gallery_id="dcbest",
         post_id="1",
@@ -64,7 +66,7 @@ def test_local_output_store_writes_posts_failures_and_report(tmp_path: Path) -> 
     )
 
     post_ref = asyncio.run(store.append_post(minimal_post()))
-    failure_ref = asyncio.run(store.write_failure(failure))
+    failure_ref = asyncio.run(failure_store.write_failure(failure))
     asyncio.run(store.finalize(JobReport(job_id="job-1", status=JobReportStatus.COMPLETED, success_count=1)))
 
     post_line = json.loads(layout.posts_path.read_text(encoding="utf-8").splitlines()[0])
@@ -76,6 +78,7 @@ def test_local_output_store_writes_posts_failures_and_report(tmp_path: Path) -> 
     assert report["status"] == "completed"
     assert post_ref.storage_type == "local"
     assert failure_ref.object_key == "outputs/job-1/run-1/failures.jsonl"
+    assert asyncio.run(failure_store.read_failures(layout.failures_path))[0].post_id == "1"
 
 
 def test_local_media_store_saves_bytes_and_metadata_only(tmp_path: Path) -> None:
@@ -158,7 +161,7 @@ def test_storage_factory_builds_local_bundle(tmp_path: Path) -> None:
 
     ref = asyncio.run(bundle.output_store.append_post(minimal_post()))
 
-    assert bundle.failure_store is bundle.output_store
+    assert bundle.failure_store is not bundle.output_store
     assert bundle.layout.posts_path.exists()
     assert ref.object_key == "outputs/job_1/run_1/posts.jsonl"
 

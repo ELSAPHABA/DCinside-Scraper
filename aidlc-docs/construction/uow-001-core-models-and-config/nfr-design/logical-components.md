@@ -216,8 +216,16 @@ Defines async result output contract.
 Methods:
 
 - `append_post`
-- `write_failure`
 - `finalize`
+
+### FailureStorePort
+
+Defines async failure output/input contract.
+
+Methods:
+
+- `write_failure`
+- `read_failures`
 
 ### MediaStorePort
 
@@ -289,4 +297,3 @@ Methods:
 2. PBT executes round trip or invariant property.
 3. Hypothesis shrinks failures.
 4. Failing seed and minimal counterexample are logged by test runner.
-

@@ -166,6 +166,9 @@
     - 스크래핑 속도 조절
       - 요청 사이의 대기 시간을 사용자가 설정 가능
       - 기본값은 안정성을 우선하여 너무 빠른 연속 요청을 피하도록 설정
+      - 게시글/미디어 HTTP 요청 재시도 횟수를 사용자가 설정 가능
+        - 옵션 예: `--max-post-retries 3`
+        - 값은 재시도 횟수이며, 실제 HTTP 최대 시도 횟수는 `max_post_retries + 1`로 `RetryPolicy.max_attempts`에 연결
       - 갤러리 목록, 통합 검색, 게시글 상세, `(펌)` AJAX, DC 동영상 iframe, 댓글 API, 이미지/DC 동영상 다운로드 요청에 동일하게 적용
       - CAPTCHA 또는 차단 의심 응답 발생 시 즉시 작업 중단 후 중단점 저장
     - CAPTCHA 대응
@@ -496,7 +499,8 @@
     - 단일 컨테이너 환경: 체크포인트는 PostgreSQL 컨테이너에 저장, Job JSONL 파일과 다운로드 미디어는 S3 호환 오브젝트 스토리지에 저장
       - 기본 구현 대상은 Garage
       - 구현은 Garage 전용 API가 아니라 S3 호환 접속 설정을 사용
-      - S3 호환 접속 환경변수: `S3_ENDPOINT_URL`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_REGION`, `S3_FORCE_PATH_STYLE`
+      - S3 호환 접속 환경변수: `S3_ENDPOINT_URL`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_REGION`, `S3_PREFIX`, `S3_FORCE_PATH_STYLE`
+      - `S3_PREFIX`가 있으면 모든 `posts.jsonl`, `failures.jsonl`, `report.json`, `media/` object key 앞에 prefix를 붙임
       - SeaweedFS는 대량 미디어/소파일 저장, FUSE, Iceberg 등 고급 저장소 요구가 생길 때 대체 저장소로 검토
     - AWS CDK 배포 환경: `infra/cdk`에서 ECS Fargate 워커, AWS S3 출력 bucket, RDS PostgreSQL 체크포인트 저장소, Secrets Manager secret 주입, CloudWatch Logs/EventBridge 알림 구성을 제공
       - CDK는 워커 이미지 빌드를 수행하지 않고, 사전에 push된 image URI/tag를 참조

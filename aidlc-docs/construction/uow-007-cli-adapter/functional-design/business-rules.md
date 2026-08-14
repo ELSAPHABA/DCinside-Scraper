@@ -38,6 +38,7 @@
 - CLI uses `LinkCollectorService` for link collection.
 - CLI uses `PostDetailService` for post and comment detail collection.
 - CLI uses `LocalOutputStore` for local output writes.
+- CLI uses `LocalFailureStore` for local failure JSONL writes.
 - CLI uses `LocalCheckpointStore` for local checkpoint reads and writes.
 - CLI calls `core.api.run_job()` for new Jobs.
 - CLI calls `core.api.resume_job()` for resume.
@@ -106,6 +107,7 @@
 - `--dccon-mode` maps to `ScrapeOptions.dccon_mode`.
 - `--include-comments` and `--no-comments` map to `ScrapeOptions.include_comments`.
 - `--request-interval-seconds` maps to both HTTP runtime request delay and scrape option request interval where applicable.
+- `--max-post-retries` maps to `ScrapeOptions.max_post_retries` and `RetryPolicy.max_attempts = max_post_retries + 1`.
 - `--post-worker-count` maps to `WorkerConfig.post_worker_count`.
 - `--media-worker-count` maps to `WorkerConfig.media_worker_count`.
 - `--queue-max-size` maps to `WorkerConfig.queue_max_size`.

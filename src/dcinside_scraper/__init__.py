@@ -38,6 +38,7 @@ from dcinside_scraper.models.post import PostResult
 from dcinside_scraper.models.report import JobReport
 from dcinside_scraper.outputs import (
     LocalCheckpointStore,
+    LocalFailureStore,
     LocalMediaStore,
     LocalOutputStore,
     OutputRunLayout,
@@ -85,6 +86,7 @@ __all__ = [
     "JobRunner",
     "LinkCollectorService",
     "LocalCheckpointStore",
+    "LocalFailureStore",
     "LocalMediaStore",
     "LocalOutputStore",
     "MediaDownloadCoordinator",

@@ -11,10 +11,12 @@ dcinside_scraper.outputs
 Root package exports were also updated for common storage classes:
 
 - `LocalOutputStore`
+- `LocalFailureStore`
 - `LocalMediaStore`
 - `LocalCheckpointStore`
 - `OutputRunLayout`
 - `S3ObjectStore`
+- `S3OutputStore`
 
 ## Local Output Store
 
@@ -25,16 +27,29 @@ layout = OutputRunLayout.create(job_id="job-1", run_id="run-1", base_path=".")
 store = LocalOutputStore(layout)
 
 post_ref = await store.append_post(post_result)
-failure_ref = await store.write_failure(failure_record)
 await store.finalize(job_report)
 ```
 
 Contract:
 
 - writes `outputs/<job_id>/<run_id>/posts.jsonl`
-- writes `outputs/<job_id>/<run_id>/failures.jsonl`
 - writes `outputs/<job_id>/<run_id>/report.json`
-- returns local `StoredObjectRef` values for JSONL append targets
+- returns local `StoredObjectRef` values for post JSONL append targets
+
+## Local Failure Store
+
+```python
+from dcinside_scraper.outputs import LocalFailureStore
+
+failure_ref = await LocalFailureStore(layout).write_failure(failure_record)
+failures = await LocalFailureStore(layout).read_failures("outputs/job-1/run-1/failures.jsonl")
+```
+
+Contract:
+
+- writes `outputs/<job_id>/<run_id>/failures.jsonl`
+- reads failure JSONL records from a local path under the output base
+- returns local `StoredObjectRef` values for failure JSONL append targets
 - redacts failure metadata through allow-list rules
 
 ## Local Media Store
@@ -130,6 +145,7 @@ from dcinside_scraper.outputs import S3ObjectStore
 store = S3ObjectStore(bucket="bucket", layout=layout, endpoint_url="http://garage:3900")
 ref = store.object_ref(layout.posts_key)
 await store.put_bytes(layout.report_key, b"{}", content_type="application/json")
+content = await store.get_bytes(ref.object_key)
 ```
 
 Contract:
@@ -138,7 +154,9 @@ Contract:
 - root package import works without S3 extra installed
 - object keys mirror local relative layout
 - Garage-specific APIs are not used
-- S3 write failures surface as `StorageFailureError`
+- S3 read/write failures surface as `StorageFailureError`
+
+`S3OutputStore` implements output, failure, and media-store behavior for container mode. `read_failures()` accepts a stored S3 URI/key and returns validated `FailureRecord` values for retry input.
 
 ## Boundaries
 

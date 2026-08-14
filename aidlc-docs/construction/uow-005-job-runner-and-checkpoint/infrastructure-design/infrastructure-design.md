@@ -33,7 +33,7 @@ Out of scope:
 | Worker execution | single Python process, `anyio` task group, `asyncio.Queue[PostCandidate]` |
 | Configuration source | caller injects validated config and ports; UOW-005 does not read `.env`, CLI, or Docker env |
 | Checkpoint infrastructure | UOW-005 calls `CheckpointStorePort` only |
-| Output infrastructure | UOW-005 calls `OutputStorePort` only |
+| Output infrastructure | UOW-005 calls `OutputStorePort`, `FailureStorePort`, and `MediaStorePort` only |
 | Observability | UOW-005 emits safe events through `LoggerPort` only |
 | Test infrastructure | default tests use fake services only |
 | Shared infrastructure | no shared infrastructure artifact for UOW-005 |
@@ -98,7 +98,7 @@ Inputs:
 - `WorkerConfig`
 - UOW-003 collector service or port
 - UOW-004 post detail service or port
-- UOW-006 output, media, and checkpoint ports
+- UOW-006 output, failure, media, and checkpoint ports
 - UOW-002 HTTP port for media downloads when `image_mode=download`
 - safe logger and clock ports
 
@@ -138,7 +138,7 @@ UOW-005 owns the order of output/checkpoint calls.
 UOW-005 calls:
 
 - `OutputStorePort.append_post`
-- `OutputStorePort.write_failure`
+- `FailureStorePort.write_failure`
 - `OutputStorePort.finalize`
 
 UOW-005 does not implement:

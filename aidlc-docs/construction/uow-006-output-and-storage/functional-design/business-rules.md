@@ -4,10 +4,15 @@
 
 - UOW-006 must implement storage behind UOW-001 ports.
 - `append_post` must store one `PostResult` per JSONL line.
-- `write_failure` must store one failure per JSONL line.
 - `finalize` must write one final `report.json` for the run.
 - `OutputStorePort` must not fetch URLs, parse HTML, retry HTTP requests, or update checkpoints.
 - Storage failure must surface as a typed error to the caller.
+
+## Failure Store Rules
+
+- `write_failure` must store one failure per JSONL line.
+- `read_failures` must read persisted failure JSONL records when the backend supports retry input.
+- `FailureStorePort` must not fetch URLs, parse HTML, retry HTTP requests, or update checkpoints.
 
 ## Path Rules
 

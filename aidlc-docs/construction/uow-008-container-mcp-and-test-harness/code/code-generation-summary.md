@@ -21,7 +21,8 @@
 
 - one-shot container entrypoint with `run` and `RESUME=true` paths
 - container env validation for PostgreSQL and S3/Garage storage
-- container runtime wiring to existing HTTP/search/detail/runner components
+- `S3_PREFIX` env mapping to object key prefixes
+- container runtime wiring to existing HTTP/search/detail/output/failure/runner components
 - S3/Garage JSONL output through local spool plus durable upload
 - S3 media byte upload and metadata-only handling
 - PostgreSQL checkpoint save/load/latest with idempotent schema creation

@@ -9,7 +9,8 @@ UOW-006 logical components store already-produced scraper results. They do not c
 | `OutputRunLayout` | derives sanitized local paths and S3 object keys for one `job_id`/`run_id` |
 | `JsonlWriter` | appends one validated model/dict as one JSONL record |
 | `AtomicJsonWriter` | writes small JSON documents with temp-file replace |
-| `LocalOutputStore` | writes `posts.jsonl`, `failures.jsonl`, and `report.json` locally |
+| `LocalOutputStore` | writes `posts.jsonl` and `report.json` locally |
+| `LocalFailureStore` | writes and reads `failures.jsonl` locally |
 | `LocalMediaStore` | writes media bytes locally or returns metadata-only media |
 | `LocalCheckpointStore` | saves and loads local `Checkpoint.json` |
 | `S3ObjectStore` | writes output/media objects through an optional S3-compatible client |
@@ -51,7 +52,7 @@ Responsibilities:
 Consumers:
 
 - `LocalOutputStore.append_post`
-- `LocalOutputStore.write_failure`
+- `LocalFailureStore.write_failure`
 
 ## AtomicJsonWriter
 
@@ -74,7 +75,6 @@ Responsibilities:
 
 - create the run directory
 - append `PostResult` to `posts.jsonl`
-- append safe `FailureRecord` to `failures.jsonl`
 - write final `JobReport` to `report.json`
 - return `StoredObjectRef` values with `storage_type="local"`
 
@@ -84,6 +84,22 @@ Boundaries:
 - does not update checkpoints
 - does not download media
 - does not store secrets
+
+## LocalFailureStore
+
+Implements `FailureStorePort`.
+
+Responsibilities:
+
+- append safe `FailureRecord` to `failures.jsonl`
+- read persisted failure records for retry input
+- return `StoredObjectRef` values with `storage_type="local"`
+
+Boundaries:
+
+- does not deduplicate failures
+- does not update checkpoints
+- does not fetch or retry posts
 
 ## LocalMediaStore
 
