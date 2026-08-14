@@ -8,6 +8,7 @@ from dcinside_scraper.core.api import (
     search_gallery,
     search_integrated,
 )
+from dcinside_scraper.core.normalization import normalize_checkpoint, normalize_job_report
 from dcinside_scraper.core.errors import (
     BlockedResponseError,
     CaptchaDetectedError,
@@ -110,6 +111,8 @@ __all__ = [
     "run_job",
     "search_gallery",
     "search_integrated",
+    "normalize_checkpoint",
+    "normalize_job_report",
 ]
 
 __version__ = "0.1.0"
