@@ -926,22 +926,19 @@
 ```
 DCinside-Scraper/
 ├── main.py
-├── scraper/
-│   ├── __init__.py
-│   ├── gallery_scraper.py
-│   ├── post_scraper.py
-│   └── comment_scraper.py
-├── database/
-│   ├── __init__.py
-│   ├── json_handler.py
-│   └── mongodb_handler.py
-├── utils/
-│   ├── __init__.py
-│   ├── proxy.py
-│   ├── user_agent.py
-│   └── logger.py
-├── config/
-│   └── settings.py
+├── src/dcinside_scraper/
+│   ├── adapters/       # CLI, 컨테이너, MCP 어댑터
+│   ├── collect/        # 표준 링크 수집 모듈 경로
+│   ├── core/           # public API, ports, errors, schema/validation
+│   ├── http/           # httpx runtime, retry, rate limit, UA/Proxy
+│   ├── models/         # Pydantic 데이터 모델
+│   ├── outputs/        # local/S3/PostgreSQL 저장소와 layout/redaction/jsonl helpers
+│   ├── parse/          # 표준 게시글/댓글/본문 파서 모듈 경로
+│   ├── post_detail/    # 기존 호환용 파서 경로
+│   ├── retry/          # 파싱 실패 재처리
+│   ├── runner/         # JobRunner, checkpointing, policies, workers
+│   └── search/         # 기존 호환용 검색 경로
+├── infra/cdk/
 ├── user-agents.txt
 ├── .env
 ├── .dockerignore

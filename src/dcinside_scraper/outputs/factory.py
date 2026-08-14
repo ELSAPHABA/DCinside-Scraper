@@ -8,7 +8,9 @@ from typing import Any
 from dcinside_scraper.core.errors import StorageFailureError
 from dcinside_scraper.models.enums import CheckpointMode, OutputMode
 from dcinside_scraper.models.job import StorageConfig
-from dcinside_scraper.outputs.local import LocalCheckpointStore, LocalFailureStore, LocalMediaStore, LocalOutputStore, OutputRunLayout
+from dcinside_scraper.outputs.checkpoint import LocalCheckpointStore
+from dcinside_scraper.outputs.layout import OutputRunLayout
+from dcinside_scraper.outputs.local import LocalFailureStore, LocalMediaStore, LocalOutputStore
 from dcinside_scraper.outputs.postgres_checkpoint import PostgresCheckpointStore
 from dcinside_scraper.outputs.s3 import S3ObjectStore
 from dcinside_scraper.outputs.s3_output import S3OutputStore

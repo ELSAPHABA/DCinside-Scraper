@@ -7,7 +7,7 @@
 | `CliAdapter` | `JobConfigValidator`, `ScraperFacade` | Direct async call through `asyncio.run()` |
 | `ContainerAdapter` | `JobConfigValidator`, `ScraperFacade` | Direct async call |
 | `McpAdapter` | `JobConfigValidator`, `ScraperFacade` | Direct async call from MCP tool |
-| `ScraperFacade` | `JobRunner`, parsers for single-shot APIs | Direct async call |
+| `ScraperFacade` | `JobRunner`, `collect`/`parse` services for single-shot APIs | Direct async call |
 | `JobRunner` | `LinkCollector`, `PostWorkerPool`, storage ports | Direct async call |
 | `LinkCollector` | `HttpClient`, `GallerySearchParser`, `IntegratedSearchParser` | HTTP + parser calls |
 | `PostWorkerPool` | `PostScrapeService`, `OutputStorePort`, `CheckpointStorePort` | Queue + direct async call |
@@ -87,4 +87,3 @@ Checkpoint
 | Failed post/media records | `OutputStorePort` | Failure JSONL/report |
 | Checkpoint/status | `CheckpointStorePort` | `Checkpoint.json` or PostgreSQL |
 | Structured logs | `LoggerPort` implementation | stdout/stderr or local logs |
-

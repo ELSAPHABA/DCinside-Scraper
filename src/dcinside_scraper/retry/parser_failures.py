@@ -16,7 +16,7 @@ from dcinside_scraper.core.errors import ScraperError, StorageFailureError, Vali
 from dcinside_scraper.models.enums import JobReportStatus, JobType
 from dcinside_scraper.models.job import DirectPostSource, JobConfig, ScrapeOptions, StorageConfig, WorkerConfig
 from dcinside_scraper.models.report import FailureRecord, JobReport
-from dcinside_scraper.search.collection import parse_post_url
+from dcinside_scraper.collect.urls import parse_post_url
 
 RetryKey = tuple[str, str, str]
 

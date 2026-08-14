@@ -12,7 +12,9 @@ from urllib.parse import urlparse
 from dcinside_scraper.models.media import MediaItem
 from dcinside_scraper.models.post import PostResult
 from dcinside_scraper.models.report import FailureRecord, JobReport, StoredObjectRef
-from dcinside_scraper.outputs.local import JsonlWriter, OutputRunLayout, SafeFailureRecordBuilder
+from dcinside_scraper.outputs.jsonl import JsonlWriter
+from dcinside_scraper.outputs.layout import OutputRunLayout
+from dcinside_scraper.outputs.redaction import SafeFailureRecordBuilder
 from dcinside_scraper.outputs.s3 import S3ObjectStore
 
 

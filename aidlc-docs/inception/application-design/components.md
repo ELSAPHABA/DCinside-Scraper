@@ -8,10 +8,12 @@
 |---|---|
 | `core` | public API, 설정 검증, 공통 예외, ports |
 | `models` | Pydantic request/result/checkpoint models |
-| `parsers` | BeautifulSoup 기반 HTML/API 응답 파싱 |
+| `collect` | 갤러리/통합/심층/노키워드/실시간 링크 수집 URL 빌더, 검색 파서, 수집 서비스 |
+| `parse` | BeautifulSoup 기반 게시글 상세, 본문, 미디어, 댓글 파싱 서비스 |
 | `http` | 요청 속도, retry, timeout, User-Agent, Proxy 적용 |
-| `jobs` | Job validation, link collection, worker queue orchestration |
+| `runner` | Job 실행, worker queue orchestration, checkpoint 조정 |
 | `outputs` | JSONL, media, failure report, checkpoint storage |
+| `retry` | 파싱 실패 게시글 재처리 |
 | `adapters` | CLI, worker container, MCP adapter |
 
 ## Core Components
@@ -171,4 +173,3 @@
 - **Purpose**: MCP tool 호출을 core API로 위임
 - **Responsibilities**: `search_gallery`, `search_integrated`, `fetch_post`, `fetch_comments`, `run_job`, `resume_job`
 - **Interface**: MCP tool schemas with masked errors
-

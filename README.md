@@ -53,12 +53,14 @@
 ├── aidlc-docs/                     # AI-DLC 산출 문서
 ├── src/dcinside_scraper/
 │   ├── adapters/                   # CLI, 컨테이너, MCP 어댑터
+│   ├── collect/                    # 표준 링크 수집 모듈 경로
 │   ├── core/                       # 포트, 예외, 공통 유스케이스 경계
 │   ├── http/                       # httpx 기반 요청 런타임, UA/Proxy/Rate 정책
 │   ├── models/                     # Pydantic 데이터 모델
-│   ├── post_detail/                # 게시글/댓글/본문 파서와 서비스
+│   ├── parse/                      # 표준 게시글/댓글/본문 파서 모듈 경로
+│   ├── post_detail/                # 기존 호환용 파서 경로
 │   ├── runner/                     # JobRunner, 체크포인트, 출력 orchestration
-│   └── search/                     # 검색 URL 빌더, 검색 파서, 링크 수집기
+│   └── search/                     # 기존 호환용 검색 경로
 └── tests/                          # 단위/계약/선택적 smoke 테스트
 ```
 

@@ -47,10 +47,10 @@ from dcinside_scraper.models.job import (
     WorkerConfig,
 )
 from dcinside_scraper.outputs import StorageFactory
-from dcinside_scraper.post_detail import PostDetailService
+from dcinside_scraper.parse import PostDetailService
 from dcinside_scraper.retry import ParserFailureRetryRequest, ParserFailureRetryService
 from dcinside_scraper.runner import JobRunner
-from dcinside_scraper.search import LinkCollectorService
+from dcinside_scraper.collect import LinkCollectorService
 
 EXIT_SUCCESS = 0
 EXIT_RUNTIME_ERROR = 1

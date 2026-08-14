@@ -46,7 +46,7 @@ from dcinside_scraper.outputs import (
     S3OutputStore,
     StorageFactory,
 )
-from dcinside_scraper.post_detail import (
+from dcinside_scraper.parse import (
     CommentService,
     ContentBlockParser,
     PostDetailService,
@@ -54,7 +54,7 @@ from dcinside_scraper.post_detail import (
 )
 from dcinside_scraper.retry import ParserFailureRetryService
 from dcinside_scraper.runner import CheckpointCoordinator, JobRunner, MediaDownloadCoordinator, RunnerEventBuilder, StopController
-from dcinside_scraper.search import (
+from dcinside_scraper.collect import (
     CandidateDeduper,
     GallerySearchCollector,
     GallerySearchUrlBuilder,

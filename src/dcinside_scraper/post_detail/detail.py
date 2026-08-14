@@ -26,7 +26,7 @@ from dcinside_scraper.post_detail.normalization import (
     parse_dcinside_date,
     strip_repost_marker,
 )
-from dcinside_scraper.search import parse_post_url
+from dcinside_scraper.collect.urls import parse_post_url
 
 GALL_BASE_URL = "https://gall.dcinside.com"
 COMMENT_URL = f"{GALL_BASE_URL}/board/comment/"

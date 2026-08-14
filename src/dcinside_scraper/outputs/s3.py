@@ -8,7 +8,7 @@ import anyio
 
 from dcinside_scraper.core.errors import StorageFailureError
 from dcinside_scraper.models.report import StoredObjectRef
-from dcinside_scraper.outputs.local import OutputRunLayout
+from dcinside_scraper.outputs.layout import OutputRunLayout
 
 
 class S3ObjectStore:

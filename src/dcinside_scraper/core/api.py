@@ -32,10 +32,10 @@ from dcinside_scraper.models.job import (
 )
 from dcinside_scraper.models.post import PostResult
 from dcinside_scraper.models.report import JobReport
-from dcinside_scraper.post_detail import CommentService, PostDetailService
+from dcinside_scraper.parse import CommentService, PostDetailService
 from dcinside_scraper.retry import ParserFailureRetryRequest, ParserFailureRetryService
 from dcinside_scraper.runner import JobRunner
-from dcinside_scraper.search import GallerySearchCollector, IntegratedSearchCollector
+from dcinside_scraper.collect import GallerySearchCollector, IntegratedSearchCollector
 
 
 async def search_gallery(request: GallerySearchRequest, http_client: HttpPort | None = None) -> GallerySearchPage:

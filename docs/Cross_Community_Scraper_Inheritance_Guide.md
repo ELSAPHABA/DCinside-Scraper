@@ -272,12 +272,13 @@ ExampleCommunity-Scraper/
 │   └── example_community_scraper/
 │       ├── adapters/
 │       ├── core/
+│       ├── collect/
 │       ├── http/
 │       ├── models/
 │       ├── outputs/
-│       ├── post_detail/
+│       ├── parse/
 │       ├── runner/
-│       └── search/
+│       └── retry/
 └── tests/
 ```
 
@@ -301,14 +302,14 @@ community-scraper-core/
 community-a-scraper/
 └── src/community_a_scraper/
     ├── site/
-    ├── search/
-    └── post_detail/
+    ├── collect/
+    └── parse/
 
 community-b-scraper/
 └── src/community_b_scraper/
     ├── site/
-    ├── search/
-    └── post_detail/
+    ├── collect/
+    └── parse/
 ```
 
 공통 패키지 후보:
@@ -1581,11 +1582,12 @@ Live smoke 후 확인할 항목:
 
 - [ ] `pyproject.toml`
 - [ ] `src/<site_scraper>/models/`
+- [ ] `src/<site_scraper>/collect/`
 - [ ] `src/<site_scraper>/http/`
-- [ ] `src/<site_scraper>/search/`
-- [ ] `src/<site_scraper>/post_detail/`
+- [ ] `src/<site_scraper>/parse/`
 - [ ] `src/<site_scraper>/outputs/`
 - [ ] `src/<site_scraper>/runner/`
+- [ ] `src/<site_scraper>/retry/`
 - [ ] `src/<site_scraper>/adapters/cli.py`
 - [ ] `src/<site_scraper>/adapters/container.py`
 - [ ] `src/<site_scraper>/adapters/mcp.py`
