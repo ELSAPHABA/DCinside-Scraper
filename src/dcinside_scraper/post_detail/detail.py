@@ -400,6 +400,8 @@ class CommentMemoParser:
                 )
             )
             node.decompose()
+        for node in soup.select("span.txtcon_meas"):
+            node.replace_with(NavigableString(node.get_text("\n", strip=True)))
         text = soup.get_text(" ", strip=True)
         return (text or None, dccons)
 

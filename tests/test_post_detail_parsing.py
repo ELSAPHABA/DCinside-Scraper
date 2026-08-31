@@ -15,6 +15,7 @@ from dcinside_scraper.models.job import CommentRequest, PostRequest, ScrapeOptio
 from dcinside_scraper.post_detail import (
     CommentAjaxParser,
     CommentHtmlFallbackParser,
+    CommentMemoParser,
     ContentBlockParser,
     PostDetailService,
     PostMetadataParser,
@@ -151,6 +152,23 @@ def test_comment_ajax_parser_ignores_comment_ad_items() -> None:
     page = CommentAjaxParser().parse(json.dumps(payload))
 
     assert [comment.comment_id for comment in page.comments] == ["1"]
+
+
+def test_comment_parser_treats_txtcon_as_comment_content() -> None:
+    memo = (
+        '<div class="comment_dccon clear">'
+        '<div class="coment_dccon_txt cbg_ffffff">'
+        '<p class="txtcon_txt"><span class="txtcon_meas">콘 그만쓰\n고 말좀\n해</span></p>'
+        "</div></div>"
+    )
+    text, dccons = CommentMemoParser().parse(memo)
+    page = CommentAjaxParser().parse(json.dumps({"comments": [{"no": "1", "memo": memo}]}))
+    rendered = CommentHtmlFallbackParser().parse(f'<li id="comment_li_2"><div class="cmt_txtbox">{memo}</div></li>')
+
+    assert text == "콘 그만쓰\n고 말좀\n해"
+    assert dccons == []
+    assert page.comments[0].memo_text == text
+    assert rendered[0].memo_text == text
 
 
 def test_failure_and_event_builders_exclude_raw_values() -> None:

@@ -576,6 +576,7 @@ posts = pl.read_ndjson("outputs/job-1/run-1/posts.jsonl")
 | `parent_comment_number` | 답글이면 부모 댓글 번호 |
 | `depth` | 루트 댓글 `0`, 답글 `1` 이상 |
 | `author` | 댓글 작성자 정보 |
+| `memo_text` | 댓글 내용. 글자콘은 별도 스키마 없이 텍스트만 여기에 저장 |
 | `created_at` | 댓글 작성 시각 |
 
 ## 실패와 중단 처리

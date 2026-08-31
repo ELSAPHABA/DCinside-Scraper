@@ -846,11 +846,13 @@
         - 디시콘/HTML이 포함된 경우 `memo`를 BeautifulSoup으로 한 번 더 파싱
         - 디시콘 이미지: `img.written_dccon[src]` 의 `src`, `alt`, `title`, `conalt` 값
         - 디시콘 영상: `video.written_dccon[data-src]` 또는 `video.written_dccon > source[src]` 값
+        - 글자콘은 `span.txtcon_meas`의 텍스트만 일반 댓글 내용으로 저장하고 별도 스키마를 만들지 않음
       - AJAX 응답에 `nicktype=COMMENT_BOY` 또는 `pw_ad=Y` 광고/댓글돌이 항목이 섞일 수 있으므로 댓글/덧글 수집 대상에서 제외
     - 렌더링된 HTML을 보조로 파싱할 경우
       - 댓글 목록: `li[id^="comment_li_"]`
       - 댓글 글쓴이: `#comment_li_<댓글 번호> > div > div.addbox > div.cmt_nickbox > span.gall_writer`
       - 댓글 내용: `#comment_li_<댓글 번호> > div > div.addbox > div.clear.cmt_txtbox.btn_reply_write_all`
+      - 글자콘: `.cmt_txtbox span.txtcon_meas`의 텍스트를 댓글 내용으로 저장
       - 덧글은 `#comment_li_<댓글 번호>` 내부가 아니라, 같은 `ul.cmt_list` 안에서 댓글 바로 다음 형제 `<li>` 하위의 `<ul class="reply_list" id="reply_list_<댓글 번호>" p-no="<댓글 번호>">` 에 들어간다.
       - BeautifulSoup 기준: `comment_li.find_next_sibling("li")` 에서 `ul.reply_list[p-no="<댓글 번호>"]` 를 찾고, 없으면 덧글 없음으로 처리
       - `li#comment_li_0`, `.dory`, `.cmt_pw_ad` 는 광고/댓글돌이 항목이므로 댓글/덧글 수집 대상에서 제외
